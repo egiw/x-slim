@@ -1,0 +1,129 @@
+{% extends template %}
+
+{% set title %}
+    {% trans %} Update Article  {% endtrans %}
+{% endset %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                {% trans %} Edit Article {% endtrans %}
+                <small>
+                    {% trans %} 
+                        Update and publish or save as draft article
+                    {% endtrans %}
+                </small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.article.index') }}">
+                        <i class="fa fa-file"></i> 
+                        {% trans %} Article {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-edit"></i> 
+                    {% trans %} Edit {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <form data-pjax method="post" role="form" 
+          class="form-horizontal" 
+          action="{{ urlFor('admin.article.edit', {id: article.id}) }}">
+
+        <div class="form-group">
+            <label for="select-language" class="control-label col-sm-2">
+                {% trans %} Language {% endtrans %}
+            </label>
+            <div class="col-sm-2">
+                {{
+                    html.select(languages, article.language, {
+                        class: 'form-control',
+                        id: 'select-language',
+                        disabled: true
+                    })
+                }}
+            </div>
+        </div>
+
+        <div class="form-group 
+             {% if errors['title'] is not empty %} has-error {% endif %}">
+            <label class="control-label col-sm-2" for="title">
+                {% trans %} Title {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" 
+                       name="title" 
+                       value="{{ article.title }}" 
+                       placeholder="{% trans 'Enter Title' %}"/>
+                <span class="help-block">{{ errors['title'] }}</span>
+            </div>
+        </div>
+        <div class="form-group 
+             {% if errors['content'] is not empty %} has-error {% endif %}">
+            <label class="control-label col-sm-2" for="content">
+                {% trans %} Content {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <textarea id="textarea-content" name="content" 
+                          class="form-control" cols="30" rows="10" 
+                          placeholder="Content">{{ article.getContent() }}
+                </textarea>
+                <span class="help-block">
+                    {{ errors['content'] }}
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="select-status" class="control-label col-sm-2">
+                {% trans %} Status {% endtrans %}
+            </label>
+            <div class="col-sm-2">
+                {{
+                    html.select({
+                        (constant('StatusEnum::PUBLISH')): 'Publish'|trans,
+                        (constant('StatusEnum::DRAFT')): 'Draft'|trans
+                    }, article.status, {
+                        name: 'status',
+                        class: 'form-control',
+                        id: 'select-status'
+                    })
+                }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <div class="btn-group">
+                    <input type="submit" class="btn btn-primary" 
+                           value="Submit" />
+                    <a data-pjax href="{{ urlFor('admin.article.index') }}" 
+                       class="btn btn-default">
+                        {% trans %} Cancel {% endtrans %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        $(function() {
+            $("#textarea-content").summernote({
+                height: 350
+            });
+        });
+    </script>
+{% endblock %}

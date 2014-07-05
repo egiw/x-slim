@@ -1,0 +1,186 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Title is required and between 12-60 characters"
+msgstr "Judul diperlukan dan antara 12-60 karakter"
+
+msgid "Content cannot be null and at least 100 characters"
+msgstr "Konten tidak boleh kosong dan setidaknya 100 karakter"
+
+msgid "Toggle navigation"
+msgstr "Alihkan navigasi"
+
+msgid "Dashboard"
+msgstr "Dasbor"
+
+msgid "Article"
+msgstr "Artikel"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Inbox"
+msgstr "Kotak masuk"
+
+msgid "Settings"
+msgstr "Pengaturan"
+
+msgid "Log Out"
+msgstr "Keluar"
+
+msgid "Copyright &copy;2014 My Custom Blog"
+msgstr "Hak cipta &copy;2014 My Custom Blog"
+
+msgid "No data available in table"
+msgstr "Tidak ada data tersedia didalam tabel"
+
+msgid "Showing _START_ to _END_ of _TOTAL_ entries"
+msgstr "Menampilkan _START_ to _END_ of _TOTAL_ entries"
+
+msgid "Showing 0 to 0 of 0 entries"
+msgstr "Menampilkan 0 sampai 0 dari 0 entries"
+
+msgid "filtered from _MAX_ total entries"
+msgstr "disaring dari _MAX_ entri keseluruhan"
+
+msgid "Show _MENU_ entries"
+msgstr "Menampilkan _MENU_ entri"
+
+msgid "Loading..."
+msgstr "Memuat..."
+
+msgid "Processing..."
+msgstr "Memproses"
+
+msgid "Search"
+msgstr "Cari"
+
+msgid "No matching records found"
+msgstr "Tidak ada data sesuai ditemukan"
+
+msgid "First"
+msgstr "Pertama"
+
+msgid "Last"
+msgstr "Terakhir"
+
+msgid "Next"
+msgstr "Selanjutnya"
+
+msgid "Previous"
+msgstr "Sebelumnya"
+
+msgid "activate to sort column ascending"
+msgstr "aktifkan untuk menyortir kolom secara menaik"
+
+msgid "activate to sort column descending"
+msgstr "aktifkan untuk menyortir kolom secara menurun"
+
+msgid "Language"
+msgstr "Bahasa"
+
+msgid "English"
+msgstr "Bahasa Inggris"
+
+msgid "Indonesian"
+msgstr "Bahasa Indonesia"
+
+msgid "Save"
+msgstr "Simpan"
+
+msgid "Admin Dashboard"
+msgstr "Dasbor admin"
+
+msgid "Statistics overview"
+msgstr "Sekilas Statistik"
+
+msgid "Hey %name%, I have one apple."
+msgid_plural "Hey %name%, I have %count% apples."
+msgstr[0] "Halo %name%, Saya mempunyai satu apel."
+msgstr[1] "Halo %name%, Saya mempunyai %count% apel."
+
+msgid "Add Article"
+msgstr "Tambah Artikel"
+
+msgid "Publish or save as draft new article"
+msgstr "Terbitkan atau simpan sebagai konsep artikel baru"
+
+msgid "Add"
+msgstr "Tambah"
+
+msgid "Title"
+msgstr "Judul"
+
+msgid "Enter Title"
+msgstr "Masukan Judul"
+
+msgid "Content"
+msgstr "Isi"
+
+msgid "Published"
+msgstr "Diterbitkan"
+
+msgid "Draft"
+msgstr "Konsep"
+
+msgid "Cancel"
+msgstr "Batal"
+
+msgid "List, add, or edit articles"
+msgstr "Menampilkan, menambahkan, atau mengubah artikel"
+
+msgid "All"
+msgstr "Semua"
+
+msgid "Trash"
+msgstr "Arsip"
+
+msgid "Create New"
+msgstr "Buat Baru"
+
+msgid "Created At"
+msgstr "Tanggal Dibuat"
+
+msgid "Last Update"
+msgstr "Terakhir diperbaharui"
+
+msgid "This item will be moved to archive. Are you sure ?"
+msgstr "Konten ini akan dipindahkan ke arsip. Apakah anda yakin ?"
+
+msgid "This item will be restored. Are you sure ?"
+msgstr "Konten ini akan dikembalikan. Apakah anda yakin ?"
+
+msgid "This item will be completely removed. Are you sure ?"
+msgstr "Konten ini akan benar benar dihapus. Apakah anda yakin ?"
+
+msgid "Publish"
+msgstr "Diterbitkan"
+
+msgid "Archived"
+msgstr "Diarsipkan"
+
+msgid "Edit"
+msgstr "Ubah"
+
+msgid "Move to trash"
+msgstr "Pindahkan ke arsip"
+
+msgid "Restore"
+msgstr "Kembalikan"
+
+msgid "Delete"
+msgstr "Hapus"
+
+msgid "Update Article"
+msgstr "Perbaharui Artikel"
+
+msgid "Edit Article"
+msgstr "Perbaharui Artikel"
+
+msgid "Update and publish or save as draft article"
+msgstr "Perbaharui dan terbitkan atau simpan sebagai draft artikel"
+
+msgid "Status"
+msgstr "Status"

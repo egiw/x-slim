@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                   https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+    <entity name="Articlei18n" table="articlei18n">
+        <id name="id" type="string" column="id" length="36">
+            <generator strategy="UUID"/>
+        </id>
+        <field name="language" column="language" type="string"
+               column-definition="ENUM('id', 'en')">
+        </field>
+        <field name="title" type="string" column="title" length="100" unique="true"/>
+        <field name="slug" type="string" column="slug" length="255" unique="true" />
+        <field name="content" type="text" column="content" />
+        <field name="status" type="string" column="status"
+               column-definition="ENUM('archived', 'draft', 'publish')" />
+        <field name="createdAt" type="datetime" column="created_at"/>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true"/>
+        <many-to-one target-entity="User" field="author" inversed-by="articles">
+            <join-column name="created_by" referenced-column-name="id"/>
+        </many-to-one>
+        <many-to-one target-entity="User" field="updatedBy">
+            <join-column name="updated_by" referenced-column-name="id"/>
+        </many-to-one>
+        <many-to-one target-entity="Article" field="article" inversed-by="i18n">
+            <cascade>
+                <cascade-persist/>
+            </cascade>
+        </many-to-one>
+    </entity>
+</doctrine-mapping>

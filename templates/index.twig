@@ -1,0 +1,45 @@
+{% extends template %}
+
+{% set title = "Home" %}
+
+{% block content %}
+    {% for article in articles %}
+        {% 
+	set params = {
+		slug: article.getSlug(),
+		year: article.getCreatedAt().format('Y'),
+		month: article.getCreatedAt().format('m'),
+		day: article.getCreatedAt().format('d')
+	}
+        %}
+        <article class="blog-post well well-sm">
+            <p class="blog-post-meta">{{ article.createdAt|date('F d, Y')}} by <a href="#">{{ article.author.fullname }}</a></p>
+            <hr />
+            <header>
+                <strong>
+                    <a data-pjax href="{{ urlFor('article.archive', params) }}">
+                        {{ article.title }}
+                    </a>
+                </strong>
+            </header>
+        </article>
+    {% endfor %}
+
+    <ul class="pager">
+        <li>
+            {% if hasPrev %}
+                <a  data-pjax href="?page={{page-1}}">Previous</a>
+            {% else %}
+                <a  data-pjax>Previous</a>
+            {% endif %}
+        </li>
+        <li>
+            {% if hasNext %}
+                <a data-pjax href="?page={{page+1}}">Next</a>
+            {% else %}
+                <a data-pjax>Next</a>
+            {% endif %}
+        </li>
+    </ul>
+
+{% endblock %}

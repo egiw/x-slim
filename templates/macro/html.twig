@@ -1,0 +1,44 @@
+{#	Create html attributes using an object key and value pairs #}
+{% macro htmlAttributes(array) %}
+    {% for key, value in array %}
+        {% if value is sameas(true)%}
+            {{ key }}
+        {% elseif value is not sameas(false) %}
+            {{ key ~ '=' ~ value}}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro select(options, selected, attrs) %}
+    {% import _self as basic %}
+    <select {{ basic.htmlAttributes(attrs) }}>
+        {% for value, text in options %}
+            {% set optAttrs %}
+                {{ 
+                    basic.htmlAttributes({
+                        value: value,
+                        selected: (value is sameas(selected))
+                    })
+                }}
+            {% endset %}
+            <option {{ optAttrs }}>{{ text }}</option>
+        {% endfor %}
+    </select>
+{% endmacro %}
+
+{#	Minify a set of javascript files into one request
+        @param scripts array of string javascript urls
+        e.g:
+        minify_scripts(["jquery.js", "main.js"]) #}
+{% macro minify_scripts(scripts) %}
+    <script type="text/javascript" 
+    src="{{siteUrl('min?f=' ~ scripts|join(','))}}"></script>
+{% endmacro %}
+
+{#	Minify a set of css files into one request
+        @param styles array of string css urls
+        e.g:
+        minify_styles(["bootstrap.min.css", "layout.css"])	#}
+{% macro minify_styles(styles) %}
+    <link rel="stylesheet" href="{{siteUrl('min?f=' ~ styles|join(','))}}" />
+{% endmacro %}

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datatable>
+    {% for article in data %}
+        {% set parent = article.article %}
+        {% set translate = parent.i18n.count < languages|length %}
+        <aaData>
+            <group>
+                <![CDATA[
+                <div class="btn-toolbar">
+                    {% if(parent.status in [constant('StatusEnum::PUBLISH'), constant('StatusEnum::DRAFT')]) %}
+                        <div class="btn-group">
+                            <a href="javascript:_publish('{{ urlFor('admin.article.set', {id: parent.id, status: constant('StatusEnum::PUBLISH')}) }}')" 
+                               class="btn btn-sm btn-default {% if parent.status == constant('StatusEnum::PUBLISH') %} disabled{% endif %}">
+                                <i class="fa fa-level-up"></i>
+                                {% trans %} Publish {% endtrans %}
+                            </a>
+                            <a href="javascript:_unpublish('{{ urlFor('admin.article.set', {id: parent.id, status: constant('StatusEnum::DRAFT')}) }}')"
+                               class="btn btn-sm btn-default {% if parent.status == constant('StatusEnum::DRAFT') %} disabled {% endif %}">
+                                <i class="fa fa-level-down"></i>
+                                {% trans %} Unpublish {% endtrans %}
+                            </a>
+                        </div>
+
+                        <a data-pjax href="{{ urlFor('admin.article.translate', {id: parent.id}) }}" 
+                           class="btn btn-sm btn-default {% if parent.i18n.count == languages|length %} disabled {% endif %}">
+                            <i class="fa fa-language"></i>
+                            {% trans %} Add Translation {% endtrans %}
+                        </a>
+                    {% endif %}
+                    {% if(parent.status == constant('StatusEnum::ARCHIVED')) %}
+                        <a href="javascript:_restore('{{ urlFor('admin.article.restore', {id: parent.id}) }}')" 
+                           class="btn btn-sm btn-default">
+                            <i class="fa fa-history"></i>
+                            {% trans %} Restore {% endtrans %}
+                        </a>
+                        <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: parent.id}) }}')" 
+                           class="btn btn-sm btn-danger">
+                            <i class="fa fa-times"></i>
+                            {% trans %} Delete {% endtrans %}
+                        </a>
+                    {% else %}
+                        <a href="javascript:_remove('{{ urlFor('admin.article.archive', {id: parent.id}) }}')" 
+                           class="btn btn-sm btn-warning">
+                            <i class="fa fa-trash-o"></i>
+                            {% trans %} Remove {% endtrans %}
+                        </a>
+                    {% endif %}
+                </div>
+                ]]>
+            </group>
+            <title>
+                <![CDATA[
+                <span class="label label-info">{{ article.language|upper }}</span>
+                {% if article.status == constant('StatusEnum::PUBLISH') %}
+                    <span class="label label-success">{% trans %} Publish {% endtrans %}</span>
+                {% elseif article.status == constant('StatusEnum::DRAFT') %}
+                    <span class="label label-default">{% trans %} Draft {% endtrans %}</span>
+                {% elseif article.status == constant('StatusEnum::ARCHIVED') %}
+                    <span class="label label-warning">{% trans %} Archived {% endtrans %}</span>
+                {% endif %}
+                ]]>
+                {{ article.title }}
+            </title>
+            <createdAt>
+                <![CDATA[
+                {{ article.createdAt|date('F j, Y') }}
+                <span class="text-muted">
+                    <small>{{ article.createdAt|date('g:i a') }}</small>
+                </span>
+                <div>
+                    <span class="text-muted">by</span>
+                    {{ article.author.fullname }}
+                </div>
+                ]]>
+
+            </createdAt>
+            <lastUpdate>
+                {% if article.updatedAt %}
+                    <![CDATA[
+                    {{ article.updatedAt|date('F j, Y') }}
+                    <span class="text-muted"><small>{{ article.updatedAt|date('g:i a') }}</small></span>
+                    <div>
+                        <span class="text-muted">by</span>
+                        {{ article.updatedBy.fullname }}
+                    </div>
+                    ]]>
+                {% endif %}
+            </lastUpdate>
+            <control>
+                <![CDATA[ 
+                <div class="btn-group">
+                    <a data-pjax href="{{ urlFor('admin.article.edit', {id: article.id}) }}" 
+                       title="{% trans 'Edit' %}"
+                       class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
+                    <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: parent.id, cid: article.id}) }}')" 
+                       class="btn btn-default btn-danger btn-sm"
+                       title="{% trans 'Delete' %}"><i class="fa fa-times"></i></a>
+                </div>
+                ]]>
+            </control>
+        </aaData>
+    {% endfor %}
+</datatable>

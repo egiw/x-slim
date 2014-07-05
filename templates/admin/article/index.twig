@@ -1,0 +1,182 @@
+{% extends template %}
+
+{% set title = "Articles" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                {% trans %} Article {% endtrans %}
+                <small>
+                    {% trans %} List, add, or edit articles {% endtrans %}
+                </small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li class="active"><i class="fa fa-file"></i> 
+                    {% trans %} Article {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <ul id="nav-filter-status" class="nav nav-tabs">
+                <li>
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables') }}">
+                        {% trans %} All {% endtrans %}
+                        <span id="badge-all" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: 'publish'}) }}">
+                        {% trans %} Published {% endtrans %}
+                        <span id="badge-published" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: 'draft'}) }}">
+                        {% trans %} Draft {% endtrans %}
+                        <span id="badge-draft" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: 'archived'}) }}">
+                        {% trans %} Trash {% endtrans %}
+                        <span id="badge-archived" class="badge badge-default"></span>
+                    </a>
+                </li>
+            </ul>
+
+            <a data-pjax href="{{ urlFor('admin.article.create') }}" id="btn-create"
+               class="btn btn-primary">
+                <span class="glyphicon glyphicon-pencil"></span>
+                {% trans %} Create New {% endtrans %}
+            </a>
+
+            <table class="table table-condensed" id="tbl-article">
+                <colgroup>
+                    <col width="40%"/>
+                    <col width="20%"/>
+                    <col width="20%"/>
+                    <col width="6%"/>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>{% trans %} Title {% endtrans %}</th>
+                        <th>{% trans %} Created {% endtrans %}</th>
+                        <th>{% trans %} Last Update {% endtrans %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div><!-- /.blog-main -->
+    </div>
+{% endblock %}
+
+
+{% block script %}
+    <script type="text/javascript">
+        {% set script %}
+            var $tblArticle = $("#tbl-article").DataTable({
+                dom: '<"row"<"#toolbar.col-xs-6"><"col-xs-6"f>>t<"row"<"col-xs-6"i><"col-xs-6"p>>r',
+                serverSide: true,
+                processing: false,
+                ordering: true,
+                lengthChange: false,
+                ajax: '{{ urlFor('admin.article.datatables', {'status': constant('StatusEnum::PUBLISH')}) }}',
+                pageLength: 5,
+                order: [1, 'desc'],
+                bSort: false,
+                columns: [
+                    {
+                        data: "group",
+                        visible: false
+                    },
+                    {data: "title" },
+                    {data: "createdAt"},
+                    {data: "lastUpdate"},
+                    {
+                        data: "control",
+                        orderable: false
+                    }
+                ],
+                drawCallback: function(settings) {
+                    var api = this.api();
+                    var rows = api.rows({page: 'current'}).nodes();
+                    var last = null;
+                    api.column(0, {page: 'current'}).data().each(function(group, i) {
+                        if (last !== group) {
+                            $(rows).eq(i).before('<tr class="group"><td colspan="5">' + group + '</td></tr>');
+                            last = group;
+                        }
+                    });
+                }
+            });
+            $("#btn-create").appendTo($("#toolbar"));
+            $("#nav-filter-status a[data-toggle='tab']")
+                    .on('shown.bs.tab', function(e) {
+                        $tblArticle.ajax.url($(e.target).data('url')).load();
+                    });
+
+            function _remove(url) {
+                var msg = "<h4 class='text-warning'><i class='fa fa-warning'></i> {% trans %} This item will be moved to archive. Are you sure ? {% endtrans %}</h4>";
+                request(url, 'put', msg);
+            }
+
+            function _restore(url) {
+                var msg = "<h4 class='text-info'><i class='fa fa-info-circle'></i> {% trans %} This item will be restored. Are you sure ? {% endtrans %}</h4>";
+                request(url, 'put', msg);
+            }
+
+            function _delete(url) {
+                var msg = "<h4 class='text-danger'><i class='fa fa-warning'></i> {% trans %} This item will be completely deleted. Are you sure ? {% endtrans %}</h4>";
+                request(url, 'delete', msg);
+            }
+
+            function _publish(url) {
+                var msg = "<h4 class='text-info'><i class='fa fa-info-circle'></i> {% trans %} This item will be published. Are you sure ? {% endtrans %}</h4>";
+                request(url, 'put', msg);
+            }
+
+            function _unpublish(url) {
+                var msg = "<h4 class='text-info'><i class='fa fa-warning'></i> {% trans %} This item will no longer published. Are you sure ? {% endtrans %}</h4>";
+                request(url, 'put', msg);
+            }
+
+            function request(url, method, confirmMsg) {
+                bootbox.confirm(confirmMsg, function(result) {
+                    if (result) {
+                        $.ajax({
+                            url: url,
+                            type: 'post',
+                            data: {_METHOD: method.toUpperCase()},
+                            success: function(result) {
+                                if (result) {
+                                    $tblArticle.ajax.reload();
+                                    loadCountInfo();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            (loadCountInfo = function() {
+                $.get('{{ urlFor('admin.article.count') }}', function(data) {
+                    $("#badge-all").text(data.all);
+                    $("#badge-published").text(data.published);
+                    $("#badge-draft").text(data.draft);
+                    $("#badge-archived").text(data.archived);
+                })
+            })();
+        {% endset %}
+        {{ script|pack|raw }}
+    </script>
+{% endblock %}

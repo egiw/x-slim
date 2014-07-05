@@ -1,0 +1,120 @@
+{% extends template %}
+
+{% set title %}
+    {% trans %} Create Article {% endtrans %}
+{% endset %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                {% trans %} Add Article {% endtrans %}
+                <small>
+                    {% trans %} Publish or save as draft new article {% endtrans %}
+                </small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.article.index') }}">
+                        <i class="fa fa-file"></i> 
+                        {% trans %} Article {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-pencil"></i> 
+                    {% trans %} Add {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <form data-pjax method="post" role="form" 
+          class="form-horizontal" action="{{ urlFor('admin.article.create') }}">
+
+        <div class="form-group">
+            <label for="select-language" class="control-label col-sm-2">
+                {% trans %} Language {% endtrans %}
+            </label>
+            <div class="col-sm-2">
+                {{
+                    html.select(languages, input['language'] , {
+                        name: 'language',
+                        class: 'form-control',
+                        id: 'select-language'
+                    })
+                }}
+            </div>
+        </div>
+
+        <div class="form-group {% if errors['title'] is not empty %} has-error {% endif %}">
+            <label class="control-label col-sm-2" for="title">
+                {% trans %} Title {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" 
+                       name="title" 
+                       value="{{ input['title'] }}" 
+                       placeholder="{% trans 'Enter Title' %}"/>
+                <span class="help-block">{{ errors['title'] }}</span>
+            </div>
+        </div>
+        <div class="form-group {% if errors['content'] is not empty %} has-error {% endif %}">
+            <label class="control-label col-sm-2" for="content">
+                {% trans %} Content {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <textarea id="textarea-content" 
+                          name="content" 
+                          class="form-control" 
+                          cols="30" 
+                          rows="10"
+                          placeholder="Content">{{ input['content'] }}
+                </textarea>
+                <span class="help-block">{{ errors['content'] }}</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="select-status" class="control-label col-sm-2">Status</label>
+            <div class="col-sm-2">
+                <select name="status" id="select-status" class="form-control">
+                    <option value="{{ constant('StatusEnum::PUBLISH') }}">
+                        {% trans %} Published {% endtrans %}
+                    </option>
+                    <option value="{{ constant('StatusEnum::DRAFT') }}">
+                        {% trans %} Draft {% endtrans %}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <div class="btn-group">
+                    <input type="submit" class="btn btn-primary" 
+                           value="Submit" />
+                    <a data-pjax href="{{ urlFor('admin.article.index') }}" 
+                       class="btn btn-default">
+                        {% trans %} Cancel {% endtrans %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        $(function() {
+            $("#textarea-content").summernote({
+                height: 350
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd" uri="raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd"/>
+    <system systemId="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping" uri="gediminasm.org/schemas/orm/doctrine-extensions-mapping.xsd"/>
+</catalog>

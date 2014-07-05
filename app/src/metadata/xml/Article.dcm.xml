@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                   https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+    <entity name="Article" table="article">
+        <id name="id" type="string" column="id" length="36">
+            <generator strategy="UUID"/>
+        </id>
+        <field name="status" type="string" column="status"
+               column-definition="ENUM('archived', 'draft', 'publish')" />
+        <one-to-many target-entity="Articlei18n" mapped-by="article" field="i18n">
+            <cascade>
+                <cascade-remove/>
+                <cascade-detach/>
+                <cascade-persist/>
+            </cascade>
+        </one-to-many>
+    </entity>
+</doctrine-mapping>

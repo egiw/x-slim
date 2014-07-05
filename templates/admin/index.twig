@@ -1,0 +1,18 @@
+{% extends template %}
+
+{% set title = "Admin Dashboard"|trans %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>{% trans 'Dashboard' %}
+                <small>{% trans 'Statistics overview' %}</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li class="active">
+                    <i class="fa fa-dashboard"></i> {% trans 'Dashboard' %}
+                </li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}

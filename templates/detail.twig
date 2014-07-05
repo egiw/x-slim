@@ -1,0 +1,10 @@
+{% extends template %}
+
+{% block content %}
+<article>
+	<header>
+		<h1>{{ article.getTitle() }}</h1>
+	</header>
+	{{ article.getContent()|raw }}
+</article>
+{% endblock %}
