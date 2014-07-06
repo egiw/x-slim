@@ -42,3 +42,13 @@
 {% macro minify_styles(styles) %}
     <link rel="stylesheet" href="{{siteUrl('min?f=' ~ styles|join(','))}}" />
 {% endmacro %}
+
+{% macro error(error) %}
+    {% if error is iterable %}
+        {% for message in error %}
+            <span class="help-block">{{ message }}</span>
+        {% endfor %}
+    {% else %}
+        <span class="help-block">{{ error }}</span>
+    {% endif %}
+{% endmacro %}

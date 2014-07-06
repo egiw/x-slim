@@ -37,11 +37,12 @@
     <form data-pjax method="post" role="form" 
           class="form-horizontal" action="{{ urlFor('admin.article.create') }}">
 
+        {#        LANGUAGE      #}
         <div class="form-group">
             <label for="select-language" class="control-label col-sm-2">
                 {% trans %} Language {% endtrans %}
             </label>
-            <div class="col-sm-2">
+            <div class="col-sm-3">
                 {{
                     html.select(languages, input['language'] , {
                         name: 'language',
@@ -52,7 +53,8 @@
             </div>
         </div>
 
-        <div class="form-group {% if errors['title'] is not empty %} has-error {% endif %}">
+        {#            TITLE         #}
+        <div class="form-group {% if error.title %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="title">
                 {% trans %} Title {% endtrans %}
             </label>
@@ -61,10 +63,12 @@
                        name="title" 
                        value="{{ input['title'] }}" 
                        placeholder="{% trans 'Enter Title' %}"/>
-                <span class="help-block">{{ errors['title'] }}</span>
+                {{ html.error(error.title) }}
             </div>
         </div>
-        <div class="form-group {% if errors['content'] is not empty %} has-error {% endif %}">
+
+        {#        CONTENT       #}
+        <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
                 {% trans %} Content {% endtrans %}
             </label>
@@ -76,11 +80,12 @@
                           rows="10"
                           placeholder="Content">{{ input['content'] }}
                 </textarea>
-                <span class="help-block">{{ errors['content'] }}</span>
+                {{ html.error(error.content) }}
             </div>
         </div>
 
-        <div class="form-group">
+        {#            STATUS        #}
+        <div class="form-group">    
             <label for="select-status" class="control-label col-sm-2">Status</label>
             <div class="col-sm-2">
                 <select name="status" id="select-status" class="form-control">
@@ -94,6 +99,7 @@
             </div>
         </div>
 
+        {#                SUBMIT            #}
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
                 <div class="btn-group">

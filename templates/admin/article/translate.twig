@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <div class="form-group {% if errors['title'] is not empty %} has-error {% endif %}">
+        <div class="form-group {% if error.title %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="title">
                 {% trans %} Title {% endtrans %}
             </label>
@@ -82,10 +82,10 @@
                        name="title" 
                        value="{{ input['title'] }}" 
                        placeholder="{% trans 'Enter Title' %}"/>
-                <span class="help-block">{{ errors['title'] }}</span>
+                {{ html.error(error.title) }}
             </div>
         </div>
-        <div class="form-group {% if errors['content'] is not empty %} has-error {% endif %}">
+        <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
                 {% trans %} Content {% endtrans %}
             </label>
@@ -97,21 +97,23 @@
                           rows="10"
                           placeholder="Content">{{ input['content'] }}
                 </textarea>
-                <span class="help-block">{{ errors['content'] }}</span>
+                {{ html.error(error.content) }}
             </div>
         </div>
 
         <div class="form-group">
             <label for="select-status" class="control-label col-sm-2">Status</label>
             <div class="col-sm-2">
-                <select name="status" id="select-status" class="form-control">
-                    <option value="{{ constant('StatusEnum::PUBLISH') }}">
-                        {% trans %} Published {% endtrans %}
-                    </option>
-                    <option value="{{ constant('StatusEnum::DRAFT') }}">
-                        {% trans %} Draft {% endtrans %}
-                    </option>
-                </select>
+                {{
+                    html.select({
+                        (constant('StatusEnum::PUBLISH')): 'Publish'|trans,
+                        (constant('StatusEnum::DRAFT')): 'Draft'|trans
+                    }, input['status'], {
+                        name: 'status',
+                        class: 'form-control',
+                        id: 'select-status'
+                    })
+                }}
             </div>
         </div>
 

@@ -59,8 +59,6 @@ $app->view->parserOptions = array(
     'autoescape' => true
 );
 
-
-
 $app->view->parserExtensions = array(
     new \Slim\Views\TwigExtension(),
     new Twig_Extension_Debug()
@@ -74,10 +72,14 @@ $twig->addFilter(new Twig_SimpleFilter('pack', function($string) {
     return $jsPacker->pack();
 }));
 
-include_once '../app/routes/public.php';
-include_once '../app/routes/admin.php';
+$twig->addFilter(new Twig_SimpleFilter('strftime', function(DateTime $date, $format) {
+    return strftime($format, $date->getTimestamp());
+}));
 
-$app->get('/test', function() use($app, $em) {
+include_once '../routes/public.php';
+include_once '../routes/admin.php';
+
+$app->get('/test', function() use($app, $em, $twig) {
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($app->config('templates.path')), RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
         // force compilation
         if ($file->isFile()) {

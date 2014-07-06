@@ -10,8 +10,8 @@
         <field name="language" column="language" type="string"
                column-definition="ENUM('id', 'en')">
         </field>
-        <field name="title" type="string" column="title" length="100" unique="true"/>
-        <field name="slug" type="string" column="slug" length="255" unique="true" />
+        <field name="title" type="string" column="title" length="100"/>
+        <field name="slug" type="string" column="slug" length="255"/>
         <field name="content" type="text" column="content" />
         <field name="status" type="string" column="status"
                column-definition="ENUM('archived', 'draft', 'publish')" />

@@ -92,15 +92,15 @@
                 ordering: true,
                 lengthChange: false,
                 ajax: '{{ urlFor('admin.article.datatables', {'status': constant('StatusEnum::PUBLISH')}) }}',
-                pageLength: 5,
+                pageLength: 10,
                 order: [1, 'desc'],
                 bSort: false,
                 columns: [
                     {
-                        data: "group",
+                        data: "id",
                         visible: false
                     },
-                    {data: "title" },
+                    {data: "title"},
                     {data: "createdAt"},
                     {data: "lastUpdate"},
                     {
@@ -114,7 +114,8 @@
                     var last = null;
                     api.column(0, {page: 'current'}).data().each(function(group, i) {
                         if (last !== group) {
-                            $(rows).eq(i).before('<tr class="group"><td colspan="5">' + group + '</td></tr>');
+                            var $toolbar = this.row(i).data().toolbar;
+                            $(rows).eq(i).before($toolbar);
                             last = group;
                         }
                     });

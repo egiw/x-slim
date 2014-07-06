@@ -41,6 +41,7 @@ $app->group(null, function() use($app, $em) {
         putenv("LANG={$locale}");
         putenv("LANGUAGE={$locale}");
         setlocale(LC_MESSAGES, $locale);
+        setlocale(LC_TIME, $locale);
 
         $domain = "messages";
         bindtextdomain($domain, __DIR__ . "/../locale");
@@ -49,8 +50,8 @@ $app->group(null, function() use($app, $em) {
         $app->view->set('template', $app->isPjax ? "pjax_template.twig" : "admin/template.twig");
         $app->view->set('user', $user);
         $app->view->set('languages', array(
-            "id" => "Indonesian",
-            "en" => "English"
+            "id" => gettext("Indonesian"),
+            "en" => gettext("English")
         ));
     }, function() use ($app, $em) {
         // display dashboard page
@@ -70,6 +71,18 @@ $app->group(null, function() use($app, $em) {
                     try {
                         $data['input'] = $input = $app->request->post();
 
+                        $notExists = function($title) use ($em) {
+                            return $em->getRepository("Articlei18n")
+                                            ->findOneBy(array("title" => $title)) === null;
+                        };
+
+                        // validation
+                        V::create()
+                                ->key("title", V::create()->notEmpty()->length(16, 60))
+                                ->key("title", V::create()->callback($notExists)->setName("notExists"))
+                                ->key("content", V::create()->notEmpty()->length(160))
+                                ->assert($input);
+
                         $article = new Article();
                         $article->setStatus($input['status']);
 
@@ -83,25 +96,19 @@ $app->group(null, function() use($app, $em) {
                                 ->setAuthor($app->user)
                                 ->setStatus($input['status'])
                                 ->setArticle($article);
-
                         $article->addI18n($i18n);
-
-                        // validation
-                        V::create()
-                                ->attribute("title", V::create()->notEmpty()->length(12, 60))
-                                ->attribute("content", V::create()->length(100, null))
-                                ->assert($i18n);
-
                         $em->persist($article);
                         $em->persist($i18n);
                         $em->flush();
-
                         $app->redirect($app->urlFor("admin.article.index"));
                     } catch (InvalidArgumentException $ex) {
-                        $data['errors'] = $ex->findMessages(array(
-                            "title" => gettext("Title is required and between 12-60 characters"),
-                            "content" => gettext("Content cannot be null and at least 100 characters")
-                        ));
+                        $data['error'] = new Error($ex->findMessages(array(
+                                    "title.notEmpty" => gettext("Title cannot be empty"),
+                                    "title.length" => gettext("Title must be between 12 to 60 characters"),
+                                    "title.notExists" => gettext("Title already exists"),
+                                    "content.notEmpty" => gettext("Content cannot be empty"),
+                                    "content.length" => gettext("Content must be at least 160 characters")
+                        )));
                     }
                 }
                 $app->render('admin/article/create.twig', $data);
@@ -113,7 +120,26 @@ $app->group(null, function() use($app, $em) {
                     $data = array("article" => $article);
                     if ($app->request->isPost()) {
                         try {
-                            $input = $app->request->post();
+                            $data['input'] = $input = $app->request->post();
+
+                            $notExists = function($title) use ($article, $em) {
+                                if ($article->getTitle() == $title)
+                                    return true;
+
+                                $i18n = $em->getRepository("Articlei18n")
+                                        ->findOneBy(array("title" => $title));
+                                if (null === $i18n || $article->getArticle() === $i18n->getArticle())
+                                    return true;
+
+                                return false;
+                            };
+
+                            // validation
+                            V::create()
+                                    ->key("title", V::create()->notEmpty()->length(16, 60))
+                                    ->key("title", V::create()->callback($notExists)->setName("notExists"))
+                                    ->key("content", V::create()->notEmpty()->length(160))
+                                    ->assert($input);
 
                             $article->setTitle($input['title'])
                                     ->setSlug(slugify($input['title']))
@@ -122,20 +148,18 @@ $app->group(null, function() use($app, $em) {
                                     ->setUpdatedBy($app->user)
                                     ->setStatus($input['status']);
 
-                            V::create()
-                                    ->attribute("title", V::create()->notEmpty()->length(12, 50))
-                                    ->attribute("content", V::create()->length(100, null))
-                                    ->assert($article);
-
                             $em->persist($article);
                             $em->flush();
 
                             $app->redirect($app->urlFor("admin.article.index"));
                         } catch (InvalidArgumentException $ex) {
-                            $data['errors'] = $ex->findMessages(array(
-                                "title" => gettext("Title is required and between 12-60 characters"),
-                                "content" => gettext("Content cannot be null and at least 100 characters")
-                            ));
+                            $data['error'] = new Error($ex->findMessages(array(
+                                        "title.notEmpty" => gettext("Title cannot be empty"),
+                                        "title.length" => gettext("Title must be between 12 to 60 characters"),
+                                        "title.notExists" => gettext("Title already exists"),
+                                        "content.notEmpty" => gettext("Content cannot be empty"),
+                                        "content.length" => gettext("Content must be at least 160 characters")
+                            )));
                         }
                     }
                     $app->render('admin/article/edit.twig', $data);
@@ -148,7 +172,20 @@ $app->group(null, function() use($app, $em) {
                     $data = array('article' => $article);
                     if ($app->request->isPost()) {
                         try {
-                            $input = $app->request->post();
+                            $data['input'] = $input = $app->request->post();
+
+                            $notExists = function($title) use($article, $em) {
+                                $i18n = $em->getRepository("Articlei18n")
+                                        ->findOneBy(array("title" => $title));
+                                return null == $i18n || $i18n->getArticle() == $article;
+                            };
+
+                            // validation
+                            V::create()
+                                    ->key("title", V::create()->notEmpty()->length(16, 60))
+                                    ->key("title", V::create()->callback($notExists)->setName("notExists"))
+                                    ->key("content", V::create()->length(160))
+                                    ->assert($input);
 
                             $i18n = new Articlei18n();
                             $i18n
@@ -163,22 +200,19 @@ $app->group(null, function() use($app, $em) {
 
                             $article->addI18n($i18n);
 
-                            // validation
-                            V::create()
-                                    ->attribute("title", V::create()->notEmpty()->length(12, 60))
-                                    ->attribute("content", V::create()->length(100, null))
-                                    ->assert($i18n);
-
                             $em->persist($article);
                             $em->persist($i18n);
                             $em->flush();
 
                             $app->redirect($app->urlFor("admin.article.index"));
                         } catch (InvalidArgumentException $ex) {
-                            $data['errors'] = $ex->findMessages(array(
-                                "title" => gettext("Title is required and between 12-60 characters"),
-                                "content" => gettext("Content cannot be null and at least 100 characters")
-                            ));
+                            $data['error'] = new Error($ex->findMessages(array(
+                                        "title.notEmpty" => gettext("Title cannot be empty"),
+                                        "title.length" => gettext("Title must be between 12 to 60 characters"),
+                                        "title.notExists" => gettext("Title already exists"),
+                                        "content.notEmpty" => gettext("Content cannot be empty"),
+                                        "content.length" => gettext("Content must be at least 160 characters")
+                            )));
                         }
                     }
                     $app->render("admin/article/translate.twig", $data);
@@ -285,7 +319,7 @@ $app->group(null, function() use($app, $em) {
                 return $app->response->body(json_encode($data));
             })->name('admin.article.count');
         });
-
+        // handle user settings
         $app->group('/user', function() use($app, $em) {
             $app->map('/settings', function() use($app, $em) {
                 $user = $app->user;
