@@ -139,7 +139,7 @@ $app->group(null, function() use($app) {
             // Find the user
             $user = $em->getRepository("User")
                     ->findOneBy(array("username" => $input['username']));
-
+            
             // Let's check whether the user found and the provided password is correct
             if (null !== $user && password_verify($input['password'], $user->getPassword())) {
                 $app->log->info('Authenticated', array(
@@ -159,10 +159,10 @@ $app->group(null, function() use($app) {
     // handle user register
     $app->get('/register', function() use($app, $em) {
         $user = new User;
-        $user->setUsername("testing")
-                ->setPassword(password_hash("testing", PASSWORD_BCRYPT))
-                ->setFullname("Test Account")
-                ->setEmail("test@myblog.com");
+        $user->setUsername("admin")
+                ->setPassword(password_hash("admin", PASSWORD_BCRYPT))
+                ->setFullname("Administrator")
+                ->setEmail("admin@domain.tld");
 
         $em->persist($user);
         $em->flush();

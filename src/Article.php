@@ -1,25 +1,33 @@
 <?php
 
-
-
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @Entity
  * Article
  */
-class Article
-{
-    /**
-     * @var string
-     */
-    private $status;
+class Article {
 
     /**
+     * @Id
+     * @GeneratedValue(strategy="UUID")
+     * @Column(type="string", length=36)
      * @var string
      */
     private $id;
 
     /**
+     * @Column(type="string", columnDefinition="ENUM('publish', 'archive', 'draft')")
+     * @var string
+     */
+    private $status;
+
+    /**
+     * @OneToMany(
+     *      targetEntity="Articlei18n", 
+     *      mappedBy="article", 
+     *      cascade={"persist", "remove", "detach"}
+     * )
      * @var \Doctrine\Common\Collections\Collection
      */
     private $i18n;
@@ -27,8 +35,7 @@ class Article
     /**
      * Constructor
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->i18n = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
@@ -38,8 +45,7 @@ class Article
      * @param string $status
      * @return Article
      */
-    public function setStatus($status)
-    {
+    public function setStatus($status) {
         $this->status = $status;
 
         return $this;
@@ -50,8 +56,7 @@ class Article
      *
      * @return string 
      */
-    public function getStatus()
-    {
+    public function getStatus() {
         return $this->status;
     }
 
@@ -60,8 +65,7 @@ class Article
      *
      * @return string 
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
@@ -71,8 +75,7 @@ class Article
      * @param \Articlei18n $i18n
      * @return Article
      */
-    public function addI18n(\Articlei18n $i18n)
-    {
+    public function addI18n(\Articlei18n $i18n) {
         $this->i18n[] = $i18n;
 
         return $this;
@@ -83,8 +86,7 @@ class Article
      *
      * @param \Articlei18n $i18n
      */
-    public function removeI18n(\Articlei18n $i18n)
-    {
+    public function removeI18n(\Articlei18n $i18n) {
         $this->i18n->removeElement($i18n);
     }
 
@@ -93,8 +95,8 @@ class Article
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getI18n()
-    {
+    public function getI18n() {
         return $this->i18n;
     }
+
 }

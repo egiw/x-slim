@@ -8,9 +8,9 @@ date_default_timezone_set("Asia/Jakarta");
 
 require_once "vendor/autoload.php";
 
-$paths = array(__DIR__ . "/app/src/metadata/xml");
 $isDevMode = true;
-$config = Setup::createXMLMetadataConfiguration($paths, $isDevMode);
+$config = Setup::createAnnotationMetadataConfiguration(array(__DIR__ . "/src"), $isDevMode);
+
 $config->setCustomDatetimeFunctions(array(
     "month" => "\DoctrineExtensions\Query\Mysql\Month",
     "day" => "\DoctrineExtensions\Query\Mysql\Day",

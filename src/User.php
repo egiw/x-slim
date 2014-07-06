@@ -1,50 +1,59 @@
 <?php
 
-
-
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @Entity
  * User
  */
-class User
-{
-    /**
-     * @var string
-     */
-    private $username;
+class User {
 
     /**
-     * @var string
-     */
-    private $password;
-
-    /**
-     * @var string
-     */
-    private $fullname;
-
-    /**
-     * @var string
-     */
-    private $email;
-
-    /**
-     * @var string
-     */
-    private $avatar;
-
-    /**
-     * @var array
-     */
-    private $settings;
-
-    /**
+     * @Id
+     * @GeneratedValue(strategy="UUID")
+     * @Column(type="string", length=36)
      * @var string
      */
     private $id;
 
     /**
+     * @Column(type="string", length=32, unique=true, nullable=false)
+     * @var string
+     */
+    private $username;
+
+    /**
+     * @Column(type="string", length=60, nullable=false)
+     * @var string
+     */
+    private $password;
+
+    /**
+     * @Column(type="string", length=60, nullable=true)
+     * @var string
+     */
+    private $fullname;
+
+    /**
+     * @Column(type="string", length=100, unique=true, nullable=true)
+     * @var string
+     */
+    private $email;
+
+    /**
+     * @Column(type="blob", nullable=true)
+     * @var string
+     */
+    private $avatar;
+
+    /**
+     * @Column(type="json_array", nullable=true)
+     * @var array
+     */
+    private $settings;
+
+    /**
+     * @OneToMany(targetEntity="Articlei18n", mappedBy="author", cascade={"persist"})
      * @var \Doctrine\Common\Collections\Collection
      */
     private $articles;
@@ -52,8 +61,7 @@ class User
     /**
      * Constructor
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->articles = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
@@ -63,8 +71,7 @@ class User
      * @param string $username
      * @return User
      */
-    public function setUsername($username)
-    {
+    public function setUsername($username) {
         $this->username = $username;
 
         return $this;
@@ -75,8 +82,7 @@ class User
      *
      * @return string 
      */
-    public function getUsername()
-    {
+    public function getUsername() {
         return $this->username;
     }
 
@@ -86,8 +92,7 @@ class User
      * @param string $password
      * @return User
      */
-    public function setPassword($password)
-    {
+    public function setPassword($password) {
         $this->password = $password;
 
         return $this;
@@ -98,8 +103,7 @@ class User
      *
      * @return string 
      */
-    public function getPassword()
-    {
+    public function getPassword() {
         return $this->password;
     }
 
@@ -109,8 +113,7 @@ class User
      * @param string $fullname
      * @return User
      */
-    public function setFullname($fullname)
-    {
+    public function setFullname($fullname) {
         $this->fullname = $fullname;
 
         return $this;
@@ -121,8 +124,7 @@ class User
      *
      * @return string 
      */
-    public function getFullname()
-    {
+    public function getFullname() {
         return $this->fullname;
     }
 
@@ -132,8 +134,7 @@ class User
      * @param string $email
      * @return User
      */
-    public function setEmail($email)
-    {
+    public function setEmail($email) {
         $this->email = $email;
 
         return $this;
@@ -144,8 +145,7 @@ class User
      *
      * @return string 
      */
-    public function getEmail()
-    {
+    public function getEmail() {
         return $this->email;
     }
 
@@ -155,8 +155,7 @@ class User
      * @param string $avatar
      * @return User
      */
-    public function setAvatar($avatar)
-    {
+    public function setAvatar($avatar) {
         $this->avatar = $avatar;
 
         return $this;
@@ -167,8 +166,7 @@ class User
      *
      * @return string 
      */
-    public function getAvatar()
-    {
+    public function getAvatar() {
         return $this->avatar;
     }
 
@@ -178,8 +176,7 @@ class User
      * @param array $settings
      * @return User
      */
-    public function setSettings($settings)
-    {
+    public function setSettings($settings) {
         $this->settings = $settings;
 
         return $this;
@@ -190,8 +187,7 @@ class User
      *
      * @return array 
      */
-    public function getSettings()
-    {
+    public function getSettings() {
         return $this->settings;
     }
 
@@ -200,8 +196,7 @@ class User
      *
      * @return string 
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
@@ -211,8 +206,7 @@ class User
      * @param \Articlei18n $articles
      * @return User
      */
-    public function addArticle(\Articlei18n $articles)
-    {
+    public function addArticle(\Articlei18n $articles) {
         $this->articles[] = $articles;
 
         return $this;
@@ -223,8 +217,7 @@ class User
      *
      * @param \Articlei18n $articles
      */
-    public function removeArticle(\Articlei18n $articles)
-    {
+    public function removeArticle(\Articlei18n $articles) {
         $this->articles->removeElement($articles);
     }
 
@@ -233,8 +226,8 @@ class User
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getArticles()
-    {
+    public function getArticles() {
         return $this->articles;
     }
+
 }

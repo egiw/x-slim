@@ -47,7 +47,7 @@
     "autoload": {
         "classmap": ["vendor/jpgraph/jpgraph/lib/JpGraph"],
         "psr-0": {
-            "": ["app/src/"]
+            "": ["src/", "lib/"]
         }
     }
 }

@@ -12,23 +12,15 @@ define('DOMPDF_ENABLE_REMOTE', true);
 define('DOMPDF_ENABLE_CSS_FLOAT', true);
 
 require '../bootstrap.php';
-
 //include the DOMPDF config file (required)
 require '../vendor/dompdf/dompdf/dompdf_config.inc.php';
-
 //if you get errors about missing classes please also add:
 require_once('../vendor/dompdf/dompdf/include/autoload.inc.php');
-
-require '../app/constants.php';
-
-require '../app/functions.php';
-
-require '../app/DataTables.php';
+require '../lib/constants.php';
+require '../lib/functions.php';
 
 // Prepare app
-$app = new \Slim\Slim(array(
-    'templates.path' => '../templates',
-        ));
+$app = new \Slim\Slim(array('templates.path' => '../templates'));
 
 $app->container->singleton("isPjax", function() use($app) {
     $request = $app->request;
@@ -87,7 +79,6 @@ $app->get('/test', function() use($app, $em, $twig) {
         }
     }
 });
-
 
 // Run app
 $app->run();

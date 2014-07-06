@@ -1,64 +1,82 @@
 <?php
 
-
-
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @Entity
  * Articlei18n
  */
-class Articlei18n
-{
-    /**
-     * @var string
-     */
-    private $language;
+class Articlei18n {
 
     /**
-     * @var string
-     */
-    private $title;
-
-    /**
-     * @var string
-     */
-    private $slug;
-
-    /**
-     * @var string
-     */
-    private $content;
-
-    /**
-     * @var string
-     */
-    private $status;
-
-    /**
-     * @var \DateTime
-     */
-    private $createdAt;
-
-    /**
-     * @var \DateTime
-     */
-    private $updatedAt;
-
-    /**
+     * @Id
+     * @GeneratedValue(strategy="UUID")
+     * @Column(type="string", length=36)
      * @var string
      */
     private $id;
 
     /**
+     * @Column(type="string", length=2, columnDefinition="ENUM('id', 'en')")
+     * @var string
+     */
+    private $language = "en";
+
+    /**
+     * @Column(type="string", length=60)
+     * @var string
+     */
+    private $title;
+
+    /**
+     * @Column(type="string", length=80)
+     * @var string
+     */
+    private $slug;
+
+    /**
+     * @Column(type="text")
+     * @var string
+     */
+    private $content;
+
+    /**
+     * @Column(type="string", length=8, columnDefinition="ENUM('publish', 'archive', 'draft')")
+     * @var string
+     */
+    private $status;
+
+    /**
+     * @Column(type="datetime", name="created_at")
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * @Column(type="datetime", name="updated_at", nullable=true)
+     * @var \DateTime
+     */
+    private $updatedAt;
+
+    /**
+     * @ManyToOne(targetEntity="User", inversedBy="articles")
+     * @JoinColumn(name="created_by", referencedColumnName="id")
      * @var \User
      */
     private $author;
 
     /**
+     * @ManyToOne(targetEntity="User")
+     * @JoinColumn(name="updated_by", referencedColumnName="id")
+     * @var \User
+     */
+    private $updatedBy;
+
+    /**
+     * @ManyToOne(targetEntity="Article", inversedBy="i18n", cascade={"persist"})
      * @var \Article
      */
     private $article;
-
 
     /**
      * Set language
@@ -66,8 +84,7 @@ class Articlei18n
      * @param string $language
      * @return Articlei18n
      */
-    public function setLanguage($language)
-    {
+    public function setLanguage($language) {
         $this->language = $language;
 
         return $this;
@@ -78,8 +95,7 @@ class Articlei18n
      *
      * @return string 
      */
-    public function getLanguage()
-    {
+    public function getLanguage() {
         return $this->language;
     }
 
@@ -89,8 +105,7 @@ class Articlei18n
      * @param string $title
      * @return Articlei18n
      */
-    public function setTitle($title)
-    {
+    public function setTitle($title) {
         $this->title = $title;
 
         return $this;
@@ -101,8 +116,7 @@ class Articlei18n
      *
      * @return string 
      */
-    public function getTitle()
-    {
+    public function getTitle() {
         return $this->title;
     }
 
@@ -112,8 +126,7 @@ class Articlei18n
      * @param string $slug
      * @return Articlei18n
      */
-    public function setSlug($slug)
-    {
+    public function setSlug($slug) {
         $this->slug = $slug;
 
         return $this;
@@ -124,8 +137,7 @@ class Articlei18n
      *
      * @return string 
      */
-    public function getSlug()
-    {
+    public function getSlug() {
         return $this->slug;
     }
 
@@ -135,8 +147,7 @@ class Articlei18n
      * @param string $content
      * @return Articlei18n
      */
-    public function setContent($content)
-    {
+    public function setContent($content) {
         $this->content = $content;
 
         return $this;
@@ -147,8 +158,7 @@ class Articlei18n
      *
      * @return string 
      */
-    public function getContent()
-    {
+    public function getContent() {
         return $this->content;
     }
 
@@ -158,8 +168,7 @@ class Articlei18n
      * @param string $status
      * @return Articlei18n
      */
-    public function setStatus($status)
-    {
+    public function setStatus($status) {
         $this->status = $status;
 
         return $this;
@@ -170,8 +179,7 @@ class Articlei18n
      *
      * @return string 
      */
-    public function getStatus()
-    {
+    public function getStatus() {
         return $this->status;
     }
 
@@ -181,8 +189,7 @@ class Articlei18n
      * @param \DateTime $createdAt
      * @return Articlei18n
      */
-    public function setCreatedAt($createdAt)
-    {
+    public function setCreatedAt($createdAt) {
         $this->createdAt = $createdAt;
 
         return $this;
@@ -193,8 +200,7 @@ class Articlei18n
      *
      * @return \DateTime 
      */
-    public function getCreatedAt()
-    {
+    public function getCreatedAt() {
         return $this->createdAt;
     }
 
@@ -204,8 +210,7 @@ class Articlei18n
      * @param \DateTime $updatedAt
      * @return Articlei18n
      */
-    public function setUpdatedAt($updatedAt)
-    {
+    public function setUpdatedAt($updatedAt) {
         $this->updatedAt = $updatedAt;
 
         return $this;
@@ -216,8 +221,7 @@ class Articlei18n
      *
      * @return \DateTime 
      */
-    public function getUpdatedAt()
-    {
+    public function getUpdatedAt() {
         return $this->updatedAt;
     }
 
@@ -226,8 +230,7 @@ class Articlei18n
      *
      * @return string 
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
@@ -237,8 +240,7 @@ class Articlei18n
      * @param \User $author
      * @return Articlei18n
      */
-    public function setAuthor(\User $author = null)
-    {
+    public function setAuthor(\User $author = null) {
         $this->author = $author;
 
         return $this;
@@ -249,9 +251,29 @@ class Articlei18n
      *
      * @return \User 
      */
-    public function getAuthor()
-    {
+    public function getAuthor() {
         return $this->author;
+    }
+
+    /**
+     * Set updatedBy
+     *
+     * @param \User $updatedBy
+     * @return Articlei18n
+     */
+    public function setUpdatedBy(\User $updatedBy = null) {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
+    }
+
+    /**
+     * Get updatedBy
+     *
+     * @return \User 
+     */
+    public function getUpdatedBy() {
+        return $this->updatedBy;
     }
 
     /**
@@ -260,8 +282,7 @@ class Articlei18n
      * @param \Article $article
      * @return Articlei18n
      */
-    public function setArticle(\Article $article = null)
-    {
+    public function setArticle(\Article $article = null) {
         $this->article = $article;
 
         return $this;
@@ -272,8 +293,8 @@ class Articlei18n
      *
      * @return \Article 
      */
-    public function getArticle()
-    {
+    public function getArticle() {
         return $this->article;
     }
+
 }
