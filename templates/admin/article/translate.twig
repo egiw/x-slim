@@ -106,8 +106,8 @@
             <div class="col-sm-2">
                 {{
                     html.select({
-                        (constant('StatusEnum::PUBLISH')): 'Publish'|trans,
-                        (constant('StatusEnum::DRAFT')): 'Draft'|trans
+                        (constant('Article::STATUS_PUBLISH')): 'Publish'|trans,
+                        (constant('Article::STATUS_DRAFT')): 'Draft'|trans
                     }, input['status'], {
                         name: 'status',
                         class: 'form-control',

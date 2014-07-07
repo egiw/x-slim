@@ -16,8 +16,6 @@ require '../bootstrap.php';
 require '../vendor/dompdf/dompdf/dompdf_config.inc.php';
 //if you get errors about missing classes please also add:
 require_once('../vendor/dompdf/dompdf/include/autoload.inc.php');
-require '../lib/constants.php';
-require '../lib/functions.php';
 
 // Prepare app
 $app = new \Slim\Slim(array('templates.path' => '../templates'));

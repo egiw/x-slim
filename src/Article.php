@@ -1,12 +1,14 @@
 <?php
 
-use Doctrine\ORM\Mapping as ORM;
-
 /**
  * @Entity
  * Article
  */
 class Article {
+
+    const STATUS_PUBLISH = 'publish';
+    const STATUS_ARCHIVE = 'archive';
+    const STATUS_DRAFT = 'draft';
 
     /**
      * @Id
@@ -97,6 +99,31 @@ class Article {
      */
     public function getI18n() {
         return $this->i18n;
+    }
+
+    /**
+     * Check whether this article is publish
+     * 
+     * @return bool
+     */
+    public function isPublish() {
+        return $this->getStatus() === self::STATUS_PUBLISH;
+    }
+
+    /**
+     * Check whether this article is draft
+     * 
+     * @return bool
+     */
+    public function isDraft() {
+        return $this->getStatus() === self::STATUS_DRAFT;
+    }
+
+    /**
+     * Check whether this article is archive
+     */
+    public function isArchive() {
+        return $this->getStatus() === self::STATUS_ARCHIVE;
     }
 
 }

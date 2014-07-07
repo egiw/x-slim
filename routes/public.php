@@ -25,7 +25,7 @@ $app->group(null, function() use($app, $em) {
             ->orderBy("name", "DESC")
             ->setParameters(array(
                 "language" => "id",
-                "status" => StatusEnum::PUBLISH
+                "status" => Article::STATUS_PUBLISH
     ));
     $app->view->set('archives', $qb->getQuery()->getResult());
     $app->view->set('template', $app->isPjax ? "pjax_template.twig" : "template.twig");
@@ -47,7 +47,7 @@ $app->group(null, function() use($app, $em) {
                 ->setMaxResults($limit);
 
         $qb->setParameters(array(
-            "status" => StatusEnum::PUBLISH,
+            "status" => Article::STATUS_PUBLISH,
             "language" => "id"
         ));
 
@@ -72,7 +72,7 @@ $app->group(null, function() use($app, $em) {
         $qb = $repo->createQueryBuilder("a");
 
         $qb->where("a.status = :status")
-                ->setParameter("status", StatusEnum::PUBLISH);
+                ->setParameter("status", Article::STATUS_PUBLISH);
 
         if (null !== $year)
             $qb->andWhere("YEAR(a.createdAt) = :year")
@@ -139,7 +139,7 @@ $app->group(null, function() use($app) {
             // Find the user
             $user = $em->getRepository("User")
                     ->findOneBy(array("username" => $input['username']));
-            
+
             // Let's check whether the user found and the provided password is correct
             if (null !== $user && password_verify($input['password'], $user->getPassword())) {
                 $app->log->info('Authenticated', array(

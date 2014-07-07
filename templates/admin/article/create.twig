@@ -89,10 +89,10 @@
             <label for="select-status" class="control-label col-sm-2">Status</label>
             <div class="col-sm-2">
                 <select name="status" id="select-status" class="form-control">
-                    <option value="{{ constant('StatusEnum::PUBLISH') }}">
+                    <option value="{{ constant('Article::STATUS_PUBLISH') }}">
                         {% trans %} Published {% endtrans %}
                     </option>
-                    <option value="{{ constant('StatusEnum::DRAFT') }}">
+                    <option value="{{ constant('Article::STATUS_DRAFT') }}">
                         {% trans %} Draft {% endtrans %}
                     </option>
                 </select>

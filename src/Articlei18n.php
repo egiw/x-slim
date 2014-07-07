@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Articlei18n {
 
+    const STATUS_PUBLISH = 'publish';
+    const STATUS_DRAFT = 'draft';
+
     /**
      * @Id
      * @GeneratedValue(strategy="UUID")
@@ -295,6 +298,45 @@ class Articlei18n {
      */
     public function getArticle() {
         return $this->article;
+    }
+
+    /**
+     * Check whether article is published
+     * @return bool
+     */
+    public function isPublish() {
+        return $this->getStatus() === self::STATUS_PUBLISH;
+    }
+
+    /**
+     * Check wheter article is draft
+     * @return bool
+     */
+    public function isDraft() {
+        return $this->getStatus() === self::STATUS_DRAFT;
+    }
+
+    public static function slugify($text) {
+        // replace non letter or digits by -
+        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
+
+        // trim
+        $text = trim($text, '-');
+
+        // transliterate
+        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+
+        // lowercase
+        $text = strtolower($text);
+
+        // remove unwanted characters
+        $text = preg_replace('~[^-\w]+~', '', $text);
+
+        if (empty($text)) {
+            return 'n-a';
+        }
+
+        return $text;
     }
 
 }

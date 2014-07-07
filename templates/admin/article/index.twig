@@ -91,7 +91,7 @@
                 processing: false,
                 ordering: true,
                 lengthChange: false,
-                ajax: '{{ urlFor('admin.article.datatables', {'status': constant('StatusEnum::PUBLISH')}) }}',
+                ajax: '{{ urlFor('admin.article.datatables', {'status': constant('Article::STATUS_PUBLISH')}) }}',
                 pageLength: 10,
                 order: [1, 'desc'],
                 bSort: false,

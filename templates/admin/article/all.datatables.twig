@@ -1,48 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <datatable>
-    {% for article in data %}
-        {% set parent = article.article %}
-        {% set translate = parent.i18n.count < languages|length %}
+    {% for i18n in data %}
+        {% set article = i18n.article %}
         <aaData>
-            <id>{{ parent.id }}</id>
+            <id>{{ article.id }}</id>
             <toolbar>
                 <![CDATA[
                 <tr class="group">
                     <td colspan="5">
                         <div class="btn-toolbar">
-                            {% if(parent.status in [constant('StatusEnum::PUBLISH'), constant('StatusEnum::DRAFT')]) %}
+                            {% if(article.publish or article.draft) %}
                                 <div class="btn-group">
-                                    <a href="javascript:_publish('{{ urlFor('admin.article.set', {id: parent.id, status: constant('StatusEnum::PUBLISH')}) }}')" 
-                                       class="btn btn-sm btn-default {% if parent.status == constant('StatusEnum::PUBLISH') %} disabled{% endif %}">
+                                    <a href="javascript:_publish('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_PUBLISH')}) }}')" 
+                                       class="btn btn-sm btn-default {% if article.publish  %} disabled {% endif %}">
                                         <i class="fa fa-level-up"></i>
                                         {% trans %} Publish {% endtrans %}
                                     </a>
-                                    <a href="javascript:_unpublish('{{ urlFor('admin.article.set', {id: parent.id, status: constant('StatusEnum::DRAFT')}) }}')"
-                                       class="btn btn-sm btn-default {% if parent.status == constant('StatusEnum::DRAFT') %} disabled {% endif %}">
+                                    <a href="javascript:_unpublish('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_DRAFT')}) }}')"
+                                       class="btn btn-sm btn-default {% if article.draft %} disabled {% endif %}">
                                         <i class="fa fa-level-down"></i>
                                         {% trans %} Unpublish {% endtrans %}
                                     </a>
                                 </div>
 
-                                <a data-pjax href="{{ urlFor('admin.article.translate', {id: parent.id}) }}" 
-                                   class="btn btn-sm btn-default {% if parent.i18n.count == languages|length %} disabled {% endif %}">
+                                <a data-pjax href="{{ urlFor('admin.article.translate', {id: article.id}) }}" 
+                                   class="btn btn-sm btn-default {% if article.i18n.count == languages|length %} disabled {% endif %}">
                                     <i class="fa fa-language"></i>
                                     {% trans %} Add Translation {% endtrans %}
                                 </a>
                             {% endif %}
-                            {% if(parent.status == constant('StatusEnum::ARCHIVED')) %}
-                                <a href="javascript:_restore('{{ urlFor('admin.article.restore', {id: parent.id}) }}')" 
+                            {% if article.archive %}
+                                <a href="javascript:_restore('{{ urlFor('admin.article.restore', {id: article.id}) }}')" 
                                    class="btn btn-sm btn-default">
                                     <i class="fa fa-history"></i>
                                     {% trans %} Restore {% endtrans %}
                                 </a>
-                                <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: parent.id}) }}')" 
+                                <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: article.id}) }}')" 
                                    class="btn btn-sm btn-danger">
                                     <i class="fa fa-times"></i>
                                     {% trans %} Delete {% endtrans %}
                                 </a>
                             {% else %}
-                                <a href="javascript:_remove('{{ urlFor('admin.article.archive', {id: parent.id}) }}')" 
+                                <a href="javascript:_remove('{{ urlFor('admin.article.archive', {id: article.id}) }}')" 
                                    class="btn btn-sm btn-warning">
                                     <i class="fa fa-trash-o"></i>
                                     {% trans %} Remove {% endtrans %}
@@ -55,38 +54,35 @@
             </toolbar>
             <title>
                 <![CDATA[
-                <span class="label label-info">{{ article.language|upper }}</span>
-                {% if article.status == constant('StatusEnum::PUBLISH') %}
+                <span class="label label-info">{{ i18n.language|upper }}</span>
+                {% if i18n.publish %}
                     <span class="label label-success">{% trans %} Publish {% endtrans %}</span>
-                {% elseif article.status == constant('StatusEnum::DRAFT') %}
+                {% elseif i18n.draft %}
                     <span class="label label-default">{% trans %} Draft {% endtrans %}</span>
-                {% elseif article.status == constant('StatusEnum::ARCHIVED') %}
-                    <span class="label label-warning">{% trans %} Archived {% endtrans %}</span>
                 {% endif %}
                 ]]>
-                {{ article.title }}
+                {{ i18n.title }}
             </title>
             <createdAt>
                 <![CDATA[
-                {{ article.createdAt|strftime('%A, %e %B %Y') }}
+                {{ i18n.createdAt|strftime('%A, %e %B %Y') }}
                 <span class="text-muted">
-                    <small>{{ article.createdAt|date('g:i a') }}</small>
+                    <small>{{ i18n.createdAt|date('g:i a') }}</small>
                 </span>
                 <div>
                     <span class="text-muted">{% trans %} by {% endtrans %}</span>
-                    {{ article.author.fullname }}
+                    {{ i18n.author.fullname }}
                 </div>
                 ]]>
-
             </createdAt>
             <lastUpdate>
-                {% if article.updatedAt %}
+                {% if i18n.updatedAt %}
                     <![CDATA[
-                    {{ article.updatedAt|strftime('%A, %e %B %Y') }}
-                    <span class="text-muted"><small>{{ article.updatedAt|date('g:i a') }}</small></span>
+                    {{ i18n.updatedAt|strftime('%A, %e %B %Y') }}
+                    <span class="text-muted"><small>{{ i18n.updatedAt|date('g:i a') }}</small></span>
                     <div>
                         <span class="text-muted">{% trans %} by {% endtrans %}</span>
-                        {{ article.updatedBy.fullname }}
+                        {{ i18n.updatedBy.fullname }}
                     </div>
                     ]]>
                 {% endif %}
@@ -94,10 +90,10 @@
             <control>
                 <![CDATA[ 
                 <div class="btn-group">
-                    <a data-pjax href="{{ urlFor('admin.article.edit', {id: article.id}) }}" 
+                    <a data-pjax href="{{ urlFor('admin.article.edit', {id: i18n.id}) }}" 
                        title="{% trans 'Edit' %}"
                        class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
-                    <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: parent.id, cid: article.id}) }}')" 
+                    <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: article.id, cid: i18n.id}) }}')" 
                        class="btn btn-default btn-danger btn-sm"
                        title="{% trans 'Delete' %}"><i class="fa fa-times"></i></a>
                 </div>

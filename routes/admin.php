@@ -90,7 +90,7 @@ $app->group(null, function() use($app, $em) {
                         $i18n
                                 ->setLanguage($input['language'])
                                 ->setTitle($input['title'])
-                                ->setSlug(slugify($input['title']))
+                                ->setSlug(Articlei18n::slugify($input['title']))
                                 ->setContent($input['content'])
                                 ->setCreatedAt(new DateTime("now"))
                                 ->setAuthor($app->user)
@@ -142,7 +142,7 @@ $app->group(null, function() use($app, $em) {
                                     ->assert($input);
 
                             $article->setTitle($input['title'])
-                                    ->setSlug(slugify($input['title']))
+                                    ->setSlug(Articlei18n::slugify($input['title']))
                                     ->setContent($input['content'])
                                     ->setUpdatedAt(new DateTime("now"))
                                     ->setUpdatedBy($app->user)
@@ -191,7 +191,7 @@ $app->group(null, function() use($app, $em) {
                             $i18n
                                     ->setLanguage($input['language'])
                                     ->setTitle($input['title'])
-                                    ->setSlug(slugify($input['title']))
+                                    ->setSlug(Articlei18n::slugify($input['title']))
                                     ->setContent($input['content'])
                                     ->setCreatedAt(new DateTime("now"))
                                     ->setAuthor($app->user)
@@ -222,7 +222,7 @@ $app->group(null, function() use($app, $em) {
             $app->put("/:id/archive", function($id) use($app, $em) {
                 /* @var $article Article */
                 if ($article = $em->find("Article", $id)) {
-                    $article->setStatus(StatusEnum::ARCHIVED);
+                    $article->setStatus(Article::STATUS_ARCHIVE);
                     $em->persist($article);
                     $em->flush();
                     echo true;
@@ -233,10 +233,10 @@ $app->group(null, function() use($app, $em) {
             // restore archived article
             $app->put("/:id/restore", function($id) use($app, $em) {
                 $article = $em->find("Article", $id);
-                if (null === $article || $article->getStatus() !== StatusEnum::ARCHIVED) {
+                if (null === $article || $article->getStatus() !== Article::STATUS_ARCHIVE) {
                     $app->notFound();
                 }
-                $article->setStatus(StatusEnum::DRAFT);
+                $article->setStatus(Article::STATUS_DRAFT);
                 $em->persist($article);
                 $em->flush();
                 echo true;
@@ -249,7 +249,7 @@ $app->group(null, function() use($app, $em) {
                     $em->flush();
                 }
                 echo true;
-            })->conditions(array("status" => "(" . StatusEnum::PUBLISH . "|" . StatusEnum::DRAFT . ")"))->name('admin.article.set');
+            })->conditions(array("status" => "(" . Article::STATUS_PUBLISH . "|" . Article::STATUS_DRAFT . ")"))->name('admin.article.set');
             // remove article or translation from db
             $app->delete("/:id(/:cid)", function($id, $cid = null) use($app, $em) {
                 if ($article = $em->find("Article", $id)) {
@@ -260,7 +260,7 @@ $app->group(null, function() use($app, $em) {
                         if (!$article->getI18n()->count()) {
                             $em->remove($article);
                         }
-                    } elseif ($article->getStatus() == StatusEnum::ARCHIVED) {
+                    } elseif ($article->getStatus() == Article::STATUS_ARCHIVE) {
                         $em->remove($article);
                     }
                     $em->flush();
@@ -307,13 +307,13 @@ $app->group(null, function() use($app, $em) {
                 $dql .= " WHERE a.status = :status";
                 $query = $em->createQuery($dql);
                 $data['published'] = $query
-                        ->setParameter("status", StatusEnum::PUBLISH)
+                        ->setParameter("status", Article::STATUS_PUBLISH)
                         ->getSingleScalarResult();
                 $data['draft'] = $query
-                        ->setParameter("status", StatusEnum::DRAFT)
+                        ->setParameter("status", Article::STATUS_DRAFT)
                         ->getSingleScalarResult();
                 $data['archived'] = $query
-                        ->setParameter("status", StatusEnum::ARCHIVED)
+                        ->setParameter("status", Article::STATUS_ARCHIVE)
                         ->getSingleScalarResult();
                 $app->contentType("application/json");
                 return $app->response->body(json_encode($data));
