@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datatable>
+    {% for user in data %}
+        <aaData>
+            <username>{{ user.username }}</username>
+            <email>{{ user.email }}</email>
+            <fullname>{{ user.fullname }}</fullname>
+            <control>
+                <![CDATA[
+                <div class="btn-group">
+                    <a data-pjax href="#" title="{% trans 'Edit' %}"
+                       class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
+                    <a href="#" class="btn btn-default btn-danger btn-sm"
+                       title="{% trans 'Delete' %}"><i class="fa fa-times"></i></a>
+                </div>
+                ]]>
+            </control>
+        </aaData>
+    {% endfor %}
+</datatable>

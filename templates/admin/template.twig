@@ -63,6 +63,13 @@
                                 {% trans %} Article {% endtrans %}
                             </a>
                         </li>
+                        <li>
+                            <a data-pjax 
+                               href="{{ urlFor('admin.user.index') }}">
+                                <i class="fa fa-users"></i> 
+                                {% trans %} User {% endtrans %}
+                            </a>
+                        </li>
                     </ul>
 
                     <ul class="nav navbar-nav navbar-right navbar-user">
@@ -76,7 +83,7 @@
                                 <li><a href="#"><i class="fa fa-user"></i> {% trans %} Profile {% endtrans %}</a></li>
                                 <li><a href="#"><i class="fa fa-envelope"></i> {% trans %} Inbox {% endtrans %} <span class="badge">7</span></a></li>
                                 <li>
-                                    <a href="{{ urlFor('user.settings') }}">
+                                    <a href="{{ urlFor('account.settings') }}">
                                         <i class="fa fa-gear"></i> {% trans %} Settings {% endtrans %}
                                     </a>
                                 </li>
@@ -113,26 +120,27 @@
         <script type="text/javascript">
             {% set script %}
                 $.extend($.fn.dataTable.defaults, {
-                    "language": {
-                        "emptyTable": "{% trans %} No data available in table {% endtrans %}",
-                        "info": "{% trans %} Showing _START_ to _END_ of _TOTAL_ entries {% endtrans %}",
-                        "infoEmpty": "{% trans %} Showing 0 to 0 of 0 entries {% endtrans %}",
-                        "infoFiltered": "({% trans %} filtered from _MAX_ total entries {% endtrans %})",
-                        "infoPostFix": "",
-                        "lengthMenu": "{% trans %} Show _MENU_ entries {% endtrans %}",
-                        "loadingRecords": "{% trans %} Loading... {% endtrans %}",
-                        "processing": "{% trans %} Processing... {% endtrans %}",
-                        "search": "{% trans %} Search {% endtrans %}:",
-                        "zeroRecords": "{% trans %} No matching records found {% endtrans %}",
-                        "paginate": {
-                            "first": "{% trans %} First {% endtrans %}",
-                            "last": "{% trans %} Last {% endtrans %}",
-                            "next": "{% trans %} Next {% endtrans %}",
-                            "previous": "{% trans %} Previous {% endtrans %}"
+                    dom: '<"row"<"#toolbar.col-xs-6"><"col-xs-6"f>>t<"row"<"col-xs-6"i><"col-xs-6"p>>r',
+                    language: {
+                        emptyTable: "{% trans %} No data available in table {% endtrans %}",
+                        info: "{% trans %} Showing _START_ to _END_ of _TOTAL_ entries {% endtrans %}",
+                        infoEmpty: "{% trans %} Showing 0 to 0 of 0 entries {% endtrans %}",
+                        infoFiltered: "({% trans %} filtered from _MAX_ total entries {% endtrans %})",
+                        infoPostFix: "",
+                        lengthMenu: "{% trans %} Show _MENU_ entries {% endtrans %}",
+                        loadingRecords: "{% trans %} Loading... {% endtrans %}",
+                        processing: "{% trans %} Processing... {% endtrans %}",
+                        search: "{% trans %} Search {% endtrans %}:",
+                        zeroRecords: "{% trans %} No matching records found {% endtrans %}",
+                        paginate: {
+                            first: "{% trans %} First {% endtrans %}",
+                            last: "{% trans %} Last {% endtrans %}",
+                            next: "{% trans %} Next {% endtrans %}",
+                            previous: "{% trans %} Previous {% endtrans %}"
                         },
-                        "aria": {
-                            "sortAscending": ": {% trans %} activate to sort column ascending {% endtrans %}",
-                            "sortDescending": ": {% trans %} activate to sort column descending {% endtrans %}"
+                        aria: {
+                            sortAscending: ": {% trans %} activate to sort column ascending {% endtrans %}",
+                            sortDescending: ": {% trans %} activate to sort column descending {% endtrans %}"
                         }
                     }
                 });

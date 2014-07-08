@@ -1,6 +1,6 @@
 {% extends template %}
 
-{% set title = "Articles" %}
+{% set title = "Articles"|trans %}
 
 {% block content %}
     <div class="row">
@@ -94,7 +94,6 @@
                 ajax: '{{ urlFor('admin.article.datatables', {'status': constant('Article::STATUS_PUBLISH')}) }}',
                 pageLength: 10,
                 order: [1, 'desc'],
-                bSort: false,
                 columns: [
                     {
                         data: "id",

@@ -8,6 +8,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class User {
 
+    const ROLE_ADMIN = 'admin';
+    const ROLE_EDITOR = 'editor';
+    const ROLE_AUTHOR = 'author';
+    const ROLE_CONTRIBUTOR = 'contributor';
+
     /**
      * @Id
      * @GeneratedValue(strategy="UUID")
@@ -59,10 +64,21 @@ class User {
     private $articles;
 
     /**
+     * @Column(
+     *      type="string", 
+     *      length=32,
+     *      columnDefinition="ENUM('admin', 'editor', 'author', 'contributor')"
+     * )
+     * @var string
+     */
+    private $role;
+
+    /**
      * Constructor
      */
     public function __construct() {
         $this->articles = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->roles = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -228,6 +244,27 @@ class User {
      */
     public function getArticles() {
         return $this->articles;
+    }
+
+    /**
+     * Get Role
+     * 
+     * @return string
+     */
+    public function getRole() {
+        return $this->role;
+    }
+
+    /**
+     * Set Role
+     * 
+     * @param string $role
+     * @return \User
+     */
+    public function setRole($role) {
+        $this->role = $role;
+
+        return $this;
     }
 
 }

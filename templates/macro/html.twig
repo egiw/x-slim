@@ -21,7 +21,7 @@
                     })
                 }}
             {% endset %}
-            <option {{ optAttrs }}>{{ text }}</option>
+            <option {{ optAttrs }}>{{ text|raw }}</option>
         {% endfor %}
     </select>
 {% endmacro %}
@@ -48,7 +48,7 @@
         {% for message in error %}
             <span class="help-block">{{ message }}</span>
         {% endfor %}
-    {% else %}
+    {% elseif error is not empty %}
         <span class="help-block">{{ error }}</span>
     {% endif %}
 {% endmacro %}

@@ -6,16 +6,7 @@
 
 session_start();
 
-// inhibit DOMPDF's auto-loader
-define('DOMPDF_ENABLE_AUTOLOAD', false);
-define('DOMPDF_ENABLE_REMOTE', true);
-define('DOMPDF_ENABLE_CSS_FLOAT', true);
-
 require '../bootstrap.php';
-//include the DOMPDF config file (required)
-require '../vendor/dompdf/dompdf/dompdf_config.inc.php';
-//if you get errors about missing classes please also add:
-require_once('../vendor/dompdf/dompdf/include/autoload.inc.php');
 
 // Prepare app
 $app = new \Slim\Slim(array('templates.path' => '../templates'));

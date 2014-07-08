@@ -1,0 +1,176 @@
+{% extends template %}
+
+{% set title = "Add User"|trans %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                {% trans %} Add User {% endtrans %}
+                <small>
+                    {% trans %} Register new user and notify by sending email {% endtrans %}
+                </small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ urlFor('admin.user.index') }}" data-pjax>
+                        <i class="fa fa-users"></i> 
+                        {% trans %} User {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-plus"></i> 
+                    {% trans %} Add New {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <form data-pjax action="{{ urlFor('admin.user.create') }}" 
+                  class="form form-horizontal" method="post">
+
+                <div class="form-group {% if error.username %} has-error {% endif %}">
+                    <label for="input-name" class="control-label col-sm-3">
+                        {% trans %} Username {% endtrans %}
+                    </label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" name="username"
+                               value="{{ input['name'] }}"
+                               placeholder="{% trans 'Between 4 and 32 characters' %}"/>
+                        {{ html.error(error.username) }}
+                    </div>
+                </div>
+
+                <div class="form-group {% if error.email %} has-error {% endif %}">
+                    <label for="input-email" class="control-label col-sm-3">
+                        {% trans %} Email {% endtrans %}
+                    </label>
+                    <div class="col-sm-4">
+                        <input type="text" name="email" id="input-email" 
+                               value="{{ input['email'] }}"
+                               class="form-control"
+                               placeholder="{% trans 'A valid email address' %}"/>
+                        {{ html.error(error.email) }}
+                    </div>
+                </div>
+
+                <div class="form-group {% if error.password %} has-error {% endif %}">
+                    <label for="input-password" class="control-label col-sm-3">
+                        {% trans %} Password {% endtrans %}
+                    </label>
+                    <div class="col-sm-6">
+                        <input class="hidden"/>
+                        <input type="password" class="form-control" name="password" 
+                               id="input-password"
+                               placeholder="{% trans 'Between 6 and 32 characters long' %}"
+                               value="{{ input['password'] }}"/>
+                        {{ html.error(error.password) }}
+                    </div>
+                </div>
+
+                <div class="form-group {% if error.passwordConfirmation %} has-error {% endif %}">
+                    <label for="input-password-confirmation" class="control-label col-sm-3">
+                        {% trans %} Confirm Password {% endtrans %}
+                    </label>
+                    <div class="col-sm-6">
+                        <input type="password" class="form-control" 
+                               id="input-password-confirmation"
+                               name="passwordConfirmation" 
+                               value="{{ input['passwordConfirmation'] }}"
+                               placeholder="{% trans 'Retype the passwords' %}"
+                               autocomplete="off"/>
+                        {{ html.error(error.passwordConfirmation) }}
+                    </div>
+                </div>
+
+                <div class="form-group {% if error.role %} has-error {% endif %}">
+                    <label class="control-label col-sm-3">
+                        {% trans %} Role {% endtrans %}
+                    </label>
+                    <div class="col-sm-6">
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="role" value="{{ constant('User::ROLE_ADMIN') }}">
+                                {% trans %} Administrator {% endtrans %}
+                            </label>
+                            <span class="help-block">
+                                <small>
+                                    <p> 
+                                        {% trans %}
+                                            An Administrator has full power over the site and can do absolutely everything.
+                                        {% endtrans %}
+                                    </p>
+                                </small>
+                            </span>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="role" value="{{ constant('User::ROLE_EDITOR') }}">
+                                {% trans %} Editor {% endtrans %}
+                            </label>
+                            <span class="help-block">
+                                <small>
+                                    {% trans %}
+                                        An Editor can create, edit, publish, and delete any post (not just their own).
+                                    {% endtrans %}
+                                </small>
+                            </span>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="role" value="{{ constant('User::ROLE_AUTHOR') }}">
+                                {% trans %} Author {% endtrans %}
+                            </label>
+                            <span class="help-block">
+                                <small>
+                                    {% trans %}
+                                        An Author can create, edit, publish, and delete only their own posts. 
+                                        Authors do not have access to modify posts by other users.
+                                    {% endtrans %}
+                                </small>
+                            </span>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="role" value="{{ constant('User::ROLE_CONTRIBUTOR') }}"
+                                       checked>
+                                {% trans %} Contributor {% endtrans %}
+                            </label>
+                            <span class="help-block">
+                                <small>
+                                    {% trans %}
+                                        A Contributor can create and edit only their own posts, but cannot publish them.
+                                        When one of their posts is ready to be published or has been revised, 
+                                        the Administrator needs to be notified personally by the Contributor to review it.
+                                        Furthermore, once a Contributor’s post is approved and published by an Administrator, 
+                                        it can no longer be edited by the Contributor.
+                                    {% endtrans %}
+                                </small>
+                            </span>
+                        </div>
+                        {{ html.error(error.role) }}
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="col-sm-3 col-sm-offset-3">
+                        <button class="btn btn-primary" type="submit">{% trans %} Submit {% endtrans %}</button>
+                        <a data-pjax href="{{ urlFor('admin.user.index') }}" class="btn btn-default">
+                            {% trans %} Cancel {% endtrans %}
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+{% endblock %}

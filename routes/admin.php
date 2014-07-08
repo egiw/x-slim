@@ -1,6 +1,7 @@
 <?php
 
 use Respect\Validation\Validator as V;
+use Respect\Validation\Exceptions\AllOfException;
 
 /* @var $app Slim\Slim */
 /* @var $em Doctrine\ORM\EntityManager */
@@ -270,7 +271,7 @@ $app->group(null, function() use($app, $em) {
             })->name("admin.article.delete");
             // get datatables data
             $app->get('/datatables(/:status)', function($status = null) use($app, $em) {
-                if ($app->request->isAjax() || true) {
+                if ($app->request->isAjax()) {
                     $qb = $em->getRepository("Articlei18n")
                             ->createQueryBuilder("a")
                             ->join("a.article", "b");
@@ -319,8 +320,8 @@ $app->group(null, function() use($app, $em) {
                 return $app->response->body(json_encode($data));
             })->name('admin.article.count');
         });
-        // handle user settings
-        $app->group('/user', function() use($app, $em) {
+        // handle account settings
+        $app->group('/account', function() use($app, $em) {
             $app->map('/settings', function() use($app, $em) {
                 $user = $app->user;
                 $settings = $user->getSettings();
@@ -334,8 +335,67 @@ $app->group(null, function() use($app, $em) {
                     $app->response->redirect($app->urlFor("admin.index"));
                 }
                 // render form
-                $app->render("admin/user/settings.twig");
-            })->via("GET", "POST")->name("user.settings");
+                $app->render("admin/account/settings.twig");
+            })->via("GET", "POST")->name("account.settings");
+        });
+        /// manage role
+        $app->group('/user', function() use($app, $em) {
+            // display list of users
+            $app->get('/', function() use($app, $em) {
+                $app->render('admin/user/index.twig');
+            })->setName('admin.user.index');
+            // display create user form
+            $app->map('/create', function() use($app, $em) {
+                $data = array();
+                if ($app->request->isPost()) {
+                    $data['input'] = $input = $app->request->post();
+                    // validation
+                    try {
+                        V::create()
+                                ->key('username', V::create()->notEmpty()->length(4, 16))
+                                ->key('email', V::create()->notEmpty()->email())
+                                ->key('password', V::create()->notEmpty()->length(4))
+                                ->key('passwordConfirmation', V::create()->notEmpty()->equals($input['password']))
+                                ->key('role', V::create()->notEmpty(), false)
+                                ->assert($input);
+
+                        $user = new User;
+                        $user->setUsername($input['username'])
+                                ->setEmail($input['email'])
+                                ->setPassword(password_hash($input['password'], PASSWORD_BCRYPT))
+                                ->setRole($input['role']);
+
+                        $em->persist($user);
+                        $em->flush();
+
+                        $app->redirect($app->urlFor("admin.user.index"));
+                    } catch (AllOfException $ex) {
+                        $data['error'] = new Error($ex->findMessages(array(
+                                    'username.notEmpty' => gettext('Username cannot be empty'),
+                                    'username.length' => gettext('Username must be between 4 and 16 characters'),
+                                    'email.notEmpty' => gettext('Email address cannot be empty'),
+                                    'email.email' => gettext('Invalid email address'),
+                                    'password.notEmpty' => gettext('Password cannot be empty'),
+                                    'password.length' => gettext('Password must be at least 6 characters'),
+                                    'passwordConfirmation.notEmpty' => gettext('Please retype password'),
+                                    'passwordConfirmation.equals' => gettext('Password confirmation doesn\'t match'),
+                                    'role.notEmpty' => gettext('Role must be selected')
+                        )));
+                    }
+                }
+                $app->render('admin/user/create.twig', $data);
+            })->via("GET", "POST")->setName('admin.user.create');
+
+            $app->get('/datatables', function() use($app, $em) {
+                if ($app->request->isAjax() || true) {
+                    $qb = $em->getRepository("User")
+                            ->createQueryBuilder("u");
+
+                    $app->contentType("application/json");
+                    $data = new DataTables($qb, 'admin/user/datatables.twig');
+                    return $app->response->write(json_encode($data));
+                }
+            })->setName('admin.user.datatables');
         });
     });
 });

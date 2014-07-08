@@ -1,30 +1,14 @@
 {
-    "name": "slim/slim-skeleton",
-    "description": "A Slim Framework skeleton application for rapid development",
-    "keywords": ["microframework", "rest", "router"],
-    "homepage": "http://github.com/codeguy/Slim-Skeleton",
+    "name": "x-slim",
+    "description": "A Simple CMS",
+    "keywords": ["CMS"],
+    "homepage": "https://github.com/egiw",
     "license": "MIT",
     "authors": [
         {
-            "name": "Josh Lockhart",
-            "email": "info@joshlockhart.com",
+            "name": "Egi Soleh Hasdi",
+            "email": "egiwrr@gmail.com",
             "homepage": "http://www.joshlockhart.com/"
-        }
-    ],
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "openwall/phpass",
-                "version": "0.3",
-                "dist": {
-                    "url": "http://www.openwall.com/phpass/phpass-0.3.tar.gz",
-                    "type": "tar"
-                },
-                "autoload": {
-                    "classmap": ["PasswordHash.php"]
-                }
-            }
         }
     ],
     "require": {
@@ -35,17 +19,13 @@
         "twig/twig": "1.*",
         "doctrine/orm": "2.4.*",
         "beberlei/DoctrineExtensions": "dev-master",
-        "dompdf/dompdf": "dev-master",
         "respect/validation": "dev-master",
-        "jpgraph/jpgraph": "dev-master",
-        "swiftmailer/swiftmailer": "5.*",
-        "openwall/phpass": "0.3",
         "meenie/javascript-packer": "dev-master",
         "umpirsky/twig-gettext-extractor": "1.1.*",
-        "gedmo/doctrine-extensions": "v2.3.9"
+        "gedmo/doctrine-extensions": "v2.3.9",
+        "owasp/phprbac": "dev-master"
     },
     "autoload": {
-        "classmap": ["vendor/jpgraph/jpgraph/lib/JpGraph"],
         "psr-0": {
             "": ["src/", "lib/"]
         }
