@@ -8,9 +8,9 @@
             <control>
                 <![CDATA[
                 <div class="btn-group">
-                    <a data-pjax href="#" title="{% trans 'Edit' %}"
+                    <a data-pjax href="{{ urlFor('admin.user.edit', {id: user.id}) }}" title="{% trans 'Edit' %}"
                        class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
-                    <a href="#" class="btn btn-default btn-danger btn-sm"
+                    <a href="javascript:_delete('{{ urlFor('admin.user.delete', {id: user.id}) }}')" class="btn btn-default btn-danger btn-sm"
                        title="{% trans 'Delete' %}"><i class="fa fa-times"></i></a>
                 </div>
                 ]]>

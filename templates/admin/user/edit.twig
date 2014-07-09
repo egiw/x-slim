@@ -1,14 +1,14 @@
 {% extends template %}
 
-{% set title = "Add User"|trans %}
+{% set title = "Edit User"|trans %}
 
 {% block content %}
     <div class="row">
         <div class="col-lg-12">
             <h1>
-                {% trans %} Add User {% endtrans %}
+                {% trans %} Edit User {% endtrans %}
                 <small>
-                    {% trans %} Register new user and notify by sending email {% endtrans %}
+                    {% trans %} Update user detail and credentials {% endtrans %}
                 </small>
             </h1>
             <ol class="breadcrumb">
@@ -25,8 +25,8 @@
                     </a>
                 </li>
                 <li class="active">
-                    <i class="fa fa-plus"></i> 
-                    {% trans %} Add New {% endtrans %}
+                    <i class="fa fa-edit"></i> 
+                    {% trans %} Edit {% endtrans %}
                 </li>
             </ol>
         </div>
@@ -34,9 +34,8 @@
 
     <div class="row">
         <div class="col-lg-12">
-            <form data-pjax action="{{ urlFor('admin.user.create') }}" 
+            <form data-pjax action="{{ urlFor('admin.user.edit', {id: user.id}) }}" 
                   class="form form-horizontal" method="post">
-
                 <div class="form-group {% if error.username %} has-error {% endif %}">
                     <label for="input-username" class="control-label col-sm-3">
                         {% trans %} Username {% endtrans %}
@@ -44,7 +43,7 @@
                     <div class="col-sm-4">
                         <input type="text" class="form-control" name="username"
                                id="input-username"
-                               value="{{ input['username'] }}"
+                               value="{{ input['username'] is not null ? input['username'] : user.username }}"
                                placeholder="{% trans 'Between 4 and 32 characters' %}"/>
                         {{ html.error(error.username) }}
                     </div>
@@ -56,7 +55,7 @@
                     </label>
                     <div class="col-sm-4">
                         <input type="text" name="email" id="input-email" 
-                               value="{{ input['email'] }}"
+                               value="{{ input['email'] is not null ? input['email'] : user.email }}"
                                class="form-control"
                                id="input-email"
                                placeholder="{% trans 'A valid email address' %}"/>
@@ -100,22 +99,29 @@
                     <div class="col-sm-6">
                         <div class="radio">
                             <label>
-                                <input type="radio" name="role" value="{{ constant('User::ROLE_ADMIN') }}">
+                                <input type="radio" 
+                                       name="role" 
+                                       {% if input['role']|default(user.role) is constant('User::ROLE_ADMIN') %} 
+                                           checked 
+                                       {% endif %}
+                                       value="{{ constant('User::ROLE_ADMIN') }}">
                                 {% trans %} Administrator {% endtrans %}
                             </label>
                             <span class="help-block">
                                 <small>
-                                    <p> 
-                                        {% trans %}
-                                            An Administrator has full power over the site and can do absolutely everything.
-                                        {% endtrans %}
-                                    </p>
+                                    {% trans %}
+                                        An Administrator has full power over the site and can do absolutely everything.
+                                    {% endtrans %}
                                 </small>
                             </span>
                         </div>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="role" value="{{ constant('User::ROLE_EDITOR') }}">
+                                <input type="radio" name="role" 
+                                       {% if input['role']|default(user.role) is constant('User::ROLE_EDITOR') %} 
+                                           checked 
+                                       {% endif %}
+                                       value="{{ constant('User::ROLE_EDITOR') }}">
                                 {% trans %} Editor {% endtrans %}
                             </label>
                             <span class="help-block">
@@ -128,7 +134,11 @@
                         </div>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="role" value="{{ constant('User::ROLE_AUTHOR') }}">
+                                <input type="radio" name="role" 
+                                       {% if input['role']|default(user.role) is constant('User::ROLE_AUTHOR') %} 
+                                           checked 
+                                       {% endif %}
+                                       value="{{ constant('User::ROLE_AUTHOR') }}">
                                 {% trans %} Author {% endtrans %}
                             </label>
                             <span class="help-block">
@@ -142,8 +152,11 @@
                         </div>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="role" value="{{ constant('User::ROLE_CONTRIBUTOR') }}"
-                                       checked>
+                                <input type="radio" name="role" 
+                                       {% if input['role']|default(user.role) is constant('User::ROLE_CONTRIBUTOR') %} 
+                                           checked 
+                                       {% endif %}
+                                       value="{{ constant('User::ROLE_CONTRIBUTOR') }}">
                                 {% trans %} Contributor {% endtrans %}
                             </label>
                             <span class="help-block">

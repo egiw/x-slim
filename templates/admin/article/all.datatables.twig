@@ -71,7 +71,7 @@
                 </span>
                 <div>
                     <span class="text-muted">{% trans %} by {% endtrans %}</span>
-                    {{ i18n.author.fullname }}
+                    {{ i18n.author.fullname|default(i18n.author.username) }}
                 </div>
                 ]]>
             </createdAt>

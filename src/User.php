@@ -12,6 +12,7 @@ class User {
     const ROLE_EDITOR = 'editor';
     const ROLE_AUTHOR = 'author';
     const ROLE_CONTRIBUTOR = 'contributor';
+    const ROLE_GUEST = 'guest';
 
     /**
      * @Id
@@ -58,7 +59,7 @@ class User {
     private $settings;
 
     /**
-     * @OneToMany(targetEntity="Articlei18n", mappedBy="author", cascade={"persist"})
+     * @OneToMany(targetEntity="Articlei18n", mappedBy="author", cascade={"persist", "remove"})
      * @var \Doctrine\Common\Collections\Collection
      */
     private $articles;
@@ -265,6 +266,51 @@ class User {
         $this->role = $role;
 
         return $this;
+    }
+
+    /**
+     * Check if user is Admin
+     * 
+     * @return bool
+     */
+    public function isAdmin() {
+        return $this->getRole() === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if user is Author
+     * 
+     * @return bool
+     */
+    public function isAuthor() {
+        return $this->getRole() === self::ROLE_AUTHOR;
+    }
+
+    /**
+     * Check if user is Editor
+     * 
+     * @return bool
+     */
+    public function isEditor() {
+        return $this->getRole() === self::ROLE_EDITOR;
+    }
+
+    /**
+     * Check if user is Contributor
+     * 
+     * @return bool
+     */
+    public function isContributor() {
+        return $this->getRole() === self::ROLE_CONTRIBUTOR;
+    }
+
+    /**
+     * Check if user is guest
+     * 
+     * @return bool
+     */
+    public function isGuest() {
+        return $this->getRole() == self::ROLE_GUEST;
     }
 
 }

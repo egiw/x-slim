@@ -28,7 +28,8 @@ class Article {
      * @OneToMany(
      *      targetEntity="Articlei18n", 
      *      mappedBy="article", 
-     *      cascade={"persist", "remove", "detach"}
+     *      cascade={"persist", "remove", "detach"},
+     *      orphanRemoval=true
      * )
      * @var \Doctrine\Common\Collections\Collection
      */

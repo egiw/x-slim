@@ -6,10 +6,26 @@
 
 session_start();
 
+define('ALERT_SUCCESS', 'alert-success');
+define('ALERT_DANGER', 'alert-danger');
+define('ALERT_WARNING', 'alert-warning');
+define('ALERT_INFO', 'alert-info');
+
 require '../bootstrap.php';
 
 // Prepare app
 $app = new \Slim\Slim(array('templates.path' => '../templates'));
+$app->setName("X-Slim");
+
+if (isset($_SESSION['uid'])) {
+    $app->user = $em->find("User", $_SESSION['uid']);
+} else {
+    $app->user = new User();
+    $app->user
+            ->setUsername('guest')
+            ->setRole(User::ROLE_GUEST);
+}
+$app->view->set('_user', $app->user);
 
 $app->container->singleton("isPjax", function() use($app) {
     $request = $app->request;
@@ -17,14 +33,19 @@ $app->container->singleton("isPjax", function() use($app) {
     return $request->isAjax() && $pjax;
 });
 
+
 $app->hook("slim.after.router", function() use ($app) {
     $app->response->header("X_PJAX_URL", $_SERVER['REQUEST_URI']);
 });
 
+$app->hook("slim.after", function() use($em) {
+  
+});
+
 // Create monolog logger and store logger in container as singleton 
 // (Singleton resources retrieve the same log resource definition each time)
-$app->container->singleton('log', function () {
-    $log = new \Monolog\Logger('slim-skeleton');
+$app->container->singleton('log', function () use ($app) {
+    $log = new \Monolog\Logger($app->getName());
     $log->pushHandler(new \Monolog\Handler\StreamHandler('../logs/app.log', \Monolog\Logger::DEBUG));
     return $log;
 });
@@ -57,12 +78,13 @@ $twig->addFilter(new Twig_SimpleFilter('strftime', function(DateTime $date, $for
     return strftime($format, $date->getTimestamp());
 }));
 
+
 include_once '../routes/public.php';
 include_once '../routes/admin.php';
 
 $app->get('/test', function() use($app, $em, $twig) {
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($app->config('templates.path')), RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
-        // force compilation
+// force compilation
         if ($file->isFile()) {
             $twig->loadTemplate(str_replace($app->config('templates.path') . '/', '', $file));
         }

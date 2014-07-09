@@ -1,0 +1,4 @@
+{% import 'macro/html.twig' as html %}
+{% for key, value in flash %}
+    {{ html.flash(key, value) }}
+{% endfor %}

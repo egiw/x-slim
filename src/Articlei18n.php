@@ -63,7 +63,7 @@ class Articlei18n {
 
     /**
      * @ManyToOne(targetEntity="User", inversedBy="articles")
-     * @JoinColumn(name="created_by", referencedColumnName="id")
+     * @JoinColumn(name="created_by", referencedColumnName="id", onDelete="SET NULL")
      * @var \User
      */
     private $author;

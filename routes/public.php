@@ -5,7 +5,10 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 /* @var $app Slim\Slim */
 /* @var $em Doctrine\ORM\EntityManager */
 
-// public route
+/**
+ * Public page
+ * Everyone has access
+ */
 $app->group(null, function() use($app, $em) {
     $qb = $em->getRepository("Articlei18n")
             ->createQueryBuilder("a")
@@ -54,9 +57,6 @@ $app->group(null, function() use($app, $em) {
         $articles = new Paginator($qb);
 
         $pages = ceil(count($articles) / $limit);
-
-        // Sample log message
-        $app->log->info("Slim-Skeleton '/' route");
 
         // Render index view
         $app->render('index.twig', array(
@@ -125,10 +125,13 @@ $app->group(null, function() use($app, $em) {
     })->name("article.archive")->conditions(array("year" => "\d", "month" => "\d", "day" => "\d"));
 });
 
-// only unauthenticated user, redirect to homepage instead
+/**
+ * Guest Only
+ * Redirect to homepage instead
+ */
 $app->group(null, function() use($app) {
-    if (isset($_SESSION['user']))
-        $app->redirect($app->urlFor('index'));
+    if (!$app->user->isGuest())
+        return $app->redirect($app->urlFor("index"));
 }, function() use($app, $em) {
     // handle user login
     $app->map('/auth', function() use($app, $em) {
@@ -142,14 +145,10 @@ $app->group(null, function() use($app) {
 
             // Let's check whether the user found and the provided password is correct
             if (null !== $user && password_verify($input['password'], $user->getPassword())) {
-                $app->log->info('Authenticated', array(
-                    "id" => $user->getId(),
-                    "username" => $user->getUsername()
-                ));
-
-                $_SESSION['user'] = $user->getId();
-
+                $_SESSION['uid'] = $user->getId();
                 $app->redirect($app->urlFor("admin.index"));
+            } else {
+                $app->flashNow(ALERT_DANGER, gettext("Invalid username or password"));
             }
         }
 

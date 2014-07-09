@@ -13,9 +13,11 @@
             <form id="form-login" action="{{ siteUrl('auth') }}" 
                   autocomplete="off" method="post">
                 <h2>Administrator Page</h2>
+                {% include 'flash.twig' %}
                 <p>Provide username and password to access</p>
                 <input type="text" class="form-control" name="username" 
                        id="in-username" placeholder="Username" autofocus/>
+                <input style="display:none;" />
                 <input type="password" class="form-control" name="password" 
                        id="in-password" placeholder="Password"/>
                 <br />

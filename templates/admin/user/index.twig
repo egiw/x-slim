@@ -22,6 +22,7 @@
                     {% trans %} User {% endtrans %}
                 </li>
             </ol>
+            {% include 'flash.twig' %}
         </div>
     </div>
 
@@ -55,7 +56,7 @@
 
 {% block script %}
     <script type="text/javascript">
-        $("#tbl-user").DataTable({
+        $tblUser = $("#tbl-user").DataTable({
             dom: '<"row"<"#toolbar.col-xs-6"><"col-xs-6"f>>t<"row"<"col-xs-6"i><"col-xs-6"p>>r',
             serverSide: true,
             processing: false,
@@ -70,5 +71,25 @@
             ]
         });
         $("#btn-add").appendTo($("#toolbar"));
+
+
+        function _delete(url) {
+            bootbox.confirm('<h4 class="text-danger"><i class="fa fa-warning"></i> {% trans %} Are you sure want to delete this user? {% endtrans %}</h4>', function(result) {
+                if (result) {
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        data: {_METHOD: "DELETE"},
+                        success: function(result) {
+                            if (result) {
+                                $tblUser.ajax.reload();
+                                loadCountInfo();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
     </script>
 {% endblock %}
