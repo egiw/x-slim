@@ -75,7 +75,7 @@
             <div class="col-sm-10">
                 <textarea id="textarea-content" name="content" 
                           class="form-control" cols="30" rows="10" 
-                          placeholder="Content">{{ input['content']|default(article.getContent()) }}
+                          placeholder="Content">{{ input['content']|default(article.content) }}
                 </textarea>
                 {{ html.error(error.content) }}
             </div>
@@ -86,16 +86,22 @@
                 {% trans %} Status {% endtrans %}
             </label>
             <div class="col-sm-2">
-                {{
-                    html.select({
-                        (constant('Article::STATUS_PUBLISH')): 'Publish'|trans,
-                        (constant('Article::STATUS_DRAFT')): 'Draft'|trans
-                    }, input['status']|default(article.status), {
-                        name: 'status',
-                        class: 'form-control',
-                        id: 'select-status'
-                    })
-                }}
+                <select name="status" id="select-status" class="form-control">
+                    {% if not _user.contributor %}
+                        <option value="{{ constant('Article::STATUS_PUBLISH') }}"
+                                {% if article.publish %} selected {% endif %}>
+                            {% trans %} Publish {% endtrans %}
+                        </option>
+                    {% endif %}
+                    <option value="{{ constant('Article::STATUS_PENDING') }}"
+                            {% if article.pending %} selected {% endif %}>
+                        {% trans %} Need Review {% endtrans %}
+                    </option>
+                    <option value="{{ constant('Article::STATUS_DRAFT') }}"
+                            {% if article.draft %} selected {% endif %}>
+                        {% trans %} Draft {% endtrans %}
+                    </option>
+                </select>
             </div>
         </div>
 

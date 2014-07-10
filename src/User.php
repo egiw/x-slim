@@ -59,7 +59,7 @@ class User {
     private $settings;
 
     /**
-     * @OneToMany(targetEntity="Articlei18n", mappedBy="author", cascade={"persist", "remove"})
+     * @OneToMany(targetEntity="Articlei18n", mappedBy="author", cascade={"persist"})
      * @var \Doctrine\Common\Collections\Collection
      */
     private $articles;

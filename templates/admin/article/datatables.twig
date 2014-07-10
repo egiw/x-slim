@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datatable>
+    {% for i18n in data %}
+        {% set article = i18n.article %}
+        <aaData>
+            <id>{{ article.id }}</id>
+            <toolbar>
+                <![CDATA[
+                <tr class="group">
+                    <td colspan="1">
+                        <div class="btn-toolbar">
+                            {% if(article.publish or article.draft or article.pending) %}
+                                <div class="btn-group">
+                                    {% if not article.publish and article.permitted(_user) and not _user.contributor %}
+                                        <a href="javascript:_publish('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_PUBLISH')}) }}')" 
+                                           class="btn btn-sm btn-default">
+                                            <i class="fa fa-level-up"></i>
+                                            {% trans %} Publish {% endtrans %}
+                                        </a>
+                                    {% endif %}
+                                    {% if not article.pending and article.permitted(_user) %}
+                                        <a href="javascript:_pending('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_PENDING')}) }}')" class="btn btn-sm btn-default">
+                                            <i class="fa fa-eye"></i>
+                                            {% trans %} Need Review {% endtrans %}
+                                        </a>
+                                    {% endif %}
+                                    {% if not article.draft and article.permitted(_user) %}
+                                        <a href="javascript:_unpublish('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_DRAFT')}) }}')"
+                                           class="btn btn-sm btn-default">
+                                            <i class="fa fa-level-down"></i>
+                                            {% trans %} Draft {% endtrans %}
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                                {% if article.i18n.count < languages|length and article.permitted(_user) %} 
+                                    <a data-pjax href="{{ urlFor('admin.article.translate', {id: article.id}) }}" 
+                                       class="btn btn-sm btn-default">
+                                        <i class="fa fa-language"></i>
+                                        {% trans %} Add Translation {% endtrans %}
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            {% if article.permitted(_user) %}
+                                {% if article.archive %}
+                                    <a href="javascript:_restore('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_DRAFT')}) }}')" 
+                                       class="btn btn-sm btn-default">
+                                        <i class="fa fa-history"></i>
+                                        {% trans %} Restore {% endtrans %}
+                                    </a>
+
+                                    <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: article.id}) }}')" 
+                                       class="btn btn-sm btn-danger">
+                                        <i class="fa fa-times"></i>
+                                        {% trans %} Delete {% endtrans %}
+                                    </a>
+                                {% else %}
+                                    <a href="javascript:_remove('{{ urlFor('admin.article.set', {id: article.id, status: constant('Article::STATUS_ARCHIVE')}) }}')" 
+                                       class="btn btn-sm btn-warning">
+                                        <i class="fa fa-trash-o"></i>
+                                        {% trans %} Remove {% endtrans %}
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <small>
+                            {{ article.createdAt|strftime('%a, %e %B %Y') }}
+                            <span class="text-muted">
+                                <small>
+                                    {{ article.createdAt|date('g:i a') }}
+                                </small>
+                            </span>
+                            <div>
+                                <span class="text-muted">{% trans %} by {% endtrans %}</span>
+                                {% if article.belongsTo(_user) %}
+                                    <span class="text-success">{% trans %} You {% endtrans %}</span>
+                                {% else %}
+                                    {{ article.author.fullname|default(article.author.username) }}
+                                {% endif %}
+                            </div>
+                        </small>
+                    </td>
+                    <td>
+                        {% if article.updatedAt %}
+                            <small>
+                                {{ article.updatedAt|strftime('%a, %e %B %Y') }}
+                                <span class="text-muted">
+                                    <small>
+                                        {{ article.updatedAt|date('g:i a') }}
+                                    </small>
+                                </span>
+                                <div>
+                                    <span class="text-muted">{% trans %} by {% endtrans %}</span>
+                                    {% if(article.updatedBy is sameas(_user)) %}
+                                        <span class="text-success">{% trans %} You {% endtrans %}</span>
+                                    {% else %}
+                                        {{ article.updatedBy.fullname|default(i18n.updatedBy.username) }}
+                                    {% endif %}
+                                </div>
+                            </small>
+                        {% endif %}
+                    </td>
+                    <td></td>
+                </tr>
+                ]]>
+            </toolbar>
+            <title>
+                <![CDATA[
+                <span class="label label-info">{{ i18n.language|upper }}</span>
+                {% if i18n.publish %}
+                    <span class="label label-success">{% trans %} Publish {% endtrans %}</span>
+                {% elseif i18n.draft %}
+                    <span class="label label-default">{% trans %} Draft {% endtrans %}</span>
+                {% elseif i18n.pending %}
+                    <span class="label label-warning">{% trans %} Need Review {% endtrans %}</span>
+                {% endif %}
+                ]]>
+                {{ i18n.title }}
+            </title>
+            <createdAt>
+                <![CDATA[
+                <small>
+                    {{ i18n.createdAt|strftime('%a, %e %B %Y') }}
+                    <span class="text-muted">
+                        <small>{{ i18n.createdAt|date('g:i a') }}</small>
+                    </span>
+                    <div>
+                        <span class="text-muted">{% trans %} by {% endtrans %}</span>
+                        {% if(i18n.belongsTo(_user)) %}
+                            <span class="text-success">{% trans %} You {% endtrans %}</span>
+                        {% else %}
+                            {{ i18n.author.fullname|default(i18n.author.username) }}
+                        {% endif %}
+                    </div>
+                </small>
+                ]]>
+            </createdAt>
+            <lastUpdate>
+                {% if i18n.updatedAt %}
+                    <![CDATA[
+                    <small>
+                        {{ i18n.updatedAt|strftime('%a, %e %B %Y') }}
+                        <span class="text-muted"><small>{{ i18n.updatedAt|date('g:i a') }}</small></span>
+                        <div>
+                            <span class="text-muted">{% trans %} by {% endtrans %}</span>
+                            {% if(i18n.updatedBy is sameas(_user)) %}
+                                <span class="text-success">{% trans %} You {% endtrans %}</span>
+                            {% else %}
+                                {{ i18n.updatedBy.fullname|default(i18n.updatedBy.username) }}
+                            {% endif %}
+                        </div>
+                    </small>
+                    ]]>
+                {% endif %}
+            </lastUpdate>
+            <control>
+                {% if i18n.permitted(_user) %}
+                    <![CDATA[ 
+                    <div class="btn-group">
+                        <a data-pjax href="{{ urlFor('admin.article.edit', {id: i18n.id}) }}" 
+                           title="{% trans 'Edit' %}"
+                           class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
+                        <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: article.id, cid: i18n.id}) }}')" 
+                           class="btn btn-default btn-danger btn-sm"
+                           title="{% trans 'Delete' %}"><i class="fa fa-times"></i></a>
+                    </div>
+                    ]]>
+                {% endif %}
+            </control>
+        </aaData>
+    {% endfor %}
+</datatable>

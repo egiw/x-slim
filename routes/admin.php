@@ -68,6 +68,9 @@ $app->group(null, function() use($app) {
                     try {
                         $data['input'] = $input = $app->request->post();
 
+                        if ($input['status'] == Article::STATUS_PUBLISH && $app->user->isContributor())
+                            $app->notFound();
+
                         $notExists = function($title) use ($em) {
                             return $em->getRepository("Articlei18n")
                                             ->findOneBy(array("title" => $title)) === null;
@@ -75,13 +78,20 @@ $app->group(null, function() use($app) {
 
                         // validation
                         V::create()
-                                ->key("title", V::create()->notEmpty()->length(16, 60))
-                                ->key("title", V::create()->callback($notExists)->setName("notExists"))
-                                ->key("content", V::create()->notEmpty()->length(160))
+                                ->key('title', V::create()->notEmpty()->length(16, 60))
+                                ->key('title', V::create()->callback($notExists)->setName('notExists'))
+                                ->key('content', V::create()->notEmpty()->length(160))
+                                ->key('status', V::create()->in(array(
+                                            Article::STATUS_PUBLISH,
+                                            Article::STATUS_PENDING,
+                                            Article::STATUS_DRAFT
+                                )))
                                 ->assert($input);
 
                         $article = new Article();
-                        $article->setStatus($input['status']);
+                        $article->setStatus($input['status'])
+                                ->setAuthor($app->user)
+                                ->setCreatedAt(new DateTime('now'));
 
                         $i18n = new Articlei18n();
                         $i18n
@@ -89,22 +99,24 @@ $app->group(null, function() use($app) {
                                 ->setTitle($input['title'])
                                 ->setSlug(Articlei18n::slugify($input['title']))
                                 ->setContent($input['content'])
-                                ->setCreatedAt(new DateTime("now"))
+                                ->setCreatedAt(new DateTime('now'))
                                 ->setAuthor($app->user)
                                 ->setStatus($input['status'])
                                 ->setArticle($article);
+
                         $article->addI18n($i18n);
                         $em->persist($article);
                         $em->persist($i18n);
                         $em->flush();
-                        $app->redirect($app->urlFor("admin.article.index"));
+                        $app->redirect($app->urlFor('admin.article.index'));
                     } catch (InvalidArgumentException $ex) {
                         $data['error'] = new Error($ex->findMessages(array(
-                                    "title.notEmpty" => gettext("Title cannot be empty"),
-                                    "title.length" => gettext("Title must be between 12 to 60 characters"),
-                                    "title.notExists" => gettext("Title already exists"),
-                                    "content.notEmpty" => gettext("Content cannot be empty"),
-                                    "content.length" => gettext("Content must be at least 160 characters")
+                                    'title.notEmpty' => gettext('Title cannot be empty'),
+                                    'title.length' => gettext('Title must be between 12 to 60 characters'),
+                                    'title.notExists' => gettext('Title already exists'),
+                                    'content.notEmpty' => gettext('Content cannot be empty'),
+                                    'content.length' => gettext('Content must be at least 160 characters'),
+                                    'status.in' => gettext('Invalid status')
                         )));
                     }
                 }
@@ -114,10 +126,19 @@ $app->group(null, function() use($app) {
             $app->map("/:id/edit", function($id) use ($app, $em) {
                 if ($article = $em->find("Articlei18n", $id)) {
                     /* @var $article Articlei18n */
+
+                    if (!$article->isPermitted($app->user)) {
+                        $app->notFound();
+                    }
+
                     $data = array("article" => $article);
                     if ($app->request->isPost()) {
                         try {
                             $data['input'] = $input = $app->request->post();
+
+                            if ($input['status'] == Article::STATUS_PUBLISH && $app->user->isContributor()) {
+                                $app->notFound();
+                            }
 
                             $notExists = function($title) use ($article, $em) {
                                 if ($article->getTitle() == $title)
@@ -131,19 +152,26 @@ $app->group(null, function() use($app) {
                                 return false;
                             };
 
-                            // validation
-                            V::create()
-                                    ->key("title", V::create()->notEmpty()->length(16, 60))
-                                    ->key("title", V::create()->callback($notExists)->setName("notExists"))
-                                    ->key("content", V::create()->notEmpty()->length(160))
-                                    ->assert($input);
-
                             $article->setTitle($input['title'])
                                     ->setSlug(Articlei18n::slugify($input['title']))
                                     ->setContent($input['content'])
                                     ->setUpdatedAt(new DateTime("now"))
                                     ->setUpdatedBy($app->user)
                                     ->setStatus($input['status']);
+
+                            // validation
+                            V::create()
+                                    ->attribute("title", V::create()->notEmpty()->length(16, 60))
+                                    ->attribute("title", V::create()->callback($notExists)->setName("notExists"))
+                                    ->attribute("content", V::create()->notEmpty()->length(160))
+                                    ->attribute('status', V::create()->in(array(
+                                                Article::STATUS_PUBLISH,
+                                                Article::STATUS_PENDING,
+                                                Article::STATUS_DRAFT
+                                    )))
+                                    ->assert($article);
+
+                            $article->getArticle()->setUpdatedAt(new DateTime("now"));
 
                             $em->persist($article);
                             $em->flush();
@@ -166,6 +194,10 @@ $app->group(null, function() use($app) {
             $app->map("/:id/translate", function($id) use($app, $em) {
                 if ($article = $em->find("Article", $id)) {
                     /* @var $article Article */
+
+                    if (!$article->isPermitted($app->user))
+                        $app->notFound();
+
                     $data = array('article' => $article);
                     if ($app->request->isPost()) {
                         try {
@@ -195,7 +227,8 @@ $app->group(null, function() use($app) {
                                     ->setStatus($input['status'])
                                     ->setArticle($article);
 
-                            $article->addI18n($i18n);
+                            $article->addI18n($i18n)
+                                    ->setUpdatedAt(new DateTime("now"));
 
                             $em->persist($article);
                             $em->persist($i18n);
@@ -215,55 +248,50 @@ $app->group(null, function() use($app) {
                     $app->render("admin/article/translate.twig", $data);
                 }
             })->via("GET", "POST")->name("admin.article.translate");
-            // move article to archive
-            $app->put("/:id/archive", function($id) use($app, $em) {
-                /* @var $article Article */
-                if ($article = $em->find("Article", $id)) {
-                    $article->setStatus(Article::STATUS_ARCHIVE);
-                    $em->persist($article);
-                    $em->flush();
-                    echo true;
-                } else {
-                    $app->notFound();
-                }
-            })->name('admin.article.archive');
-            // restore archived article
-            $app->put("/:id/restore", function($id) use($app, $em) {
-                $article = $em->find("Article", $id);
-                if (null === $article || $article->getStatus() !== Article::STATUS_ARCHIVE) {
-                    $app->notFound();
-                }
-                $article->setStatus(Article::STATUS_DRAFT);
-                $em->persist($article);
-                $em->flush();
-                echo true;
-            })->name('admin.article.restore');
-            // publish/unpublish article
+            // set article status
             $app->put("/:id/set/:status", function($id, $status) use($app, $em) {
-                if ($article = $em->find('Article', $id)) {
-                    $article->setStatus($status);
-                    $em->persist($article);
-                    $em->flush();
+                // contributor can't publish any post
+                if ($status == Article::STATUS_PUBLISH && $app->user->isContributor()) {
+                    $app->notFound();
                 }
-                echo true;
-            })->conditions(array("status" => "(" . Article::STATUS_PUBLISH . "|" . Article::STATUS_DRAFT . ")"))->name('admin.article.set');
-            // remove article or translation from db
+
+                if ($article = $em->find('Article', $id)) {
+                    /* @var $article Article */
+                    if ($article->isPermitted($app->user)) {
+                        $article->setStatus($status)
+                                ->setUpdatedAt(new DateTime("now"))
+                                ->setUpdatedBy($app->user);
+                        $em->persist($article);
+                        $em->flush();
+                        return $app->response->write(true);
+                    }
+                }
+                $app->notFound();
+            })->conditions(array("status" => "(" . Article::STATUS_PUBLISH . "|" . Article::STATUS_DRAFT . "|" . Article::STATUS_PENDING . "|" . Article::STATUS_ARCHIVE . ")"))->name('admin.article.set');
+            // delete article
             $app->delete("/:id(/:cid)", function($id, $cid = null) use($app, $em) {
                 if ($article = $em->find("Article", $id)) {
                     /* @var $article Article */
                     if ($cid && $i18n = $em->find('Articlei18n', $cid)) {
+                        /* @var $i18n Articlei18n */
+                        if (!$i18n->isPermitted($app->user))
+                            $app->notFound();
                         $article->removeI18n($i18n);
                         $em->remove($i18n);
                         if (!$article->getI18n()->count()) {
                             $em->remove($article);
                         }
                     } elseif ($article->getStatus() == Article::STATUS_ARCHIVE) {
+                        if (!$article->isPermitted($app->user))
+                            $app->notFound();
                         $em->remove($article);
+                    } else {
+                        $app->notFound();
                     }
                     $em->flush();
-                    echo true;
+                    return $app->response->write(true);
                 }
-                echo false;
+                $app->notFound();
             })->name("admin.article.delete");
             // get datatables data
             $app->get('/datatables(/:status)', function($status = null) use($app, $em) {
@@ -272,6 +300,11 @@ $app->group(null, function() use($app) {
                             ->createQueryBuilder("a")
                             ->join("a.article", "b");
 
+                    if ($app->request->get('type') == 1) {
+                        $qb->where("b.author = :author")
+                                ->setParameter("author", $app->user);
+                    }
+
                     if ($status) {
                         $qb->andWhere("b.status = :status")
                                 ->setParameter("status", $status);
@@ -279,39 +312,48 @@ $app->group(null, function() use($app) {
 
                     foreach ($app->request->get('order') as $order) {
                         switch ((int) $order['column']) {
-                            case 0:
+                            case 1:
                                 $qb->addOrderBy("a.title", $order['dir']);
                                 break;
-                            case 1:
-                                $qb->addOrderBy("a.createdAt", $order['dir']);
-                                break;
                             case 2:
-                                $qb->addOrderBy("a.updatedAt", $order['dir']);
+                                $qb->addOrderBy("b.createdAt", $order['dir'])
+                                        ->addOrderBy("a.createdAt", $order['dir']);
+                                break;
+                            case 3:
+                                $qb->addOrderBy("b.updatedAt", $order['dir'])
+                                        ->addOrderBy("a.updatedAt", $order['dir']);
                                 break;
                         }
                     }
 
                     $app->contentType("application/json");
-                    $data = new DataTables($qb, 'admin/article/all.datatables.twig', array('a.title'));
+                    $data = new DataTables($qb, 'admin/article/datatables.twig', array('a.title'));
                     return $app->response->write(json_encode($data));
                 }
                 $app->notFound();
             })->name('admin.article.datatables');
             // get status count summary
             $app->get('/count', function() use ($app, $em) {
-                $dql = "SELECT COUNT(a) FROM Article a LEFT JOIN a.i18n b WHERE b.id IS NULL";
-                $data['all'] = $em->createQuery($dql)->getSingleScalarResult();
-                $dql .= " AND a.status = :status";
-                $query = $em->createQuery($dql);
-                $data['published'] = $query
-                        ->setParameter("status", Article::STATUS_PUBLISH)
-                        ->getSingleScalarResult();
-                $data['draft'] = $query
-                        ->setParameter("status", Article::STATUS_DRAFT)
-                        ->getSingleScalarResult();
-                $data['archived'] = $query
-                        ->setParameter("status", Article::STATUS_ARCHIVE)
-                        ->getSingleScalarResult();
+                $qb = $em->getRepository("Article")
+                        ->createQueryBuilder("a");
+                $qb->select("COUNT(a)");
+
+                if ($app->request->get('type') == 1) {
+                    $qb->where("a.author = :author")
+                            ->setParameter("author", $app->user);
+                }
+                $data['all'] = $qb->getQuery()->getSingleScalarResult();
+
+                $qb->andWhere("a.status = :status");
+                $data['publish'] = $qb->setParameter("status", Article::STATUS_PUBLISH)
+                                ->getQuery()->getSingleScalarResult();
+                $data['draft'] = $qb->setParameter("status", Article::STATUS_DRAFT)
+                                ->getQuery()->getSingleScalarResult();
+                $data['pending'] = $qb->setParameter("status", Article::STATUS_PENDING)
+                                ->getQuery()->getSingleScalarResult();
+                $data['archive'] = $qb->setParameter("status", Article::STATUS_ARCHIVE)
+                                ->getQuery()->getSingleScalarResult();
+
                 $app->contentType("application/json");
                 return $app->response->body(json_encode($data));
             })->name('admin.article.count');
@@ -334,7 +376,6 @@ $app->group(null, function() use($app) {
                 $app->render("admin/account/settings.twig");
             })->via("GET", "POST")->name("account.settings");
         });
-
         /**
          * User management
          * Admin only
@@ -471,6 +512,16 @@ $app->group(null, function() use($app) {
              */
             $app->delete('/:id', function($id) use($app, $em) {
                 if ($user = $em->find('User', $id)) {
+                    /* @var $user User */
+                    foreach ($user->getArticles() as $i18n) {
+                        /* @var $i18n Articlei18n */
+                        $article = $i18n->getArticle();
+                        $article->removeI18n($i18n);
+                        if ($article->getI18n()->count())
+                            $em->remove($i18n);
+                        else
+                            $em->remove($article);
+                    }
                     $em->remove($user);
                     $em->flush();
                     return $app->response->write(json_encode(true));

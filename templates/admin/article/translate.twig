@@ -104,16 +104,22 @@
         <div class="form-group">
             <label for="select-status" class="control-label col-sm-2">Status</label>
             <div class="col-sm-2">
-                {{
-                    html.select({
-                        (constant('Article::STATUS_PUBLISH')): 'Publish'|trans,
-                        (constant('Article::STATUS_DRAFT')): 'Draft'|trans
-                    }, input['status'], {
-                        name: 'status',
-                        class: 'form-control',
-                        id: 'select-status'
-                    })
-                }}
+                <select name="status" id="select-status" class="form-control">
+                    {% if not _user.contributor %}
+                        <option value="{{ constant('Article::STATUS_PUBLISH') }}"
+                                {% if article.publish %} selected {% endif %}>
+                            {% trans %} Publish {% endtrans %}
+                        </option>
+                    {% endif %}
+                    <option value="{{ constant('Article::STATUS_PENDING') }}"
+                            {% if article.pending %} selected {% endif %}>
+                        {% trans %} Need Review {% endtrans %}
+                    </option>
+                    <option value="{{ constant('Article::STATUS_DRAFT') }}"
+                            {% if article.draft %} selected {% endif %}>
+                        {% trans %} Draft {% endtrans %}
+                    </option>
+                </select>
             </div>
         </div>
 

@@ -9,6 +9,7 @@ class Article {
     const STATUS_PUBLISH = 'publish';
     const STATUS_ARCHIVE = 'archive';
     const STATUS_DRAFT = 'draft';
+    const STATUS_PENDING = 'pending';
 
     /**
      * @Id
@@ -19,10 +20,36 @@ class Article {
     private $id;
 
     /**
-     * @Column(type="string", columnDefinition="ENUM('publish', 'archive', 'draft')")
+     * @Column(type="string", columnDefinition="ENUM('publish', 'archive', 'draft', 'pending')")
      * @var string
      */
     private $status;
+
+    /**
+     * @ManyToOne(targetEntity="User")
+     * @JoinColumn(name="created_by", referencedColumnName="id", onDelete="SET NULL")
+     * @var \User
+     */
+    private $author;
+
+    /**
+     * @Column(type="datetime", name="created_at")
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * @Column(type="datetime", name="updated_at", nullable=true)
+     * @var \DateTime
+     */
+    private $updatedAt;
+
+    /**
+     * @ManyToOne(targetEntity="User")
+     * @JoinColumn(name="updated_by", referencedColumnName="id")
+     * @var \User
+     */
+    private $updatedBy;
 
     /**
      * @OneToMany(
@@ -40,6 +67,27 @@ class Article {
      */
     public function __construct() {
         $this->i18n = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Set author
+     *
+     * @param \User $author
+     * @return Article
+     */
+    public function setAuthor(\User $author = null) {
+        $this->author = $author;
+
+        return $this;
+    }
+
+    /**
+     * Get author
+     *
+     * @return \User 
+     */
+    public function getAuthor() {
+        return $this->author;
     }
 
     /**
@@ -103,7 +151,7 @@ class Article {
     }
 
     /**
-     * Check whether this article is publish
+     * Check if article is publish
      * 
      * @return bool
      */
@@ -112,7 +160,7 @@ class Article {
     }
 
     /**
-     * Check whether this article is draft
+     * Check if article is draft
      * 
      * @return bool
      */
@@ -121,10 +169,101 @@ class Article {
     }
 
     /**
-     * Check whether this article is archive
+     * Check ifarticle is archive
+     * 
+     * @return bool
      */
     public function isArchive() {
         return $this->getStatus() === self::STATUS_ARCHIVE;
+    }
+
+    /**
+     * Check if article is pending
+     * @return bool
+     */
+    public function isPending() {
+        return $this->getStatus() == self::STATUS_PENDING;
+    }
+
+    /**
+     * Set createdAt
+     *
+     * @param \DateTime $createdAt
+     * @return Article
+     */
+    public function setCreatedAt($createdAt) {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt
+     *
+     * @return \DateTime 
+     */
+    public function getCreatedAt() {
+        return $this->createdAt;
+    }
+
+    /**
+     * Set updatedAt
+     *
+     * @param \DateTime $updatedAt
+     * @return Article
+     */
+    public function setUpdatedAt($updatedAt) {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get updatedAt
+     *
+     * @return \DateTime 
+     */
+    public function getUpdatedAt() {
+        return $this->updatedAt;
+    }
+
+    /**
+     * Set updatedBy
+     *
+     * @param \User $updatedBy
+     * @return Article
+     */
+    public function setUpdatedBy(\User $updatedBy = null) {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
+    }
+
+    /**
+     * Get updatedBy
+     *
+     * @return \User 
+     */
+    public function getUpdatedBy() {
+        return $this->updatedBy;
+    }
+
+    /**
+     * Check if article belongs to user
+     * 
+     * @param User $user
+     */
+    public function belongsTo(User $user) {
+        return $this->author === $user;
+    }
+
+    /**
+     * Check if user is permitted to modify this article
+     * @param User $user
+     * @return bool
+     */
+    public function isPermitted(User $user) {
+        return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
     }
 
 }

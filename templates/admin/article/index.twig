@@ -4,13 +4,31 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-8">
             <h1>
                 {% trans %} Article {% endtrans %}
                 <small>
                     {% trans %} List, add, or edit articles {% endtrans %}
                 </small>
             </h1>
+        </div>
+        <div class="col-lg-4">
+            <div class="btn-group pull-right" data-toggle="buttons" style="margin-top: 20px;">
+                {% if not(_user.author or _user.contributor) %}
+                    <label class="btn btn-primary">
+                        <input type="radio" value="0" name="type" id="radio-all"> 
+                        {% trans %} All Posts {% endtrans %}
+                    </label>
+                {% endif %}
+                <label class="btn btn-primary active">
+                    <input type="radio" value="1" name="type" id="radio-only" checked>
+                    {% trans %} My Posts {% endtrans %}
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
             <ol class="breadcrumb">
                 <li>
                     <a data-pjax href="{{ urlFor('admin.index') }}">
@@ -28,16 +46,22 @@
     <div class="row">
         <div class="col-lg-12">
             <ul id="nav-filter-status" class="nav nav-tabs">
-                <li>
+                {#<li>
                     <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables') }}">
                         {% trans %} All {% endtrans %}
                         <span id="badge-all" class="badge badge-default"></span>
                     </a>
-                </li>
+                </li>#}
                 <li class="active">
                     <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PUBLISH')}) }}">
                         {% trans %} Published {% endtrans %}
                         <span id="badge-published" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PENDING')}) }}">
+                        {% trans %} Need Review {% endtrans %}
+                        <span id="badge-pending" class="badge badge-default"></span>
                     </a>
                 </li>
                 <li>
@@ -52,13 +76,15 @@
                         <span id="badge-archived" class="badge badge-default"></span>
                     </a>
                 </li>
+                <li class="pull-right">
+                    <a data-pjax href="{{ urlFor('admin.article.create') }}" 
+                       data-placement="left">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                        {% trans %} Add New {% endtrans %}
+                    </a>
+                </li>
             </ul>
 
-            <a data-pjax href="{{ urlFor('admin.article.create') }}" id="btn-create"
-               class="btn btn-primary">
-                <span class="glyphicon glyphicon-pencil"></span>
-                {% trans %} Create New {% endtrans %}
-            </a>
 
             <table class="table table-condensed" id="tbl-article">
                 <colgroup>
@@ -86,20 +112,27 @@
     <script type="text/javascript">
         {% set script %}
             var $tblArticle = $("#tbl-article").DataTable({
-                dom: '<"row"<"#toolbar.col-xs-6"><"col-xs-6"f>>t<"row"<"col-xs-6"i><"col-xs-6"p>>r',
                 serverSide: true,
                 processing: false,
                 ordering: true,
-                lengthChange: false,
-                ajax: '{{ urlFor('admin.article.datatables', {'status': constant('Article::STATUS_PUBLISH')}) }}',
+                lengthChange: true,
+                ajax: {
+                    url: '{{ urlFor('admin.article.datatables', {'status': constant('Article::STATUS_PUBLISH')}) }}',
+                    data: function(data) {
+                        data.type = $('input[name=type]:radio:checked').val();
+                    }
+                },
                 pageLength: 10,
-                order: [1, 'desc'],
+                order: [[2, 'desc']],
                 columns: [
                     {
                         data: "id",
                         visible: false
                     },
-                    {data: "title"},
+                    {
+                        data: "title",
+                        orderable: false
+                    },
                     {data: "createdAt"},
                     {data: "lastUpdate"},
                     {
@@ -120,11 +153,16 @@
                     });
                 }
             });
-            $("#btn-create").appendTo($("#toolbar"));
             $("#nav-filter-status a[data-toggle='tab']")
                     .on('shown.bs.tab', function(e) {
                         $tblArticle.ajax.url($(e.target).data('url')).load();
                     });
+
+            $('input[name=type]:radio').change(function() {
+
+                loadCountInfo();
+                $tblArticle.ajax.reload();
+            });
 
             function _remove(url) {
                 var msg = "<h4 class='text-warning'><i class='fa fa-warning'></i> {% trans %} This item will be moved to archive. Are you sure ? {% endtrans %}</h4>";
@@ -151,6 +189,11 @@
                 request(url, 'put', msg);
             }
 
+            function _pending(url) {
+                var msg = "<h4 class='text-info'><i class='fa fa-warning'></i> {% trans %} This item will be mark as need review. Are you sure ? {% endtrans %}</h4>";
+                request(url, 'put', msg);
+            }
+
             function request(url, method, confirmMsg) {
                 bootbox.confirm(confirmMsg, function(result) {
                     if (result) {
@@ -169,13 +212,15 @@
                 });
             }
             (loadCountInfo = function() {
-                $.get('{{ urlFor('admin.article.count') }}', function(data) {
-                    $("#badge-all").text(data.all);
-                    $("#badge-published").text(data.published);
-                    $("#badge-draft").text(data.draft);
-                    $("#badge-archived").text(data.archived);
-                })
-            })();
+                var type = $('input[name=type]:radio:checked').val();
+                $.get('{{ urlFor('admin.article.count') }}', {type: type}, function(data) {
+            {#                    $("#badge-all").text(data.all);#}
+                        $("#badge-published").text(data.publish);
+                        $("#badge-draft").text(data.draft);
+                        $("#badge-pending").text(data.pending);
+                        $("#badge-archived").text(data.archive);
+                    })
+                })();
         {% endset %}
         {{ script|pack|raw }}
     </script>

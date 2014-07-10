@@ -17,13 +17,17 @@ require '../bootstrap.php';
 $app = new \Slim\Slim(array('templates.path' => '../templates'));
 $app->setName("X-Slim");
 
+$app->user = new User();
+$app->user
+        ->setUsername('guest')
+        ->setRole(User::ROLE_GUEST);
+
 if (isset($_SESSION['uid'])) {
-    $app->user = $em->find("User", $_SESSION['uid']);
-} else {
-    $app->user = new User();
-    $app->user
-            ->setUsername('guest')
-            ->setRole(User::ROLE_GUEST);
+    if ($user = $em->find("User", $_SESSION['uid'])) {
+        $app->user = $user;
+    } else {
+        unset($_SESSION['uid']);
+    }
 }
 $app->view->set('_user', $app->user);
 
@@ -39,7 +43,7 @@ $app->hook("slim.after.router", function() use ($app) {
 });
 
 $app->hook("slim.after", function() use($em) {
-  
+    
 });
 
 // Create monolog logger and store logger in container as singleton 

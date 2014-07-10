@@ -10,6 +10,7 @@ class Articlei18n {
 
     const STATUS_PUBLISH = 'publish';
     const STATUS_DRAFT = 'draft';
+    const STATUS_PENDING = 'pending';
 
     /**
      * @Id
@@ -44,7 +45,7 @@ class Articlei18n {
     private $content;
 
     /**
-     * @Column(type="string", length=8, columnDefinition="ENUM('publish', 'archive', 'draft')")
+     * @Column(type="string", length=8, columnDefinition="ENUM('publish', 'draft', 'pending')")
      * @var string
      */
     private $status;
@@ -301,7 +302,7 @@ class Articlei18n {
     }
 
     /**
-     * Check whether article is published
+     * Check if article is published
      * @return bool
      */
     public function isPublish() {
@@ -309,11 +310,39 @@ class Articlei18n {
     }
 
     /**
-     * Check wheter article is draft
+     * Check if article is draft
      * @return bool
      */
     public function isDraft() {
         return $this->getStatus() === self::STATUS_DRAFT;
+    }
+
+    /**
+     * Check if article is pending
+     * 
+     * @return bool
+     */
+    public function isPending() {
+        return $this->getStatus() === self::STATUS_PENDING;
+    }
+
+    /**
+     * Check if this article is belongs to user
+     * 
+     * @param User $user
+     * @return bool
+     */
+    public function belongsTo(User $user) {
+        return $this->author === $user;
+    }
+
+    /**
+     * Check if user is permitted to modify this article
+     * @param User $user
+     * @return bool
+     */
+    public function isPermitted(User $user) {
+        return !(($user->isAuthor() || $user->isContributor()) && !($this->belongsTo($user) || $this->article->belongsTo($user)));
     }
 
     public static function slugify($text) {

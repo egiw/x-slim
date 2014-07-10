@@ -38,7 +38,8 @@
                 <colgroup>
                     <col width='20%'/>
                     <col width='30%'/>
-                    <col width='40%'/>
+                    <col width='30%'/>
+                    <col width='10%'/>
                     <col width='10%'/>
                 </colgroup>
                 <thead>
@@ -46,6 +47,7 @@
                         <th>Username</th>
                         <th>Email</th>
                         <th>Fullname</th>
+                        <th>Role</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -67,6 +69,7 @@
                 {data: 'username'},
                 {data: 'email'},
                 {data: 'fullname'},
+                {data: "role"},
                 {data: 'control'}
             ]
         });
@@ -74,7 +77,10 @@
 
 
         function _delete(url) {
-            bootbox.confirm('<h4 class="text-danger"><i class="fa fa-warning"></i> {% trans %} Are you sure want to delete this user? {% endtrans %}</h4>', function(result) {
+            var message = '<span class="text-danger"><h4>'
+                    + '{% trans %} Are you sure want to delete this user? {% endtrans %}</h4>'
+                    + '<p>{% trans %} All posts related to this user will be deleted{% endtrans %}</p></span>';
+            bootbox.confirm(message, function(result) {
                 if (result) {
                     $.ajax({
                         url: url,

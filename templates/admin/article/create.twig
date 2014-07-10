@@ -85,17 +85,32 @@
         </div>
 
         {#            STATUS        #}
-        <div class="form-group">    
+        <div class="form-group {% if error.status %} has-error {% endif %}">
             <label for="select-status" class="control-label col-sm-2">Status</label>
             <div class="col-sm-2">
                 <select name="status" id="select-status" class="form-control">
-                    <option value="{{ constant('Article::STATUS_PUBLISH') }}">
-                        {% trans %} Published {% endtrans %}
+                    {% if not _user.contributor %} 
+                        <option value="{{ constant('Article::STATUS_PUBLISH') }}"
+                                {% if input['status'] == constant('Article::STATUS_PUBLISH') %}
+                                    selected
+                                {% endif %}>
+                            {% trans %} Publish {% endtrans %}
+                        </option>
+                    {% endif %}>
+                    <option value="{{ constant('Article::STATUS_PENDING') }}"
+                            {% if input['status'] == constant('Article::STATUS_PENDING') %}
+                                selected
+                            {% endif %}>
+                        {% trans %} Need Review {% endtrans %}
                     </option>
-                    <option value="{{ constant('Article::STATUS_DRAFT') }}">
+                    <option value="{{ constant('Article::STATUS_DRAFT') }}"
+                            {% if input['status'] == constant('Article::STATUS_DRAFT') %}
+                                selected
+                            {% endif %}>
                         {% trans %} Draft {% endtrans %}
                     </option>
                 </select>
+                {{ html.error(error.status) }}
             </div>
         </div>
 
