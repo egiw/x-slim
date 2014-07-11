@@ -1,8 +1,9 @@
 <?php
 
+require_once "../vendor/autoload.php";
+
 /* @var $app Slim\Slim */
 /* @var $twig Twig_Environment */
-/* @var $em Doctrine\ORM\EntityManager */
 
 session_start();
 
@@ -11,47 +12,28 @@ define('ALERT_DANGER', 'alert-danger');
 define('ALERT_WARNING', 'alert-warning');
 define('ALERT_INFO', 'alert-info');
 
-require '../bootstrap.php';
+include '../lib/functions.php';
+
+date_default_timezone_set("Asia/Jakarta");
+
+$config = array(
+    'templates.path' => '../templates',
+    'db' => array(
+        'driver' => 'pdo_mysql',
+        'user' => 'root',
+        'password' => 'root',
+        'dbname' => 'XSlim'
+    )
+);
 
 // Prepare app
-$app = new \Slim\Slim(array('templates.path' => '../templates'));
+$app = new Application($config);
 $app->setName("X-Slim");
 
-$app->user = new User();
-$app->user
-        ->setUsername('guest')
-        ->setRole(User::ROLE_GUEST);
-
-if (isset($_SESSION['uid'])) {
-    if ($user = $em->find("User", $_SESSION['uid'])) {
-        $app->user = $user;
-    } else {
-        unset($_SESSION['uid']);
-    }
-}
 $app->view->set('_user', $app->user);
-
-$app->container->singleton("isPjax", function() use($app) {
-    $request = $app->request;
-    $pjax = (isset($request->headers["X-PJAX"]) && $request->headers["X-PJAX"] === "true");
-    return $request->isAjax() && $pjax;
-});
-
 
 $app->hook("slim.after.router", function() use ($app) {
     $app->response->header("X_PJAX_URL", $_SERVER['REQUEST_URI']);
-});
-
-$app->hook("slim.after", function() use($em) {
-    
-});
-
-// Create monolog logger and store logger in container as singleton 
-// (Singleton resources retrieve the same log resource definition each time)
-$app->container->singleton('log', function () use ($app) {
-    $log = new \Monolog\Logger($app->getName());
-    $log->pushHandler(new \Monolog\Handler\StreamHandler('../logs/app.log', \Monolog\Logger::DEBUG));
-    return $log;
 });
 
 // Prepare view
@@ -81,7 +63,6 @@ $twig->addFilter(new Twig_SimpleFilter('pack', function($string) {
 $twig->addFilter(new Twig_SimpleFilter('strftime', function(DateTime $date, $format) {
     return strftime($format, $date->getTimestamp());
 }));
-
 
 include_once '../routes/public.php';
 include_once '../routes/admin.php';

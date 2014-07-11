@@ -9,8 +9,8 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  * Public page
  * Everyone has access
  */
-$app->group(null, function() use($app, $em) {
-    $qb = $em->getRepository("Articlei18n")
+$app->group(null, function() use($app) {
+    $qb = $app->db->getRepository("Articlei18n")
             ->createQueryBuilder("a")
             ->join("a.article", "b")
             ->where("b.status = :status")
@@ -32,13 +32,13 @@ $app->group(null, function() use($app, $em) {
     ));
     $app->view->set('archives', $qb->getQuery()->getResult());
     $app->view->set('template', $app->isPjax ? "pjax_template.twig" : "template.twig");
-}, function() use($app, $em) {
+}, function() use($app) {
     // display main page
-    $app->get('/', function() use($app, $em) {
+    $app->get('/', function() use($app) {
         $limit = 3;
 
         $page = $app->request->get("page", 1);
-        $qb = $em->getRepository("Articlei18n")
+        $qb = $app->db->getRepository("Articlei18n")
                 ->createQueryBuilder("a")
                 ->join("a.article", "b")
                 ->where("b.status = :status")
@@ -67,8 +67,8 @@ $app->group(null, function() use($app, $em) {
         ));
     })->name('index');
     // display archive page
-    $app->get('/(:year(/:month(/:day(/:slug))))', function($year = null, $month = null, $day = null, $slug = null) use ($app, $em) {
-        $repo = $em->getRepository("Article");
+    $app->get('/(:year(/:month(/:day(/:slug))))', function($year = null, $month = null, $day = null, $slug = null) use ($app) {
+        $repo = $app->db->getRepository("Article");
         $qb = $repo->createQueryBuilder("a");
 
         $qb->where("a.status = :status")
@@ -132,15 +132,15 @@ $app->group(null, function() use($app, $em) {
 $app->group(null, function() use($app) {
     if (!$app->user->isGuest())
         return $app->redirect($app->urlFor("index"));
-}, function() use($app, $em) {
+}, function() use($app) {
     // handle user login
-    $app->map('/auth', function() use($app, $em) {
+    $app->map('/auth', function() use($app) {
         // An user is trying to login..process credential
         if ($app->request->isPost()) {
             $input = $app->request->post();
 
             // Find the user
-            $user = $em->getRepository("User")
+            $user = $app->db->getRepository("User")
                     ->findOneBy(array("username" => $input['username']));
 
             // Let's check whether the user found and the provided password is correct
@@ -156,15 +156,15 @@ $app->group(null, function() use($app) {
         $app->render('auth.twig');
     })->via("GET", "POST")->name("auth");
     // handle user register
-    $app->get('/register', function() use($app, $em) {
+    $app->get('/register', function() use($app) {
         $user = new User;
         $user->setUsername("admin")
                 ->setPassword(password_hash("admin", PASSWORD_BCRYPT))
                 ->setFullname("Administrator")
                 ->setEmail("admin@domain.tld");
 
-        $em->persist($user);
-        $em->flush();
+        $app->db->persist($user);
+        $app->db->flush();
 
         echo "An user has registered";
     });

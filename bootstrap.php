@@ -4,9 +4,6 @@
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 
-date_default_timezone_set("Asia/Jakarta");
-
-require_once "vendor/autoload.php";
 
 $isDevMode = true;
 $config = Setup::createAnnotationMetadataConfiguration(array(__DIR__ . "/src"), $isDevMode);

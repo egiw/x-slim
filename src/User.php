@@ -1,6 +1,6 @@
 <?php
 
-use Doctrine\ORM\Mapping as ORM;
+use Respect\Validation\Validator as V;
 
 /**
  * @Entity
