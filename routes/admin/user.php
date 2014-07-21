@@ -1,6 +1,7 @@
 <?php
 
 use Respect\Validation\Validator as V;
+use Respect\Validation\Exceptions\AllOfException;
 
 /* @var $app Slim\Slim */
 /* @var $em Doctrine\ORM\EntityManager */
