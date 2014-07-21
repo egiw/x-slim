@@ -14,6 +14,20 @@ $app->group('/user', function() use($app) {
     if (!$app->user->isAdmin())
         $app->notFound();
 }, function() use($app) {
+
+    $messages = array(
+        'username.notEmpty' => gettext('Username cannot be empty'),
+        'username.length' => gettext('Username must be between 4 and 16 characters'),
+        'username.callback' => gettext('Username already exists'),
+        'email.notEmpty' => gettext('Email address cannot be empty'),
+        'email.email' => gettext('Invalid email address'),
+        'password.notEmpty' => gettext('Password cannot be empty'),
+        'password.length' => gettext('Password must be at least 6 characters'),
+        'passwordConfirmation.notEmpty' => gettext('Please retype password'),
+        'passwordConfirmation.equals' => gettext('Password confirmation doesn\'t match'),
+        'role.notEmpty' => gettext('Role must be selected')
+    );
+
     /**
      * Display list of users
      */
@@ -28,7 +42,7 @@ $app->group('/user', function() use($app) {
      * @todo Option for send notification email
      * @todo Option for generate random password
      */
-    $app->map('/create', function() use($app) {
+    $app->map('/create', function() use($app, $messages) {
         $data = array();
         if ($app->request->isPost()) {
             $data['input'] = $input = $app->request->post();
@@ -58,18 +72,7 @@ $app->group('/user', function() use($app) {
                 $app->flash(ALERT_SUCCESS, gettext('User has been successfully created'));
                 $app->redirect($app->urlFor("admin.user.index"));
             } catch (AllOfException $ex) {
-                $data['error'] = new Error($ex->findMessages(array(
-                            'username.notEmpty' => gettext('Username cannot be empty'),
-                            'username.length' => gettext('Username must be between 4 and 16 characters'),
-                            'username.callback' => gettext('Username already exists'),
-                            'email.notEmpty' => gettext('Email address cannot be empty'),
-                            'email.email' => gettext('Invalid email address'),
-                            'password.notEmpty' => gettext('Password cannot be empty'),
-                            'password.length' => gettext('Password must be at least 6 characters'),
-                            'passwordConfirmation.notEmpty' => gettext('Please retype password'),
-                            'passwordConfirmation.equals' => gettext('Password confirmation doesn\'t match'),
-                            'role.notEmpty' => gettext('Role must be selected')
-                )));
+                $data['error'] = new Error($ex->findMessages($messages));
             }
         }
         $app->render('admin/user/create.twig', $data);
@@ -79,7 +82,7 @@ $app->group('/user', function() use($app) {
      * Display edit form and update user
      * @todo Send email notification if password changed
      */
-    $app->map('/:id/edit', function($id) use($app) {
+    $app->map('/:id/edit', function($id) use($app, $messages) {
         if ($user = $app->db->find("User", $id)) {
             /* @var $user User */
             $data = array("user" => $user);
@@ -103,10 +106,6 @@ $app->group('/user', function() use($app) {
                             ->key("password", V::create()->length(6))
                             ->key('role', V::create()->notEmpty());
 
-                    $user->setUsername($input['username'])
-                            ->setEmail($input['email'])
-                            ->setRole($input['role']);
-
                     if (!empty($input['password'])) {
                         $validator->key("passwordConfirmation", V::create()->notEmpty()->equals($input['password']));
                         $user->setPassword(password_hash($input['password'], PASSWORD_BCRYPT));
@@ -114,21 +113,15 @@ $app->group('/user', function() use($app) {
 
                     $validator->assert($input);
 
-                    $app->db->flush($user);
+                    $user->setUsername($input['username'])
+                            ->setEmail($input['email'])
+                            ->setRole($input['role']);
 
+                    $app->db->flush($user);
+                    $app->flash(ALERT_SUCCESS, gettext('User has been successfully updated'));
                     $app->redirect($app->urlFor('admin.user.index'));
                 } catch (AllOfException $ex) {
-                    $data['error'] = new Error($ex->findMessages(array(
-                                'username.notEmpty' => gettext('Username cannot be empty'),
-                                'username.length' => gettext('Username must be between 4 and 16 characters'),
-                                'username.callback' => gettext('Username already exists'),
-                                'email.notEmpty' => gettext('Email address cannot be empty'),
-                                'email.email' => gettext('Invalid email address'),
-                                'password.length' => gettext('Password must be at least 6 characters'),
-                                'passwordConfirmation.notEmpty' => gettext('Retype password'),
-                                'passwordConfirmation.equals' => gettext('Password confirmation doesn\'t match'),
-                                'role.notEmpty' => gettext('Role must be selected')
-                    )));
+                    $data['error'] = new Error($ex->findMessages($messages));
                 }
             }
             $app->render("admin/user/edit.twig", $data);
