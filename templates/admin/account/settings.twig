@@ -30,11 +30,11 @@
                         {% trans %} Language {% endtrans %}
                     </label>
                     <div class="col-sm-4">
-                        {{ 
+                        {{
                             html.select({
                                 en: 'English'|trans,
                                 id: 'Indonesian'|trans
-                            }, user.settings.language|default('en'), {
+                            }, _user.settings.language|default('en'), {
                                 class: 'form-control',
                                 id: 'select-language',
                                 name: 'language'

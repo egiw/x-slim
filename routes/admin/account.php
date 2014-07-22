@@ -13,6 +13,7 @@ $app->group('/account', function() use($app) {
             $settings['language'] = $app->request->post('language');
             $user->setSettings($settings);
             $app->db->flush($user);
+            $app->flash(ALERT_SUCCESS, gettext('Settings saved successfully'));
             $app->redirect($app->urlFor("admin.index"));
         }
         // render form

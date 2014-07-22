@@ -7,7 +7,7 @@
             <toolbar>
                 <![CDATA[
                 <tr class="group">
-                    <td colspan="1">
+                    <td colspan="2">
                         <div class="btn-toolbar">
                             {% if(article.publish or article.draft or article.pending) %}
                                 <div class="btn-group">
@@ -103,6 +103,7 @@
                         {% endif %}
                     </td>
                     <td></td>
+                    <td></td>
                 </tr>
                 ]]>
             </toolbar>
@@ -155,6 +156,11 @@
                     ]]>
                 {% endif %}
             </lastUpdate>
+            <views>
+                <![CDATA[
+                <span class="badge">{{ i18n.stats|length }}</span>
+                ]]>
+            </views>
             <control>
                 {% if i18n.permitted(_user) %}
                     <![CDATA[ 

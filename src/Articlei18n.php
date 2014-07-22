@@ -83,6 +83,41 @@ class Articlei18n {
     private $article;
 
     /**
+     *
+     * @ManyToMany(targetEntity="Stat", cascade={"persist", "remove", "detach"})
+     * @JoinTable(
+     *  name="Articlei18n_Stat", 
+     *  joinColumns={@JoinColumn(name="articlei18n_id", referencedColumnName="id", onDelete="cascade")}, 
+     *  inverseJoinColumns={@JoinColumn(name="stat_id", referencedColumnName="id", unique=true, onDelete="cascade")}
+     * )
+     * @var \Doctrine\Common\Collections\Collection 
+     */
+    private $stats;
+
+    public function __construct() {
+        $this->stats = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add article statistic
+     * @param Stat $stat
+     * @return \Articlei18n
+     */
+    public function addStat(Stat $stat) {
+        $this->stats[] = $stat;
+
+        return $this;
+    }
+
+    /**
+     * get article statistics
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getStats() {
+        return $this->stats;
+    }
+
+    /**
      * Set language
      *
      * @param string $language

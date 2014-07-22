@@ -46,12 +46,6 @@
     <div class="row">
         <div class="col-lg-12">
             <ul id="nav-filter-status" class="nav nav-tabs">
-                {#<li>
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables') }}">
-                        {% trans %} All {% endtrans %}
-                        <span id="badge-all" class="badge badge-default"></span>
-                    </a>
-                </li>#}
                 <li class="active">
                     <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PUBLISH')}) }}">
                         {% trans %} Published {% endtrans %}
@@ -79,7 +73,7 @@
                 <li class="pull-right">
                     <a data-pjax href="{{ urlFor('admin.article.create') }}" 
                        data-placement="left">
-                        <span class="glyphicon glyphicon-pencil"></span>
+                        <i class="fa fa-plus"></i>
                         {% trans %} Add New {% endtrans %}
                     </a>
                 </li>
@@ -88,17 +82,21 @@
 
             <table class="table table-condensed" id="tbl-article">
                 <colgroup>
-                    <col width="40%"/>
+                    <col width="3%"/>
+                    <col width="32%"/>
                     <col width="20%"/>
                     <col width="20%"/>
+                    <col width="5%"/>
                     <col width="6%"/>
                 </colgroup>
                 <thead>
                     <tr>
                         <th></th>
+                        <th></th>
                         <th>{% trans %} Title {% endtrans %}</th>
                         <th>{% trans %} Created {% endtrans %}</th>
                         <th>{% trans %} Last Update {% endtrans %}</th>
+                        <th><i class="fa fa-eye"></i></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -130,11 +128,18 @@
                         visible: false
                     },
                     {
+                        class: 'details-control',
+                        orderable: false,
+                        data: null,
+                        defaultContent: ''
+                    },
+                    {
                         data: "title",
                         orderable: false
                     },
                     {data: "createdAt"},
                     {data: "lastUpdate"},
+                    {data: "views", orderable: false},
                     {
                         data: "control",
                         orderable: false
@@ -153,6 +158,25 @@
                     });
                 }
             });
+
+            // Add event listener for opening and closing details
+            $tblArticle.on('click', 'td.details-control', function() {
+                var tr = $(this).closest('tr');
+                var row = $tblArticle.row(tr);
+                var data = row.data();
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child('<h1>asdf</h1>').show();
+                    tr.addClass('shown');
+                }
+            });
+
             $("#nav-filter-status a[data-toggle='tab']")
                     .on('shown.bs.tab', function(e) {
                         $tblArticle.ajax.url($(e.target).data('url')).load();

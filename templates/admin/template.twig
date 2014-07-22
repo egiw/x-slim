@@ -18,6 +18,21 @@
             .group td{
                 background-color: #ddd;
             }
+
+            td.details-control {
+                font-family: FontAwesome;
+                cursor: pointer;
+                font-size: 18px;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            td.details-control:before {
+                content: "\f0fe";
+            }
+
+            tr.shown td.details-control:before {
+                content: "\f146";
+            }
         </style>
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->

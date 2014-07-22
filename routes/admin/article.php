@@ -6,19 +6,41 @@ use Respect\Validation\Validator as V;
 
 // manage article
 $app->group('/article', function() use ($app) {
+
+    $validator = V::create()
+            ->key('title', V::create()->notEmpty()->length(16, 60))
+            ->key('content', V::create()->notEmpty()->length(160))
+            ->key('status', V::create()->in(array(
+                Article::STATUS_PUBLISH,
+                Article::STATUS_PENDING,
+                Article::STATUS_DRAFT
+    )));
+
+    // validation messages
+    $messages = array(
+        'title.notEmpty' => gettext('Title cannot be empty'),
+        'title.length' => gettext('Title must be between 12 to 60 characters'),
+        'title.notExists' => gettext('Title already exists'),
+        'content.notEmpty' => gettext('Content cannot be empty'),
+        'content.length' => gettext('Content must be at least 160 characters'),
+        'status.in' => gettext('Invalid status')
+    );
+
     // display list of articles
     $app->get('/', function() use ($app) {
         $app->render("admin/article/index.twig");
     })->name('admin.article.index');
+
     // display form and handle creation of article
-    $app->map('/create', function() use($app) {
+    $app->map('/create', function() use($app, $validator, $messages) {
         $data = array();
         if ($app->request->isPost()) {
             try {
                 $data['input'] = $input = $app->request->post();
 
-                if ($input['status'] == Article::STATUS_PUBLISH && $app->user->isContributor())
+                if ($input['status'] == Article::STATUS_PUBLISH && $app->user->isContributor()) {
                     $app->notFound();
+                }
 
                 $notExists = function($title) use ($app) {
                     return $app->db->getRepository("Articlei18n")
@@ -26,15 +48,8 @@ $app->group('/article', function() use ($app) {
                 };
 
                 // validation
-                V::create()
-                        ->key('title', V::create()->notEmpty()->length(16, 60))
+                $validator
                         ->key('title', V::create()->callback($notExists)->setName('notExists'))
-                        ->key('content', V::create()->notEmpty()->length(160))
-                        ->key('status', V::create()->in(array(
-                                    Article::STATUS_PUBLISH,
-                                    Article::STATUS_PENDING,
-                                    Article::STATUS_DRAFT
-                        )))
                         ->assert($input);
 
                 $article = new Article();
@@ -57,25 +72,18 @@ $app->group('/article', function() use ($app) {
                 $app->db->persist($article);
                 $app->db->persist($i18n);
                 $app->db->flush();
+                $app->flash('success', 'Article has successfully created');
                 $app->redirect($app->urlFor('admin.article.index'));
             } catch (InvalidArgumentException $ex) {
-                $data['error'] = new Error($ex->findMessages(array(
-                            'title.notEmpty' => gettext('Title cannot be empty'),
-                            'title.length' => gettext('Title must be between 12 to 60 characters'),
-                            'title.notExists' => gettext('Title already exists'),
-                            'content.notEmpty' => gettext('Content cannot be empty'),
-                            'content.length' => gettext('Content must be at least 160 characters'),
-                            'status.in' => gettext('Invalid status')
-                )));
+                $data['error'] = new Error($ex->findMessages($messages));
             }
         }
         $app->render('admin/article/create.twig', $data);
     })->via("GET", "POST")->name('admin.article.create');
     // display form and update an article
-    $app->map("/:id/edit", function($id) use ($app) {
+    $app->map("/:id/edit", function($id) use ($app, $validator, $messages) {
         if ($article = $app->db->find("Articlei18n", $id)) {
             /* @var $article Articlei18n */
-
             if (!$article->isPermitted($app->user)) {
                 $app->notFound();
             }
@@ -90,17 +98,19 @@ $app->group('/article', function() use ($app) {
                     }
 
                     $notExists = function($title) use ($app, $article) {
-                        if ($article->getTitle() == $title)
+                        if ($article->getTitle() == $title) {
                             return true;
-
+                        }
                         $i18n = $app->db->getRepository("Articlei18n")
                                 ->findOneBy(array("title" => $title));
                         if (null === $i18n || $article->getArticle() === $i18n->getArticle()) {
                             return true;
                         }
-
                         return false;
                     };
+
+                    $validator->key('title', V::create()->callback($notExists)->setName('notExists'))
+                            ->assert($input);
 
                     $article->setTitle($input['title'])
                             ->setSlug(Articlei18n::slugify($input['title']))
@@ -109,40 +119,20 @@ $app->group('/article', function() use ($app) {
                             ->setUpdatedBy($app->user)
                             ->setStatus($input['status']);
 
-                    // validation
-                    V::create()
-                            ->attribute("title", V::create()->notEmpty()->length(16, 60))
-                            ->attribute("title", V::create()->callback($notExists)->setName("notExists"))
-                            ->attribute("content", V::create()->notEmpty()->length(160))
-                            ->attribute('status', V::create()->in(array(
-                                        Article::STATUS_PUBLISH,
-                                        Article::STATUS_PENDING,
-                                        Article::STATUS_DRAFT
-                            )))
-                            ->assert($article);
-
                     $article->getArticle()->setUpdatedAt(new DateTime("now"));
 
-                    $app->db->persist($article);
-                    $app->db->flush();
-
+                    $app->db->flush($article);
+                    $app->flash('succsss', 'Article has successfully updated');
                     $app->redirect($app->urlFor("admin.article.index"));
                 } catch (InvalidArgumentException $ex) {
-                    $data['error'] = new Error($ex->findMessages(array(
-                                'title.notEmpty' => gettext('Title cannot be empty'),
-                                'title.length' => gettext('Title must be between 12 to 60 characters'),
-                                'title.notExists' => gettext('Title already exists'),
-                                'content.notEmpty' => gettext('Content cannot be empty'),
-                                'content.length' => gettext('Content must be at least 160 characters'),
-                                'status.in' => gettext('Invalid status')
-                    )));
+                    $data['error'] = new Error($ex->findMessages($messages));
                 }
             }
             $app->render('admin/article/edit.twig', $data);
         }
     })->via("GET", "POST")->name("admin.article.edit");
     // display translation form
-    $app->map('/:id/translate', function($id) use($app) {
+    $app->map('/:id/translate', function($id) use($app, $validator, $messages) {
         if ($article = $app->db->find("Article", $id)) {
             /* @var $article Article */
 
@@ -166,10 +156,8 @@ $app->group('/article', function() use ($app) {
                     };
 
                     // validation
-                    V::create()
-                            ->key("title", V::create()->notEmpty()->length(16, 60))
+                    $validator
                             ->key("title", V::create()->callback($notExists)->setName("notExists"))
-                            ->key("content", V::create()->length(160))
                             ->assert($input);
 
                     $i18n = new Articlei18n();
@@ -189,16 +177,10 @@ $app->group('/article', function() use ($app) {
                     $app->db->persist($article);
                     $app->db->persist($i18n);
                     $app->db->flush();
-
+                    $app->flash('success', gettext('Translation has successfully created'));
                     $app->redirect($app->urlFor("admin.article.index"));
                 } catch (InvalidArgumentException $ex) {
-                    $data['error'] = new Error($ex->findMessages(array(
-                                "title.notEmpty" => gettext("Title cannot be empty"),
-                                "title.length" => gettext("Title must be between 12 to 60 characters"),
-                                "title.notExists" => gettext("Title already exists"),
-                                "content.notEmpty" => gettext("Content cannot be empty"),
-                                "content.length" => gettext("Content must be at least 160 characters")
-                    )));
+                    $data['error'] = new Error($ex->findMessages($messages));
                 }
             }
             $app->render("admin/article/translate.twig", $data);
@@ -255,7 +237,8 @@ $app->group('/article', function() use ($app) {
      * Contributor or author are only allowed to see own posts
      */
     $app->get('/datatables(/:status)', 'ajax', function($status = null) use($app) {
-        $qb = $app->db->getRepository("Articlei18n")
+        $qb = $app->db
+                ->getRepository("Articlei18n")
                 ->createQueryBuilder("a")
                 ->join("a.article", "b");
 

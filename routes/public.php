@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
-/* @var $app Slim\Slim */
+/* @var $app Application */
 /* @var $em Doctrine\ORM\EntityManager */
 
 /**
@@ -68,11 +68,13 @@ $app->group(null, function() use($app) {
     })->name('index');
     // display archive page
     $app->get('/(:year(/:month(/:day(/:slug))))', function($year = null, $month = null, $day = null, $slug = null) use ($app) {
-        $repo = $app->db->getRepository("Article");
+        $repo = $app->db->getRepository("Articlei18n");
         $qb = $repo->createQueryBuilder("a");
 
         $qb->where("a.status = :status")
                 ->setParameter("status", Article::STATUS_PUBLISH);
+
+        $qb->andWhere("a.language = 'id'");
 
         if (null !== $year)
             $qb->andWhere("YEAR(a.createdAt) = :year")
@@ -91,9 +93,14 @@ $app->group(null, function() use($app) {
                     ->setParameter("slug", $slug);
 
             $article = $qb->getQuery()->getOneOrNullResult();
+            /* @var $article Articlei18n */
 
             if (null == $article)
                 return $app->pass();
+
+            // track
+            $article->addStat($app->stat);
+            $app->db->flush($article);
 
             $app->render("detail.twig", array(
                 "article" => $article,
@@ -108,7 +115,7 @@ $app->group(null, function() use($app) {
 
             $articles = new Paginator($qb);
 
-// nothing found :(
+            // nothing found :(
             if (count($articles) == 0)
                 return $app->pass();
 
@@ -122,7 +129,7 @@ $app->group(null, function() use($app) {
                 "title" => date('F Y', mktime(0, 0, 0, $month, $day, $year))
             ));
         }
-    })->name("article.archive")->conditions(array("year" => "\d", "month" => "\d", "day" => "\d"));
+    })->conditions(array("year" => "\d+", "month" => "\d+", "day" => "\d+"))->name("article.archive");
 });
 
 /**

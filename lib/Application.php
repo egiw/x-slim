@@ -2,11 +2,13 @@
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use phpbrowscap\Browscap;
 
 /**
  * @property EntityManager $db Doctrine Entity Manager
  * @property \Monolog\Logger $log Monolog Logger
  * @property User $user Current User
+ * @property Stat $stat Application statistic object
  */
 class Application extends \Slim\Slim {
 
@@ -64,6 +66,23 @@ class Application extends \Slim\Slim {
 
             return $guest;
         });
+
+        // get statistic object
+        $this->container->singleton('stat', function() {
+            $app = Application::getInstance();
+            $browser = get_browser();
+            $stat = new Stat;
+            $stat->setIp($app->request->getIp())
+                    ->setPath($app->request->getPath())
+                    ->setRid(NULL)
+                    ->setBrowser($browser->browser)
+                    ->setVersion($browser->version)
+                    ->setPlatform($browser->platform)
+                    ->setIsMobile((bool) $browser->ismobiledevice)
+                    ->setVisitDate(new DateTime('now'))
+                    ->setReferrer($app->request->getReferrer());
+            return $stat;
+        });
     }
 
     /**
@@ -86,6 +105,14 @@ class Application extends \Slim\Slim {
      */
     public function getUser() {
         return $this->user;
+    }
+
+    /**
+     * Get application statistic object
+     * @return Stat
+     */
+    public function getStat() {
+        return $this->stat;
     }
 
 }

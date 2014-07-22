@@ -30,6 +30,7 @@ $config = array(
 $app = new Application($config);
 $app->setName("X-Slim");
 
+
 $app->view->set('_user', $app->user);
 
 $app->hook("slim.after.router", function() use ($app) {
@@ -67,7 +68,7 @@ $twig->addFilter(new Twig_SimpleFilter('strftime', function(DateTime $date, $for
 include_once '../routes/public.php';
 include_once '../routes/admin.php';
 
-$app->get('/test', function() use($app, $em, $twig) {
+$app->get('/test', function() use($app, $twig) {
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($app->config('templates.path')), RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
 // force compilation
         if ($file->isFile()) {

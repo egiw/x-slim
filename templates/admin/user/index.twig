@@ -28,12 +28,15 @@
 
     <div class="row">
         <div class="col-lg-12">
-            <a data-pjax href="{{ urlFor('admin.user.create') }}" class="btn btn-primary" 
-               id="btn-add">
-                <i class="fa fa-plus"></i>
-                Add New
-            </a>
-
+            <ul id="nav-filter-status" class="nav nav-tabs">
+                <li class="pull-right">
+                    <a data-pjax href="{{ urlFor('admin.user.create') }}" 
+                       data-placement="left">
+                        <i class="fa fa-plus"></i>
+                        {% trans %} Add New {% endtrans %}
+                    </a>
+                </li>
+            </ul>
             <table class="table" id="tbl-user">
                 <colgroup>
                     <col width='20%'/>
@@ -59,12 +62,11 @@
 {% block script %}
     <script type="text/javascript">
         $tblUser = $("#tbl-user").DataTable({
-            dom: '<"row"<"#toolbar.col-xs-6"><"col-xs-6"f>>t<"row"<"col-xs-6"i><"col-xs-6"p>>r',
             serverSide: true,
             processing: false,
             ordering: false,
             ajax: '{{ urlFor('admin.user.datatables') }}',
-            lengthChange: false,
+            lengthChange: true,
             columns: [
                 {data: 'username'},
                 {data: 'email'},
@@ -73,8 +75,6 @@
                 {data: 'control'}
             ]
         });
-        $("#btn-add").appendTo($("#toolbar"));
-
 
         function _delete(url) {
             var message = '<span class="text-danger"><h4>'
