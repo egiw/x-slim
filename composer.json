@@ -23,7 +23,7 @@
         "meenie/javascript-packer": "dev-master",
         "umpirsky/twig-gettext-extractor": "1.1.*",
         "gedmo/doctrine-extensions": "v2.3.9",
-        "owasp/phprbac": "dev-master"
+        "garetjax/phpbrowscap": "dev-master"
     },
     "autoload": {
         "psr-0": {

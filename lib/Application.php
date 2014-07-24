@@ -9,6 +9,7 @@ use phpbrowscap\Browscap;
  * @property \Monolog\Logger $log Monolog Logger
  * @property User $user Current User
  * @property Stat $stat Application statistic object
+ * @property mixed $browser
  */
 class Application extends \Slim\Slim {
 
@@ -33,6 +34,11 @@ class Application extends \Slim\Slim {
             $platform->registerDoctrineTypeMapping('enum', 'string');
 
             return $em;
+        });
+
+        $this->container->singleton("browser", function() {
+            $bc = new Browscap('../cache');
+            return $bc->getBrowser();
         });
 
         $this->container->singleton("isPjax", function() {
@@ -70,15 +76,14 @@ class Application extends \Slim\Slim {
         // get statistic object
         $this->container->singleton('stat', function() {
             $app = Application::getInstance();
-            $browser = get_browser();
             $stat = new Stat;
             $stat->setIp($app->request->getIp())
                     ->setPath($app->request->getPath())
                     ->setRid(NULL)
-                    ->setBrowser($browser->browser)
-                    ->setVersion($browser->version)
-                    ->setPlatform($browser->platform)
-                    ->setIsMobile((bool) $browser->ismobiledevice)
+                    ->setBrowser($app->browser->Browser)
+                    ->setVersion($app->browser->Version)
+                    ->setPlatform($app->browser->Platform)
+                    ->setIsMobile($app->browser->isMobileDevice)
                     ->setVisitDate(new DateTime('now'))
                     ->setReferrer($app->request->getReferrer());
             return $stat;
@@ -113,6 +118,14 @@ class Application extends \Slim\Slim {
      */
     public function getStat() {
         return $this->stat;
+    }
+
+    /**
+     * Get current browser information
+     * @return mixed
+     */
+    public function getBrowser() {
+        return $this->browser;
     }
 
 }

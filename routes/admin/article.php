@@ -30,7 +30,6 @@ $app->group('/article', function() use ($app) {
     $app->get('/', function() use ($app) {
         $app->render("admin/article/index.twig");
     })->name('admin.article.index');
-
     // display form and handle creation of article
     $app->map('/create', function() use($app, $validator, $messages) {
         $data = array();
@@ -269,8 +268,6 @@ $app->group('/article', function() use ($app) {
         $data = new DataTables($qb, 'admin/article/datatables.twig', array('a.title'));
         return $app->response->write(json_encode($data));
     })->name('admin.article.datatables');
-
-
     /**
      * AJAX
      * Get count summary
