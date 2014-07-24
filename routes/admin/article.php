@@ -3,29 +3,28 @@
 use Respect\Validation\Validator as V;
 
 /* @var $app Application */
+$validator = V::create()
+        ->key('title', V::create()->notEmpty()->length(16, 60))
+        ->key('content', V::create()->notEmpty()->length(160))
+        ->key('status', V::create()->in(array(
+            Article::STATUS_PUBLISH,
+            Article::STATUS_PENDING,
+            Article::STATUS_DRAFT
+        )));
+
+// validation messages
+$messages = array(
+    'title.notEmpty' => gettext('Title cannot be empty'),
+    'title.length' => gettext('Title must be between 12 to 60 characters'),
+    'title.notExists' => gettext('Title already exists'),
+    'content.notEmpty' => gettext('Content cannot be empty'),
+    'content.length' => gettext('Content must be at least 160 characters'),
+    'status.in' => gettext('Invalid status')
+);
+
 
 // manage article
-$app->group('/article', function() use ($app) {
-
-    $validator = V::create()
-            ->key('title', V::create()->notEmpty()->length(16, 60))
-            ->key('content', V::create()->notEmpty()->length(160))
-            ->key('status', V::create()->in(array(
-                Article::STATUS_PUBLISH,
-                Article::STATUS_PENDING,
-                Article::STATUS_DRAFT
-    )));
-
-    // validation messages
-    $messages = array(
-        'title.notEmpty' => gettext('Title cannot be empty'),
-        'title.length' => gettext('Title must be between 12 to 60 characters'),
-        'title.notExists' => gettext('Title already exists'),
-        'content.notEmpty' => gettext('Content cannot be empty'),
-        'content.length' => gettext('Content must be at least 160 characters'),
-        'status.in' => gettext('Invalid status')
-    );
-
+$app->group('/article', function() use ($app, $validator, $messages) {
     // display list of articles
     $app->get('/', function() use ($app) {
         $app->render("admin/article/index.twig");
@@ -268,6 +267,16 @@ $app->group('/article', function() use ($app) {
         $data = new DataTables($qb, 'admin/article/datatables.twig', array('a.title'));
         return $app->response->write(json_encode($data));
     })->name('admin.article.datatables');
+    // Get detailed information of an article
+    $app->get('/:id', 'ajax', function($id) use($app) {
+        if ($i18n = $app->db->find('Articlei18n', $id)) {
+            $app->render('admin/article/detail.twig', array(
+                'i18n' => $i18n
+            ));
+        } else {
+            $app->notFound();
+        }
+    })->name('admin.article.detail')->conditions(array('id' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'));
     /**
      * AJAX
      * Get count summary

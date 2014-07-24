@@ -3,7 +3,8 @@
     {% for i18n in data %}
         {% set article = i18n.article %}
         <aaData>
-            <id>{{ article.id }}</id>
+            <id>{{ i18n.id }}</id>
+            <group>{{ article.id }}</group>
             <toolbar>
                 <![CDATA[
                 <tr class="group">

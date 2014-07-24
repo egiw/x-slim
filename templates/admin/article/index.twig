@@ -124,7 +124,7 @@
                 order: [[2, 'desc']],
                 columns: [
                     {
-                        data: "id",
+                        data: "group",
                         visible: false
                     },
                     {
@@ -171,9 +171,12 @@
                     tr.removeClass('shown');
                 }
                 else {
-                    // Open this row
-                    row.child('<h1>asdf</h1>').show();
+                    row.child('loading...').show();
                     tr.addClass('shown');
+                    // Open this row
+                    $.get(data.id, function(response) {
+                        row.child(response);
+                    });
                 }
             });
 
