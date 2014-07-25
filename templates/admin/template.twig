@@ -11,6 +11,7 @@
                 'lib/summernote/summernote.css',
                 'lib/fontawesome/css/font-awesome.min.css',
                 'lib/datatables/css/dataTables.bootstrap.css',
+                'lib/jstree/jstree.min.css',
                 'css/admin.css'
             ])
         }}
@@ -86,6 +87,13 @@
                                     {% trans %} User {% endtrans %}
                                 </a>
                             </li>
+                            <li>
+                                <a data-pjax 
+                                   href="{{ urlFor('admin.category.index') }}">
+                                    <i class="fa fa-tags"></i> 
+                                    {% trans %} Category {% endtrans %}
+                                </a>
+                            </li>
                         {% endif %}
                     </ul>
 
@@ -131,6 +139,7 @@
                 'lib/jquery.pjax.js',
                 'lib/datatables/js/jquery.dataTables.min.js',
                 'lib/datatables/js/dataTables.bootstrap.js',
+                'lib/jstree/jstree.min.js',
                 'js/admin.js'
              ]) 
         }}

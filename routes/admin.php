@@ -15,11 +15,11 @@ $app->group("/admin", function() use($app) {
 
     // Set language
     $settings = $app->user->getSettings();
-    $locale = "en_US.utf8";
+    $locale = "en_US";
     if (isset($settings['language'])) {
         switch ($settings['language']) {
             case 'id':
-                $locale = "id_ID.utf8";
+                $locale = "id_ID";
                 break;
         }
     }
@@ -46,5 +46,6 @@ $app->group("/admin", function() use($app) {
 
     include 'admin/account.php';
     include 'admin/article.php';
+    include 'admin/category.php';
     include 'admin/user.php';
 });

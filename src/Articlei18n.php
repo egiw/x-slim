@@ -21,7 +21,7 @@ class Articlei18n {
     private $id;
 
     /**
-     * @Column(type="string", length=2, columnDefinition="ENUM('id', 'en')")
+     * @Column(type="string", length=2)
      * @var string
      */
     private $language = "en";
