@@ -10,6 +10,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  * Everyone has access
  */
 $app->group(null, function() use($app) {
+    
     $qb = $app->db->getRepository("Articlei18n")
             ->createQueryBuilder("a")
             ->join("a.article", "b")
@@ -168,6 +169,7 @@ $app->group(null, function() use($app) {
         $user->setUsername("admin")
                 ->setPassword(password_hash("admin", PASSWORD_BCRYPT))
                 ->setFullname("Administrator")
+                ->setRole(User::ROLE_ADMIN)
                 ->setEmail("admin@domain.tld");
 
         $app->db->persist($user);

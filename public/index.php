@@ -7,6 +7,9 @@ require_once "../vendor/autoload.php";
 
 session_start();
 
+if (!defined('LC_MESSAGES'))
+    define('LC_MESSAGES', 5);
+
 define('ALERT_SUCCESS', 'alert-success');
 define('ALERT_DANGER', 'alert-danger');
 define('ALERT_WARNING', 'alert-warning');
@@ -21,7 +24,7 @@ $config = array(
     'db' => array(
         'driver' => 'pdo_mysql',
         'user' => 'root',
-        'password' => 'root',
+        'password' => '',
         'dbname' => 'XSlim'
     )
 );
