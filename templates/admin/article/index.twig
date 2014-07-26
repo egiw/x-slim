@@ -46,31 +46,31 @@
     <div class="row">
         <div class="col-lg-12">
             <ul id="nav-filter-status" class="nav nav-tabs">
-                <li class="active">
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PUBLISH')}) }}">
-                        {% trans %} Published {% endtrans %}
-                        <span id="badge-published" class="badge badge-default"></span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PENDING')}) }}">
-                        {% trans %} Need Review {% endtrans %}
-                        <span id="badge-pending" class="badge badge-default"></span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_DRAFT')}) }}">
-                        {% trans %} Draft {% endtrans %}
-                        <span id="badge-draft" class="badge badge-default"></span>
-                    </a>
-                </li>
-                <li>
+                <li class="pull-right">
                     <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_ARCHIVE')}) }}">
                         {% trans %} Trash {% endtrans %}
                         <span id="badge-archived" class="badge badge-default"></span>
                     </a>
                 </li>
                 <li class="pull-right">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_DRAFT')}) }}">
+                        {% trans %} Draft {% endtrans %}
+                        <span id="badge-draft" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li class="pull-right">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PENDING')}) }}">
+                        {% trans %} Need Review {% endtrans %}
+                        <span id="badge-pending" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li class="active pull-right">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PUBLISH')}) }}">
+                        {% trans %} Published {% endtrans %}
+                        <span id="badge-published" class="badge badge-default"></span>
+                    </a>
+                </li>
+                <li>
                     <a data-pjax href="{{ urlFor('admin.article.create') }}" 
                        data-placement="left">
                         <i class="fa fa-plus"></i>

@@ -83,39 +83,40 @@
 
 {% block script %}
     <script type="text/javascript">
-        $(function() {
+        {% set script %}
             $tree = $('#tree-category').jstree({
                 core: {multiple: false},
                 plugins: ['state']
             });
-        });
 
-        function _delete() {
-            var selected = $tree.jstree(true).get_selected(true);
-            if (selected.length) {
-                var message = '<h4 class="text-danger">' + '<i class="fa fa-warning"></i>'
-                        + ' {% trans %} Are you sure want to delete this category?{% endtrans %}</h4>';
-                bootbox.confirm(message, function(result) {
-                    if (result) {
-                        $.ajax({
-                            url: selected[0].data.deleteUrl,
-                            type: 'post',
-                            data: {_METHOD: 'DELETE'},
-                            success: function(result) {
-                                if (result)
-                                    $.pjax.reload('#page-wrapper');
-                            }
-                        });
-                    }
-                });
+            function _delete() {
+                var selected = $tree.jstree(true).get_selected(true);
+                if (selected.length) {
+                    var message = '<h4 class="text-danger">' + '<i class="fa fa-warning"></i>'
+                            + ' {% trans %} Are you sure want to delete this category?{% endtrans %}</h4>';
+                    bootbox.confirm(message, function(result) {
+                        if (result) {
+                            $.ajax({
+                                url: selected[0].data.deleteUrl,
+                                type: 'post',
+                                data: {_METHOD: 'DELETE'},
+                                success: function(result) {
+                                    if (result)
+                                        $.pjax.reload('#page-wrapper');
+                                }
+                            });
+                        }
+                    });
+                }
             }
-        }
 
-        function _edit() {
-            var selected = $tree.jstree(true).get_selected(true);
-            if (selected.length) {
-                $.pjax.reload('#page-wrapper', {url: selected[0].data.editUrl});
+            function _edit() {
+                var selected = $tree.jstree(true).get_selected(true);
+                if (selected.length) {
+                    $.pjax.reload('#page-wrapper', {url: selected[0].data.editUrl});
+                }
             }
-        }
+        {% endset %}
+        {{ script|pack|raw }}
     </script>
 {% endblock %}
