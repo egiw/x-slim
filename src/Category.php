@@ -15,7 +15,7 @@ class Category {
     private $id;
 
     /**
-     * @OneToMany(targetEntity="Categoryi18n", mappedBy="parent", cascade={"persist"})
+     * @OneToMany(targetEntity="Categoryi18n", mappedBy="parent", cascade={"persist", "remove", "detach"})
      * @var Doctrine\Common\Collections\Collection
      */
     private $translations;
@@ -28,7 +28,7 @@ class Category {
     private $parent;
 
     /**
-     * @OneToMany(targetEntity="Category", mappedBy="parent")
+     * @OneToMany(targetEntity="Category", mappedBy="parent", cascade={"remove"})
      * @var Doctrine\Common\Collections\Collection
      */
     private $subcategories;

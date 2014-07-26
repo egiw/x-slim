@@ -15,11 +15,11 @@ $app->group("/admin", function() use($app) {
 
     // Set language
     $settings = $app->user->getSettings();
-    $locale = "en_US";
+    $locale = "en_US.utf8";
     if (isset($settings['language'])) {
         switch ($settings['language']) {
             case 'id':
-                $locale = "id_ID";
+                $locale = "id_ID.utf8";
                 break;
         }
     }

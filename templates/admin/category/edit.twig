@@ -1,0 +1,104 @@
+{% extends template %}
+
+{% set title = "Edit Category"|trans %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                {% trans %} Category {% endtrans %}
+                <small>
+                    {% trans %} List, add, or edit categories {% endtrans %}
+                </small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a  data-pjax href="{{ urlFor('admin.category.index') }}">
+                        <i class="fa fa-tags"></i>
+                        {% trans %} Category {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-edit"></i>
+                    {% trans %} Edit {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <form data-pjax role="form" method="post" class="form form-horizontal" 
+          action="{{ urlFor('admin.category.edit', {id: category.id}) }}">
+        {% if categories is not empty %}
+            <div class="form-group">
+                <label for="select-parent" class="control-label col-sm-3">Parent</label>
+                <div class="col-sm-4">
+                    <select name="parent" class="form-control" id="select-parent">
+                        <option value="">({% trans %} None {% endtrans %})</option>
+                        {% for _category in categories %}
+                            {% if _category is not sameas(category)%}
+                                <option value="{{ _category.id }}"
+                                        {% if category.parent is sameas(_category ) %} selected {% endif %}>
+                                    {% for translation in _category.translations %}
+                                        {{ translation.name }} 
+                                        {% if not loop.last %} &middot; {% endif %}
+                                    {% endfor %}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        {% endif %}
+
+        {% for translation in category.translations %}
+            <fieldset>
+                <legend>{{ languages[translation.language] }}</legend>
+                <div class="form-group {% if attribute(error, translation.language).name %} has-error {% endif %}">
+                    <label for="in-name-{{value}}" class="control-label col-sm-3">
+                        {% trans %} Category Name {% endtrans %}
+                    </label>
+                    <div class="col-sm-5">
+                        <input type="text" name="translations[{{translation.language}}][name]"
+                               class="form-control"
+                               value="{{input.translations[translation.language].name|default(translation.name)}}"
+                               id="in-name-{{translation.language}}" />
+                        {{ html.error(attribute(error, translation.language).name) }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="in-desc-{{translation.language}}" class="control-label col-sm-3">
+                        {% trans %} Description {% endtrans %}
+                    </label>
+                    <div class="col-sm-5">
+                        {% set description = input.translations[translation.language].description|default(translation.description) %}
+                        <textarea name="translations[{{translation.language}}][description]"
+                                  class="form-control" id="in-desc-{{translation.language}}"
+                                  rows="3">{{description}}</textarea>
+                    </div>
+                </div>
+            </fieldset>
+        {% endfor %}
+        <div class="form-group {% if error.name %} has-error {% endif %}}">
+            <div class="col-sm-5 col-sm-offset-3">
+                {{ html.error(error.name) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-5 col-sm-offset-3">
+                <div class="btn-group">
+                    <input type="submit" value="Submit" class="btn btn-primary" />
+                    <a data-pjax href="{{ urlFor('admin.category.index') }}" class="btn btn-default">
+                        {% trans %} Cancel {% endtrans %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

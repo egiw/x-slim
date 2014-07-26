@@ -1,6 +1,6 @@
 {% extends template %}
 
-{% set title = "Category"|trans %}
+{% set title = "Create Category"|trans %}
 
 {% block content %}
     <div class="row">
@@ -38,15 +38,13 @@
             <label for="select-parent" class="control-label col-sm-3">Parent</label>
             <div class="col-sm-4">
                 <select name="parent" class="form-control" id="select-parent">
-                    <option value="">-</option>
+                    <option value="">({% trans %} None {% endtrans %})</option>
                     {% for category in categories %}
-                        <optgroup>
+                        <option value="{{ category.id }}">
                             {% for translation in category.translations %}
-                                <option value="{{ category.id }}">
-                                    {{translation.name}}
-                                </option>
+                                {{ translation.name }} {% if not loop.last %} &middot; {% endif %}
                             {% endfor %}
-                        </optgroup>
+                        </option>
                     {% endfor %}
                 </select>
             </div>
@@ -88,7 +86,7 @@
             <div class="col-sm-5 col-sm-offset-3">
                 <div class="btn-group">
                     <input type="submit" value="Submit" class="btn btn-primary" />
-                    <a href="{{ urlFor('admin.category.index') }}" class="btn btn-default">
+                    <a data-pjax href="{{ urlFor('admin.category.index') }}" class="btn btn-default">
                         {% trans %} Cancel {% endtrans %}
                     </a>
                 </div>
