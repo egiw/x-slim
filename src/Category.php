@@ -15,6 +15,12 @@ class Category {
     private $id;
 
     /**
+     * @Column(type="string", length=255)
+     * @var string
+     */
+    private $image;
+
+    /**
      * @OneToMany(targetEntity="Categoryi18n", mappedBy="parent", cascade={"persist", "remove", "detach"})
      * @var Doctrine\Common\Collections\Collection
      */
@@ -33,6 +39,16 @@ class Category {
      */
     private $subcategories;
 
+    /**
+     * @ManyToMany(targetEntity="Article", mappedBy="categories")
+     * @var Doctrine\Common\Collections\Collection
+     */
+    private $articles;
+
+    public function __construct() {
+        $this->translations = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
     public function getId() {
         return $this->id;
     }
@@ -49,16 +65,32 @@ class Category {
         return $this->subcategories;
     }
 
+    public function getImage() {
+        return $this->image;
+    }
+
     public function setTranslations(Doctrine\Common\Collections\Collection $translations) {
         $this->translations = $translations;
+
+        return $this;
     }
 
     public function setParent(Category $parent) {
         $this->parent = $parent;
+
+        return $this;
     }
 
     public function setSubcategories(Doctrine\Common\Collections\Collection $subcategories) {
         $this->subcategories = $subcategories;
+
+        return $this;
+    }
+
+    public function setImage($image) {
+        $this->image = $image;
+
+        return $this;
     }
 
     /**

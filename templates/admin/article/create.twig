@@ -67,6 +67,35 @@
             </div>
         </div>
 
+        {#         CATEGORIES        #}
+        <div class="form-group">
+            <label for="select-categories" class="control-label col-sm-2">
+                {% trans %} Categories {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="categories[]" id="select-categories" class="form-control" multiple>
+                    {% for category in categories %}
+                        {% set label %}
+                            {% for translation in category.translations %} 
+                                {{ translation.name }} 
+                                {% if not loop.last %} &middot; {% endif %} 
+                            {% endfor %}
+                        {% endset %}
+                        <optgroup label="{{ label }}">
+                            {% for subcategory in category.subcategories %}
+                                <option value="{{ subcategory.id }}"> 
+                                    {% for translation in subcategory.translations %}
+                                        {{ translation.name }}
+                                        {% if not loop.last %} &middot; {% endif %}
+                                    {% endfor %}
+                                </option>
+                            {% endfor %}    
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
         {#        CONTENT       #}
         <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
@@ -136,6 +165,7 @@
             $("#textarea-content").summernote({
                 height: 350
             });
+            $('#select-categories').chosen();
         });
     </script>
 {% endblock %}

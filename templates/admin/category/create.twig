@@ -35,7 +35,7 @@
     <form data-pjax role="form" method="post" class="form form-horizontal" 
           action="{{ urlFor('admin.category.create') }}">
         <div class="form-group">
-            <label for="select-parent" class="control-label col-sm-3">Parent</label>
+            <label for="select-parent" class="control-label col-sm-2">Parent</label>
             <div class="col-sm-4">
                 <select name="parent" class="form-control" id="select-parent">
                     <option value="">({% trans %} None {% endtrans %})</option>
@@ -50,11 +50,41 @@
             </div>
         </div>
 
+        {#            INPUT IMAGE           #}
+        <div class="form-group {% if error.type or error.size %} has-error {% endif %}}">
+            <label for='input-image' class='control-label col-sm-2'>Image</label>
+            <div class="col-sm-6">
+                <div class="fileinput fileinput-new" data-provides="fileinput">
+                    <div class="fileinput-new thumbnail" style="width: 200px; height: 150px;">
+                        <img src='http://placehold.it/200x150' alt="...">
+                    </div>
+                    <div class="fileinput-preview fileinput-exists thumbnail" 
+                         style="max-width: 200px; max-height: 150px;"></div>
+                    <div>
+                        <span class="btn btn-default btn-file">
+                            <span class="fileinput-new">
+                                {% trans %} Select image {% endtrans %}
+                            </span>
+                            <span class="fileinput-exists">
+                                {% trans %} Change {% endtrans %}
+                            </span>
+                            <input type="file" name="image" />
+                        </span>
+                        <a href="#" class="btn btn-default fileinput-exists" data-dismiss="fileinput">
+                            {% trans %} Remove {% endtrans %}
+                        </a>
+                    </div>
+                    {{ html.error(error.type) }}
+                    {{ html.error(error.size) }}
+                </div>
+            </div>
+        </div>
+
         {% for value, text in languages %}
             <fieldset>
                 <legend>{{text}}</legend>
-                <div class="form-group">
-                    <label for="in-name-{{value}}" class="control-label col-sm-3">
+                <div class="form-group {% if attribute(error, value).name %} has-error {% endif %}">
+                    <label for="in-name-{{value}}" class="control-label col-sm-2">
                         {% trans %} Category Name {% endtrans %}
                     </label>
                     <div class="col-sm-5">
@@ -62,10 +92,11 @@
                                class="form-control"
                                value="{{input.translations[value].name}}"
                                id="in-name-{{value}}" />
+                        {{ html.error(attribute(error, value).name) }}
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="in-desc-{{value}}" class="control-label col-sm-3">
+                    <label for="in-desc-{{value}}" class="control-label col-sm-2">
                         {% trans %} Description {% endtrans %}
                     </label>
                     <div class="col-sm-5">
@@ -83,7 +114,7 @@
         </div>
 
         <div class="form-group">
-            <div class="col-sm-5 col-sm-offset-3">
+            <div class="col-sm-5 col-sm-offset-2">
                 <div class="btn-group">
                     <input type="submit" value="Submit" class="btn btn-primary" />
                     <a data-pjax href="{{ urlFor('admin.category.index') }}" class="btn btn-default">

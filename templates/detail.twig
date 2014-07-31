@@ -3,8 +3,17 @@
 {% block content %}
     <article>
         <header>
-            <h1>{{ article.getTitle() }}</h1>
+            <h1>{{ i18n.getTitle() }}</h1>
         </header>
-        {{ article.getContent()|raw }}
+        <strong>
+            {% for category in i18n.article.categories %}
+                {% for translation in category.translations %}
+                    {% if translation.language == i18n.language %}
+                        {{ translation.name }}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </strong>
+        {{ i18n.getContent()|raw }}
     </article>
 {% endblock %}

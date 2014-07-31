@@ -12,9 +12,9 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/egiw/NetBeansProjects/x-slim/routes/admin/category.php</file>
-            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/category/index.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/routes/admin/article.php</file>
             <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/index.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/datatables.twig</file>
         </group>
     </open-files>
 </project-private>

@@ -15,6 +15,8 @@ define('ALERT_DANGER', 'alert-danger');
 define('ALERT_WARNING', 'alert-warning');
 define('ALERT_INFO', 'alert-info');
 
+define('ROOT', __DIR__);
+
 include '../lib/functions.php';
 
 date_default_timezone_set("Asia/Jakarta");

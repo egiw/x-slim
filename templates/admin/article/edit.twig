@@ -12,7 +12,7 @@
                 {% trans %} Edit Article {% endtrans %}
                 <small>
                     {% trans %} 
-                        Update and publish or save as draft article
+                        Update and publish or save as draft i18n
                     {% endtrans %}
                 </small>
             </h1>
@@ -39,7 +39,7 @@
 
     <form data-pjax method="post" role="form" 
           class="form-horizontal" 
-          action="{{ urlFor('admin.article.edit', {id: article.id}) }}">
+          action="{{ urlFor('admin.article.edit', {id: i18n.id}) }}">
 
         <div class="form-group">
             <label for="select-language" class="control-label col-sm-2">
@@ -47,7 +47,7 @@
             </label>
             <div class="col-sm-2">
                 {{
-                    html.select(languages, input['language']|default(article.language), {
+                    html.select(languages, input['language']|default(i18n.language), {
                         class: 'form-control',
                         id: 'select-language',
                         disabled: true
@@ -63,11 +63,42 @@
             <div class="col-sm-10">
                 <input type="text" class="form-control" 
                        name="title" 
-                       value="{{ input['title']|default(article.title) }}" 
+                       value="{{ input['title']|default(i18n.title) }}" 
                        placeholder="{% trans 'Enter Title' %}"/>
                 {{ html.error(error.title) }}
             </div>
         </div>
+
+        {#         CATEGORIES        #}
+        <div class="form-group">
+            <label for="select-categories" class="control-label col-sm-2">
+                {% trans %} Categories {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="categories[]" id="select-categories" class="form-control" multiple>
+                    {% for category in categories %}
+                        {% set label %}
+                            {% for translation in category.translations %} 
+                                {{ translation.name }} 
+                                {% if not loop.last %} &middot; {% endif %} 
+                            {% endfor %}
+                        {% endset %}
+                        <optgroup label="{{ label }}">
+                            {% for subcategory in category.subcategories %}
+                                <option value="{{ subcategory.id }}" 
+                                        {% if i18n.categories.contains(subcategory) %} selected {% endif %}> 
+                                    {% for translation in subcategory.translations %}
+                                        {{ translation.name }}
+                                        {% if not loop.last %} &middot; {% endif %}
+                                    {% endfor %}
+                                </option>
+                            {% endfor %}    
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
         <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
                 {% trans %} Content {% endtrans %}
@@ -75,7 +106,7 @@
             <div class="col-sm-10">
                 <textarea id="textarea-content" name="content" 
                           class="form-control" cols="30" rows="10" 
-                          placeholder="Content">{{ input['content']|default(article.content) }}
+                          placeholder="Content">{{ input['content']|default(i18n.content) }}
                 </textarea>
                 {{ html.error(error.content) }}
             </div>
@@ -89,16 +120,16 @@
                 <select name="status" id="select-status" class="form-control">
                     {% if not _user.contributor %}
                         <option value="{{ constant('Article::STATUS_PUBLISH') }}"
-                                {% if article.publish %} selected {% endif %}>
+                                {% if i18n.publish %} selected {% endif %}>
                             {% trans %} Publish {% endtrans %}
                         </option>
                     {% endif %}
                     <option value="{{ constant('Article::STATUS_PENDING') }}"
-                            {% if article.pending %} selected {% endif %}>
+                            {% if i18n.pending %} selected {% endif %}>
                         {% trans %} Need Review {% endtrans %}
                     </option>
                     <option value="{{ constant('Article::STATUS_DRAFT') }}"
-                            {% if article.draft %} selected {% endif %}>
+                            {% if i18n.draft %} selected {% endif %}>
                         {% trans %} Draft {% endtrans %}
                     </option>
                 </select>
@@ -126,6 +157,7 @@
             $("#textarea-content").summernote({
                 height: 350
             });
+            $('#select-categories').chosen();
         });
     </script>
 {% endblock %}

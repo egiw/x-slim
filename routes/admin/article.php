@@ -55,6 +55,14 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                         ->setAuthor($app->user)
                         ->setCreatedAt(new DateTime('now'));
 
+                if ($categories = $app->request->post('categories')) {
+                    foreach ($categories as $key) {
+                        if ($category = $app->db->find('Category', $key)) {
+                            $article->addCategory($category);
+                        }
+                    }
+                }
+
                 $i18n = new Articlei18n();
                 $i18n
                         ->setLanguage($input['language'])
@@ -76,17 +84,22 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                 $data['error'] = new Error($ex->findMessages($messages));
             }
         }
+
+        $data['categories'] = $app->db->getRepository('Category')->findBy(array(
+            'parent' => null
+        ));
+
         $app->render('admin/article/create.twig', $data);
     })->via("GET", "POST")->name('admin.article.create');
     // display form and update an article
     $app->map("/:id/edit", function($id) use ($app, $validator, $messages) {
-        if ($article = $app->db->find("Articlei18n", $id)) {
-            /* @var $article Articlei18n */
-            if (!$article->isPermitted($app->user)) {
+        if ($i18n = $app->db->find("Articlei18n", $id)) {
+            /* @var $i18n Articlei18n */
+            if (!$i18n->isPermitted($app->user)) {
                 $app->notFound();
             }
 
-            $data = array("article" => $article);
+            $data = array("i18n" => $i18n);
             if ($app->request->isPost()) {
                 try {
                     $data['input'] = $input = $app->request->post();
@@ -95,13 +108,13 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                         $app->notFound();
                     }
 
-                    $notExists = function($title) use ($app, $article) {
-                        if ($article->getTitle() == $title) {
+                    $notExists = function($title) use ($app, $i18n) {
+                        if ($i18n->getTitle() == $title) {
                             return true;
                         }
-                        $i18n = $app->db->getRepository("Articlei18n")
+                        $_i18n = $app->db->getRepository("Articlei18n")
                                 ->findOneBy(array("title" => $title));
-                        if (null === $i18n || $article->getArticle() === $i18n->getArticle()) {
+                        if (null === $_i18n || $i18n->getArticle() === $_i18n->getArticle()) {
                             return true;
                         }
                         return false;
@@ -110,22 +123,34 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     $validator->key('title', V::create()->callback($notExists)->setName('notExists'))
                             ->assert($input);
 
-                    $article->setTitle($input['title'])
+                    $i18n->setTitle($input['title'])
                             ->setSlug(Articlei18n::slugify($input['title']))
                             ->setContent($input['content'])
                             ->setUpdatedAt(new DateTime("now"))
                             ->setUpdatedBy($app->user)
                             ->setStatus($input['status']);
+                    ;
+                    $article = $i18n->getArticle();
+                    $categories = new Doctrine\Common\Collections\ArrayCollection();
+                    foreach ($app->request->post('categories', array()) as $key) {
+                        if ($category = $app->db->find('Category', $key))
+                            $categories->add($category);
+                    }
+                    $article->setUpdatedAt(new DateTime('now'))
+                            ->setCategories($categories);
 
-                    $article->getArticle()->setUpdatedAt(new DateTime("now"));
-
-                    $app->db->flush($article);
+                    $app->db->flush(array($article, $i18n));
                     $app->flash('succsss', 'Article has successfully updated');
                     $app->redirect($app->urlFor("admin.article.index"));
                 } catch (InvalidArgumentException $ex) {
                     $data['error'] = new Error($ex->findMessages($messages));
                 }
             }
+
+            $data['categories'] = $app->db->getRepository('Category')->findBy(array(
+                'parent' => null
+            ));
+
             $app->render('admin/article/edit.twig', $data);
         }
     })->via("GET", "POST")->name("admin.article.edit");
@@ -252,11 +277,11 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 
         foreach ($app->request->get('order') as $order) {
             switch ((int) $order['column']) {
-                case 2:
+                case 3:
                     $qb->addOrderBy("b.createdAt", $order['dir'])
                             ->addOrderBy("a.createdAt", $order['dir']);
                     break;
-                case 3:
+                case 4:
                     $qb->addOrderBy("b.updatedAt", $order['dir'])
                             ->addOrderBy("a.updatedAt", $order['dir']);
                     break;

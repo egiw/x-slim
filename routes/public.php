@@ -10,7 +10,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  * Everyone has access
  */
 $app->group(null, function() use($app) {
-    
+
     $qb = $app->db->getRepository("Articlei18n")
             ->createQueryBuilder("a")
             ->join("a.article", "b")
@@ -93,19 +93,19 @@ $app->group(null, function() use($app) {
             $qb->andWhere("a.slug = :slug")
                     ->setParameter("slug", $slug);
 
-            $article = $qb->getQuery()->getOneOrNullResult();
+            $i18n = $qb->getQuery()->getOneOrNullResult();
             /* @var $article Articlei18n */
 
-            if (null == $article)
+            if (null == $i18n)
                 return $app->pass();
 
             // track
-            $article->addStat($app->stat);
-            $app->db->flush($article);
+            $i18n->addStat($app->stat);
+            $app->db->flush($i18n);
 
             $app->render("detail.twig", array(
-                "article" => $article,
-                "title" => $article->getTitle()
+                "i18n" => $i18n,
+                "title" => $i18n->getTitle()
             ));
         } else {
             $limit = 2;

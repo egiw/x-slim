@@ -110,16 +110,25 @@
             </toolbar>
             <title>
                 <![CDATA[
-                <span class="label label-info">{{ i18n.language|upper }}</span>
-                {% if i18n.publish %}
-                    <span class="label label-success">{% trans %} Publish {% endtrans %}</span>
-                {% elseif i18n.draft %}
-                    <span class="label label-default">{% trans %} Draft {% endtrans %}</span>
-                {% elseif i18n.pending %}
-                    <span class="label label-warning">{% trans %} Need Review {% endtrans %}</span>
-                {% endif %}
+                <strong><a href="#">{{ i18n.title }}</a></strong>
+                <div>
+                    <span class="label label-info">{{ i18n.language|upper }}</span>
+                    {% if i18n.publish %}
+                        <span class="label label-success">{% trans %} Publish {% endtrans %}</span>
+                    {% elseif i18n.draft %}
+                        <span class="label label-default">{% trans %} Draft {% endtrans %}</span>
+                    {% elseif i18n.pending %}
+                        <span class="label label-warning">{% trans %} Need Review {% endtrans %}</span>
+                    {% endif %}
+                    {% for category in i18n.categories %}
+                        {% for translation in category.translations %}
+                            {% if translation.language == i18n.language %}
+                                <span class="label label-default">{{ translation.name }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
                 ]]>
-                {{ i18n.title }}
             </title>
             <createdAt>
                 <![CDATA[

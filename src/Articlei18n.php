@@ -372,6 +372,14 @@ class Articlei18n {
     }
 
     /**
+     * Shorthand get parent article categories
+     * @return Doctrine\Common\Collections\Collection
+     */
+    public function getCategories() {
+        return $this->getArticle()->getCategories();
+    }
+
+    /**
      * Check if user is permitted to modify this article
      * @param User $user
      * @return bool

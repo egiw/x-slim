@@ -63,6 +63,12 @@ class Article {
     private $i18n;
 
     /**
+     * @ManyToMany(targetEntity="Category", inversedBy="articles")
+     * @var Doctrine\Common\Collections\Collection
+     */
+    private $categories;
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -264,6 +270,36 @@ class Article {
      */
     public function isPermitted(User $user) {
         return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
+    }
+
+    /**
+     * 
+     * @return Doctrine\Common\Collections\Collection
+     */
+    public function getCategories() {
+        return $this->categories;
+    }
+
+    /**
+     * 
+     * @param Doctrine\Common\Collections\Collection $categories
+     * @return \Article
+     */
+    public function setCategories(Doctrine\Common\Collections\Collection $categories) {
+        $this->categories = $categories;
+
+        return $this;
+    }
+
+    /**
+     * 
+     * @param Category $category
+     * @return \Article
+     */
+    public function addCategory(Category $category) {
+        $this->categories[] = $category;
+
+        return $this;
     }
 
 }

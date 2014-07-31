@@ -36,7 +36,7 @@
           action="{{ urlFor('admin.category.edit', {id: category.id}) }}">
         {% if categories is not empty %}
             <div class="form-group">
-                <label for="select-parent" class="control-label col-sm-3">Parent</label>
+                <label for="select-parent" class="control-label col-sm-2">Parent</label>
                 <div class="col-sm-4">
                     <select name="parent" class="form-control" id="select-parent">
                         <option value="">({% trans %} None {% endtrans %})</option>
@@ -56,11 +56,40 @@
             </div>
         {% endif %}
 
+        {#            INPUT IMAGE           #}
+        <div class="form-group {% if error.type or error.size %} has-error {% endif %}">
+            <label for="input-image" class="control-label col-sm-2">Image</label>
+            <div class="col-sm-6">
+                <div class="fileinput fileinput-exists" data-provides="fileinput">
+                    <div class="fileinput-new thumbnail" style="width: 200px; height: 150px;">
+                        <img src="http://placehold.it/200x150" alt="...">
+                    </div>
+                    <div class="fileinput-preview fileinput-exists thumbnail"
+                         style="max-width: 200px; max-height: 150px;">
+                        <img src="{{ siteUrl('/images/category/' ~ category.image) }}" />
+                    </div>
+                    <div>
+                        <span class="btn btn-default btn-file">
+                            <span class="fileinput-new">
+                                {% trans %} Select image {% endtrans %}
+                            </span>
+                            <span class="fileinput-exists">
+                                {% trans %} Change {% endtrans %}
+                            </span>
+                            <input type="file" name="image" />
+                        </span>
+                    </div>
+                    {{ html.error(error.type) }}
+                    {{ html.error(error.size) }}
+                </div>
+            </div>
+        </div>
+
         {% for translation in category.translations %}
             <fieldset>
                 <legend>{{ languages[translation.language] }}</legend>
                 <div class="form-group {% if attribute(error, translation.language).name %} has-error {% endif %}">
-                    <label for="in-name-{{value}}" class="control-label col-sm-3">
+                    <label for="in-name-{{value}}" class="control-label col-sm-2">
                         {% trans %} Category Name {% endtrans %}
                     </label>
                     <div class="col-sm-5">
@@ -72,7 +101,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="in-desc-{{translation.language}}" class="control-label col-sm-3">
+                    <label for="in-desc-{{translation.language}}" class="control-label col-sm-2">
                         {% trans %} Description {% endtrans %}
                     </label>
                     <div class="col-sm-5">
@@ -91,7 +120,7 @@
         </div>
 
         <div class="form-group">
-            <div class="col-sm-5 col-sm-offset-3">
+            <div class="col-sm-5 col-sm-offset-2">
                 <div class="btn-group">
                     <input type="submit" value="Submit" class="btn btn-primary" />
                     <a data-pjax href="{{ urlFor('admin.category.index') }}" class="btn btn-default">
