@@ -96,6 +96,41 @@
             </div>
         </div>
 
+        {#           REGION           #}
+        <div class="form-group">
+            <label for="select-regions" class="control-label col-sm-2">
+                {% trans %} Regions {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="regions[]" id="select-regions" class="form-control" multiple>
+                    {% for region in regions  %}
+                        <optgroup label="{{ region.name }}">
+                            {% for province in region.children %}
+                                <option value="{{ province.id }}">{{ province.name }}</option>
+                            {% endfor %}
+                            {% for province in region.children %}
+                            <optgroup label="{{ province.name }}">
+                                {% for city in province.children %}
+                                    <option value="{{ city.id }}">{{ city.name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+                
+        {#        LOCATION      #}
+        <div class="form-group">
+            <label for="select-location" class="control-label col-sm-2">
+                {% trans %} Location {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                
+            </div>
+        </div>
+
         {#        CONTENT       #}
         <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
@@ -165,7 +200,7 @@
             $("#textarea-content").summernote({
                 height: 350
             });
-            $('#select-categories').chosen();
+            $('#select-categories, #select-regions').chosen();
         });
     </script>
 {% endblock %}

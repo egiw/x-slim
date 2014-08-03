@@ -63,6 +63,14 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     }
                 }
 
+                if ($regions = $app->request->post('regions')) {
+                    foreach ($regions as $key) {
+                        if ($region = $app->db->find('Region', $key)) {
+                            $article->addRegion($region);
+                        }
+                    }
+                }
+
                 $i18n = new Articlei18n();
                 $i18n
                         ->setLanguage($input['language'])
@@ -87,6 +95,10 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 
         $data['categories'] = $app->db->getRepository('Category')->findBy(array(
             'parent' => null
+        ));
+
+        $data['regions'] = $app->db->getRepository('Region')->findBy(array(
+            'parent' => 0
         ));
 
         $app->render('admin/article/create.twig', $data);
@@ -129,15 +141,21 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                             ->setUpdatedAt(new DateTime("now"))
                             ->setUpdatedBy($app->user)
                             ->setStatus($input['status']);
-                    ;
+                    
                     $article = $i18n->getArticle();
                     $categories = new Doctrine\Common\Collections\ArrayCollection();
+                    $regions = new \Doctrine\Common\Collections\ArrayCollection();
                     foreach ($app->request->post('categories', array()) as $key) {
                         if ($category = $app->db->find('Category', $key))
                             $categories->add($category);
                     }
+                    foreach ($app->request->post('regions', array()) as $key) {
+                        if ($region = $app->db->find('Region', $key))
+                            $regions->add($region);
+                    }
                     $article->setUpdatedAt(new DateTime('now'))
-                            ->setCategories($categories);
+                            ->setCategories($categories)
+                            ->setRegions($regions);
 
                     $app->db->flush(array($article, $i18n));
                     $app->flash('succsss', 'Article has successfully updated');
@@ -149,6 +167,10 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 
             $data['categories'] = $app->db->getRepository('Category')->findBy(array(
                 'parent' => null
+            ));
+
+            $data['regions'] = $app->db->getRepository('Region')->findBy(array(
+                'parent' => 0
             ));
 
             $app->render('admin/article/edit.twig', $data);

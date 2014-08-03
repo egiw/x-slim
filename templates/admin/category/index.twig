@@ -53,7 +53,8 @@
                 <ul>
                     {% for category in categories %}
                         <li data-delete-url="{{ urlFor('admin.category.delete', {id: category.id }) }}"
-                            data-edit-url="{{ urlFor('admin.category.edit', {id: category.id }) }}">
+                            data-edit-url="{{ urlFor('admin.category.edit', {id: category.id }) }}"
+                            data-jstree='{"icon":"fa fa-tags"}'>
                             <small>
                                 {% for translation in category.translations %}
                                     {{ translation.name }} 
@@ -63,7 +64,8 @@
                             <ul>
                                 {% for subcategory in category.subcategories %}
                                     <li data-delete-url="{{ urlFor('admin.category.delete', {id: subcategory.id }) }}"
-                                        data-edit-url="{{ urlFor('admin.category.edit', {id: subcategory.id }) }}">
+                                        data-edit-url="{{ urlFor('admin.category.edit', {id: subcategory.id }) }}"
+                                        data-jstree='{"icon":"fa fa-tag"}'>
                                         <small>
                                             {% for translation in subcategory.translations %}
                                                 {{ translation.name }} 

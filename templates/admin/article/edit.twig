@@ -99,6 +99,36 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label for="select-regions" class="control-label col-sm-2">
+                {% trans %} Regions {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="regions[]" id="select-regions" class="form-control" multiple>
+                    {% for region in regions %}
+                        <optgroup label="{{ region.name }}">
+                            {% for province in region.children %}
+                                <option value="{{ province.id }}"
+                                        {% if i18n.article.regions.contains(province) %} selected {% endif %}>
+                                    {{ province.name }}
+                                </option>
+                            {% endfor %}
+                            {% for province in region.children %}
+                            <optgroup label="{{ province.name }}">
+                                {% for city in province.children %}
+                                    <option value="{{ city.id }}"
+                                            {% if i18n.article.regions.contains(city) %} selected {% endif %}>
+                                        {{ city.name }}
+                                    </option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
         <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
                 {% trans %} Content {% endtrans %}
@@ -157,7 +187,7 @@
             $("#textarea-content").summernote({
                 height: 350
             });
-            $('#select-categories').chosen();
+            $('#select-categories, #select-regions').chosen();
         });
     </script>
 {% endblock %}

@@ -69,10 +69,18 @@ class Article {
     private $categories;
 
     /**
+     * @ManyToMany(targetEntity="Region", inversedBy="articles")
+     * @var Doctrine\Common\Collections\Collection
+     */
+    private $regions;
+
+    /**
      * Constructor
      */
     public function __construct() {
         $this->i18n = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->regions = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -255,24 +263,6 @@ class Article {
     }
 
     /**
-     * Check if article belongs to user
-     * 
-     * @param User $user
-     */
-    public function belongsTo(User $user) {
-        return $this->author === $user;
-    }
-
-    /**
-     * Check if user is permitted to modify this article
-     * @param User $user
-     * @return bool
-     */
-    public function isPermitted(User $user) {
-        return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
-    }
-
-    /**
      * 
      * @return Doctrine\Common\Collections\Collection
      */
@@ -300,6 +290,45 @@ class Article {
         $this->categories[] = $category;
 
         return $this;
+    }
+
+    public function getRegions() {
+        return $this->regions;
+    }
+
+    public function setRegions(Doctrine\Common\Collections\Collection $regions) {
+        $this->regions = $regions;
+
+        return $this;
+    }
+
+    /**
+     * 
+     * @param Region $region
+     * @return \Article
+     */
+    public function addRegion(Region $region) {
+        $this->regions[] = $region;
+
+        return $this;
+    }
+
+    /**
+     * Check if article belongs to user
+     * 
+     * @param User $user
+     */
+    public function belongsTo(User $user) {
+        return $this->author === $user;
+    }
+
+    /**
+     * Check if user is permitted to modify this article
+     * @param User $user
+     * @return bool
+     */
+    public function isPermitted(User $user) {
+        return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
     }
 
 }
