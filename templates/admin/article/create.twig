@@ -120,14 +120,20 @@
                 </select>
             </div>
         </div>
-                
+
         {#        LOCATION      #}
         <div class="form-group">
             <label for="select-location" class="control-label col-sm-2">
                 {% trans %} Location {% endtrans %}
             </label>
             <div class="col-sm-10">
-                
+                <div class="checkbox">
+                    <label for="check-location">
+                        <input type="checkbox" id="check-location"/> 
+                        {% trans %} Enable {% endtrans %}
+                    </label>
+                </div>
+                <div class="well" id="map-location" style="height: 350px;"></div>
             </div>
         </div>
 
@@ -201,6 +207,22 @@
                 height: 350
             });
             $('#select-categories, #select-regions').chosen();
+
+
+            google.maps.event.addDomListener(window, 'load', function() {
+                var mapOptions = {
+                    center: new google.maps.LatLng(-34.397, 150.644),
+                    zoom: 8
+                };
+                var map = new google.maps.Map(document.getElementById("map-location"),
+                        mapOptions);
+
+
+                google.maps.event.addListener(map, 'click', function(e) {
+                    console.log(e);
+                });
+            });
+
         });
     </script>
 {% endblock %}
