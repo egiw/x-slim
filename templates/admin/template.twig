@@ -153,6 +153,27 @@
                         }
                     }
                 });
+
+                $.summernote.options.onImageUpload = function(files, editor, editable) {
+                    bootbox.prompt('Type the image title', function(alt) {
+                        data = new FormData();
+                        data.append('image', files[0]);
+                        data.append('caption', alt);
+                        $.ajax({
+                            data: data,
+                            type: 'post',
+                            url: '{{ urlFor('admin.article.upload') }}',
+                            cache: false,
+                            contentType: false,
+                            processData: false,
+                            success: function(result) {
+                                var $image = $('<img>', {src: result, alt: alt});
+                                editable.data('range').insertNode($image[0]);
+                                $image.css('width', Math.min(editable.width(), $image.width));
+                            }
+                        });
+                    });
+                }
             {% endset %}
             {{ script|pack|raw }}
         </script>
