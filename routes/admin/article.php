@@ -141,7 +141,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                             ->setUpdatedAt(new DateTime("now"))
                             ->setUpdatedBy($app->user)
                             ->setStatus($input['status']);
-                    
+
                     $article = $i18n->getArticle();
                     $categories = new Doctrine\Common\Collections\ArrayCollection();
                     $regions = new \Doctrine\Common\Collections\ArrayCollection();
@@ -351,4 +351,30 @@ $app->group('/article', function() use ($app, $validator, $messages) {
         $app->contentType("application/json");
         return $app->response->body(json_encode($data));
     })->name('admin.article.count');
+    // upload an image
+    $app->post('/upload', function() use ($app) {
+        if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
+            $image = $_FILES['image'];
+            $filename = slugify(pathinfo($image['name'], PATHINFO_FILENAME));
+            $extension = pathinfo($image['name'], PATHINFO_EXTENSION);
+            $destination = ROOT . DS . 'images' . DS . 'article';
+
+            if ($caption = $app->request->post('caption', false)) {
+                $filename = slugify($caption);
+            }
+
+            $i = 0;
+            $name = $filename;
+            while (file_exists($destination . DS . $name . '.' . $extension)) {
+                $name = $filename . '-' . $i;
+                $i++;
+            }
+
+            if (move_uploaded_file($image['tmp_name'], $destination . DS . $name . '.' . $extension)) {
+                $url = '/images/article/' . $name . '.' . $extension;
+                return $app->response->write($url, true);
+            }
+        }
+        $app->halt(400);
+    })->setName('admin.article.upload');
 });

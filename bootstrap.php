@@ -19,7 +19,7 @@ $config->setCustomDatetimeFunctions(array(
 $conn = array(
     'driver' => 'pdo_mysql',
     'user' => 'root',
-    'password' => 'root',
+    'password' => '',
     'dbname' => 'XSlim'
 );
 

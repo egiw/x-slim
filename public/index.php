@@ -15,6 +15,7 @@ define('ALERT_DANGER', 'alert-danger');
 define('ALERT_WARNING', 'alert-warning');
 define('ALERT_INFO', 'alert-info');
 
+define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 
 include '../lib/functions.php';
@@ -26,8 +27,8 @@ $config = array(
     'db' => array(
         'driver' => 'pdo_mysql',
         'user' => 'root',
-        'password' => 'root',
-        'dbname' => 'XSlim'
+        'password' => '',
+        'dbname' => 'xslim'
     )
 );
 

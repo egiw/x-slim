@@ -27,13 +27,13 @@ class Categoryi18n {
     private $language = 'en';
 
     /**
-     * @Column(type="string", length=64, unique=true, nullable=false)
+     * @Column(type="string", length=64, unique=false, nullable=false)
      * @var string
      */
     private $name;
 
     /**
-     * @Column(type="string", length=255, unique=true, nullable=false)
+     * @Column(type="string", length=255, unique=false, nullable=false)
      * @var string
      */
     private $slug;

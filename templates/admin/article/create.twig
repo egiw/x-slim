@@ -121,22 +121,6 @@
             </div>
         </div>
 
-        {#        LOCATION      #}
-        <div class="form-group">
-            <label for="select-location" class="control-label col-sm-2">
-                {% trans %} Location {% endtrans %}
-            </label>
-            <div class="col-sm-10">
-                <div class="checkbox">
-                    <label for="check-location">
-                        <input type="checkbox" id="check-location"/> 
-                        {% trans %} Enable {% endtrans %}
-                    </label>
-                </div>
-                <div class="well" id="map-location" style="height: 350px;"></div>
-            </div>
-        </div>
-
         {#        CONTENT       #}
         <div class="form-group {% if error.content %} has-error {% endif %}">
             <label class="control-label col-sm-2" for="content">
@@ -204,25 +188,29 @@
     <script type="text/javascript">
         $(function() {
             $("#textarea-content").summernote({
-                height: 350
+                height: 350,
+                onImageUpload: function(files, editor, editable) {
+                    bootbox.prompt('Type the image title', function(alt) {
+                        data = new FormData();
+                        data.append('image', files[0]);
+                        data.append('caption', alt);
+                        $.ajax({
+                            data: data,
+                            type: 'post',
+                            url: '{{ urlFor('admin.article.upload') }}',
+                            cache: false,
+                            contentType: false,
+                            processData: false,
+                            success: function(result) {
+                                var $image = $('<img>', {src: result, alt: alt});
+                                editable.data('range').insertNode($image[0]);
+                                $image.css('width', Math.min(editable.width(), $image.width));
+                            }
+                        });
+                    });
+                }
             });
             $('#select-categories, #select-regions').chosen();
-
-
-            google.maps.event.addDomListener(window, 'load', function() {
-                var mapOptions = {
-                    center: new google.maps.LatLng(-34.397, 150.644),
-                    zoom: 8
-                };
-                var map = new google.maps.Map(document.getElementById("map-location"),
-                        mapOptions);
-
-
-                google.maps.event.addListener(map, 'click', function(e) {
-                    console.log(e);
-                });
-            });
-
         });
     </script>
 {% endblock %}

@@ -95,7 +95,8 @@ $app->group('/category', function() use($app) {
                 $_input = array();
                 $messages = array();
 
-                if (isset($_FILES['image']) || $_FILES['image']['size'] > 0) {
+
+                if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
                     $upload = true;
                     $_input['type'] = $_FILES['image']['type'];
                     $validator->key('type', V::create()->in(array('image/jpg', 'image/jpeg')));
@@ -115,7 +116,17 @@ $app->group('/category', function() use($app) {
                             $validator->key($name, V::create()->notEmpty());
                             $validator->key($name, V::create()
                                             ->callback(function($name) use ($repo, $i18n) {
-                                                return $name === $i18n->getName() || $repo->findOneBy(array('name' => $name)) === null;
+                                                if ($name === $i18n->getName()) {
+                                                    return true;
+                                                } else {
+                                                    $exists = $repo->findOneBy(array('name' => $name));
+                                                    if (null === $exists) {
+                                                        return true;
+                                                    } elseif ($exists->getParent() === $i18n->getParent()) {
+                                                        return true;
+                                                    }
+                                                }
+                                                return false;
                                             })
                             );
 
