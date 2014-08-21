@@ -75,6 +75,12 @@ class Article {
     private $regions;
 
     /**
+     * @OneToMany(targetEntity="Image", mappedBy="article")
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $images;
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -298,6 +304,16 @@ class Article {
 
     public function setRegions(Doctrine\Common\Collections\Collection $regions) {
         $this->regions = $regions;
+
+        return $this;
+    }
+
+    public function getImages() {
+        return $this->images;
+    }
+
+    public function setImages(\Doctrine\Common\Collections\Collection $images) {
+        $this->images = $images;
 
         return $this;
     }

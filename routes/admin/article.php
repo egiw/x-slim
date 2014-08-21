@@ -22,7 +22,6 @@ $messages = array(
     'status.in' => gettext('Invalid status')
 );
 
-
 // manage article
 $app->group('/article', function() use ($app, $validator, $messages) {
     // display list of articles
@@ -377,4 +376,6 @@ $app->group('/article', function() use ($app, $validator, $messages) {
         }
         $app->halt(400);
     })->setName('admin.article.upload');
+
+    include 'article/image.php';
 });

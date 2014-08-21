@@ -175,11 +175,14 @@
                 {% if i18n.permitted(_user) %}
                     <![CDATA[ 
                     <div class="btn-group">
+                        <a data-pjax href="{{ urlFor('admin.article.image.index', {articlei18n: i18n.id }) }}" 
+                           class="btn btn-default btn-sm"
+                           title="{% trans 'Image Gallery' %}"><i class="fa fa-picture-o"></i></a>
                         <a data-pjax href="{{ urlFor('admin.article.edit', {id: i18n.id}) }}" 
                            title="{% trans 'Edit' %}"
                            class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
                         <a href="javascript:_delete('{{ urlFor('admin.article.delete', {id: article.id, cid: i18n.id}) }}')" 
-                           class="btn btn-default btn-danger btn-sm"
+                           class="btn btn-danger btn-sm"
                            title="{% trans 'Delete' %}"><i class="fa fa-times"></i></a>
                     </div>
                     ]]>

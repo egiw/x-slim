@@ -83,11 +83,11 @@
             <table class="table table-condensed" id="tbl-article">
                 <colgroup>
                     <col width="3%"/>
-                    <col width="42%"/>
+                    <col width="38%"/>
                     <col width="15%"/>
                     <col width="15%"/>
                     <col width="5%"/>
-                    <col width="6%"/>
+                    <col width="10%"/>
                 </colgroup>
                 <thead>
                     <tr>
@@ -109,7 +109,7 @@
 {% block script %}
     <script type="text/javascript">
         {% set script %}
-            var $tblArticle = $("#tbl-article").DataTable({
+            var $tblArticle = $('#tbl-article').DataTable({
                 serverSide: true,
                 processing: false,
                 ordering: true,
@@ -241,7 +241,6 @@
             (loadCountInfo = function() {
                 var type = $('input[name=type]:radio:checked').val();
                 $.get('{{ urlFor('admin.article.count') }}', {type: type}, function(data) {
-            {#                    $("#badge-all").text(data.all);#}
                         $("#badge-published").text(data.publish);
                         $("#badge-draft").text(data.draft);
                         $("#badge-pending").text(data.pending);

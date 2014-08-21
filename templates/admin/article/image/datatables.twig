@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datatable>
+    {% for image in data %}
+        <aaData>
+            <preview>
+                <![CDATA[<img src="{{ siteUrl('timthumb.php?src=images/article/' ~ image.filename ) }}" />]]>
+            </preview>
+            <filename>{{ image.filename }}</filename>
+            <title>{{ image.title }}</title>
+            <caption>{{ image.caption }}</caption>
+            <controls>
+                <![CDATA[
+                <div class="btn-group">
+                    <a data-pjax href="{{ urlFor('admin.article.image.edit', {id: image.id, articlei18n: articlei18n.id}) }}" 
+                       class="btn btn-sm btn-default">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                    <a href="javascript:_delete('{{ urlFor('admin.article.image.delete', {articlei18n: articlei18n.id, id: image.id}) }}')" class="btn btn-sm btn-danger">
+                        <i class="fa fa-trash-o"></i>
+                    </a>
+                </div>
+                ]]>
+            </controls>
+        </aaData>
+    {% endfor %}
+</datatable>

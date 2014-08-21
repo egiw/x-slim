@@ -1,0 +1,126 @@
+{% extends template %}
+
+{% set title = "Articles"|trans %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-8">
+            <h1>
+                <i class="fa fa-picture-o"></i>
+                {% trans %} Add Image{% endtrans %}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ urlFor('admin.article.index') }}">
+                        <i class="fa fa-file"></i> 
+                        {% trans %} Article {% endtrans %}
+                    </a>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="text-info">{{ articlei18n.language|upper }}</span>
+                        <strong>&middot;</strong>
+                        {{ articlei18n.title }}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for i18n in articlei18n.article.i18n if i18n is not sameas(articlei18n) %}
+                            <li>
+                                <a data-pjax href="{{ urlFor('admin.article.image.create', {articlei18n: i18n.id}) }}">
+                                    <span class="text-info">{{ i18n.language|upper }}</span>
+                                    <strong>&middot;</strong>
+                                    {{ i18n.title }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.article.image.index', {articlei18n: articlei18n.id}) }}">
+                        <i class="fa fa-picture-o"></i> 
+                        {% trans %} Image {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-plus"></i>
+                    {% trans %} Add New {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <form data-pjax action="{{ urlFor('admin.article.image.create', {articlei18n: articlei18n.id }) }}"
+                  class="form form-horizontal" method="post">
+
+                {#            Alt. Text         #}
+                <div class="form-group">
+                    <label for="input-alt" class="control-label col-sm-2">
+                        {% trans %} Alt. Text {% endtrans %}
+                    </label>
+                    <div class="col-sm-4">
+                        <input type="text" name="alt" id="input-alt" class="form-control" />
+                    </div>
+                </div>
+
+                {#                CAPTION               #}
+                <div class="form-group">
+                    <label for="input-caption" class="control-label col-sm-2">Caption</label>
+                    <div class="col-sm-5">
+                        <textarea name="caption" id="input-caption" rows="4" class="form-control"></textarea>
+                    </div>
+                </div>
+
+                {#             IMAGE         #}
+                <div class="form-group">
+                    <label for="input-image" class="control-label col-sm-2">Image</label>
+                    <div class="col-sm-6">
+                        <div class="fileinput fileinput-new" data-provides="fileinput">
+                            <div>
+                                <span class="btn btn-default btn-file">
+                                    <span class="fileinput-new">
+                                        {% trans %} Select image {% endtrans %}
+                                    </span>
+                                    <span class="fileinput-exists">
+                                        {% trans %} Change {% endtrans %}
+                                    </span>
+                                    <input type="file" name="image" id="input-image" />
+                                </span>
+                                <a href="#" class="btn btn-default fileinput-exists" data-dismiss="fileinput">
+                                    {% trans %} Remove {% endtrans %}
+                                </a>
+                            </div>
+                            <div class="fileinput-preview fileinput-exists thumbnail" style="margin-top: 5px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {#             BUTTONS           #}
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <a data-pjax 
+                               class="btn btn-default"
+                               href="{{ urlFor('admin.article.image.index', {articlei18n: articlei18n.id}) }}">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

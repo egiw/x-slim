@@ -94,6 +94,12 @@ class Articlei18n {
      */
     private $stats;
 
+    /**
+     * @OneToMany(targetEntity="Imagei18n", mappedBy="articlei18n", cascade={"persist"}, orphanRemoval=true)
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $images;
+
     public function __construct() {
         $this->stats = new \Doctrine\Common\Collections\ArrayCollection();
     }
@@ -334,6 +340,22 @@ class Articlei18n {
      */
     public function getArticle() {
         return $this->article;
+    }
+
+    public function getImages() {
+        return $this->images;
+    }
+
+    public function setImages(\Doctrine\Common\Collections\Collection $images) {
+        $this->images = $images;
+
+        return $this;
+    }
+
+    public function addImage(Imagei18n $imagei18n) {
+        $this->images->add($imagei18n);
+
+        return $this;
     }
 
     /**

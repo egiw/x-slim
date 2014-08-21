@@ -5,7 +5,6 @@
 {% endset %}
 
 {% block content %}
-
     <div class="row">
         <div class="col-lg-12">
             <h1>
@@ -29,6 +28,34 @@
                         {% trans %} Article {% endtrans %}
                     </a>
                 </li>
+                {% if i18n.article.i18n.count > 1 %}
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <span class="text-info">{{ i18n.language|upper }}</span>
+                            <strong>&middot;</strong>
+                            {{ i18n.title }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for translation in i18n.article.i18n if translation is not sameas(i18n) %}
+                                <li>
+                                    <a href="{{ urlFor('admin.article.edit', {id: translation.id}) }}" data-pjax>
+                                        <span class="text-info">{{ translation.language|upper }}</span>
+                                        <strong>&middot;</strong>
+                                        {{ translation.title }}
+                                        <span class="caret"></span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="active">
+                        <span class="text-info">{{ i18n.language|upper }}</span>
+                        <strong>&middot;</strong>
+                        {{ i18n.title }}
+                    </li>
+                {% endif %}
                 <li class="active">
                     <i class="fa fa-edit"></i> 
                     {% trans %} Edit {% endtrans %}

@@ -24,7 +24,7 @@ class DataTables implements JsonSerializable {
      * @param \Doctrine\ORM\QueryBuilder $queryBuilder
      * @param Array $params Input parameters
      */
-    public function __construct(QueryBuilder $queryBuilder, $view = null, $searchCols = array()) {
+    public function __construct(QueryBuilder $queryBuilder, $view = null, $searchCols = array(), $data = array()) {
 
         $app = Slim::getInstance();
 
@@ -62,7 +62,7 @@ class DataTables implements JsonSerializable {
         if (null !== $view && !empty($this->data)) {
 
             // render the twig datatable template as string
-            $str = $app->view->render($view, array("data" => $this->data));
+            $str = $app->view->render($view, array_merge($data, array("data" => $this->data)));
 
             // parse the string into xml
             $xml = simplexml_load_string($str, null, LIBXML_NOCDATA);

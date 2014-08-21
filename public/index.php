@@ -18,6 +18,8 @@ define('ALERT_INFO', 'alert-info');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 
+define('ASD', ROOT . 'test');
+
 include '../lib/functions.php';
 
 date_default_timezone_set("Asia/Jakarta");
