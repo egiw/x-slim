@@ -2,6 +2,9 @@
 
 /* @var $app Application */
 
+use Respect\Validation\Validator as V;
+use Respect\Validation\Exceptions\AllOfException;
+
 $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
     $articlei18n = $app->db->find('Articlei18n', $route->getParam('articlei18n'));
     if (null === $articlei18n) {
@@ -19,45 +22,57 @@ $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
     $app->map('/create', function(Articlei18n $articlei18n) use($app) {
         $data = array();
         if ($app->request->isPost()) {
-            $file = $_FILES['image'];
-            $input = $app->request->post();
+            try {
+                // check if user upload wrong file
+                V::create()->contains('image')->setName('image')
+                        ->assert($_FILES);
+                // check whether file type is wrong
+                V::create()->in(array('image/jpeg'))->setName('image')
+                        ->assert($_FILES['type']);
 
-            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = pathinfo($file['name'], PATHINFO_FILENAME);
+                $file = $_FILES['image'];
+                $data['input'] = $input = $app->request->post();
+                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $filename = pathinfo($file['name'], PATHINFO_FILENAME);
 
-            if (!empty($input['alt'])) {
-                $filename = slugify($input['alt']);
-            }
+                if (!empty($input['alt'])) {
+                    $filename = slugify($input['alt']);
+                }
 
-            $destination = ROOT . DS . 'images' . DS . 'article';
-            $i = 0;
-            $name = $filename . '.' . $extension;
-            while (file_exists($destination . DS . $name)) {
-                $name = $filename . '-' . $i . '.' . $extension;
-                $i++;
-            }
+                $destination = ROOT . DS . 'images' . DS . 'article';
+                $i = 0;
+                $name = $filename . '.' . $extension;
+                while (file_exists($destination . DS . $name)) {
+                    $name = $filename . '-' . $i . '.' . $extension;
+                    $i++;
+                }
 
-            if (move_uploaded_file($file['tmp_name'], $destination . DS . $name)) {
-                $image = new Image();
-                $image->setArticle($articlei18n->getArticle())
-                        ->setFilename($name);
+                if (move_uploaded_file($file['tmp_name'], $destination . DS . $name)) {
+                    $image = new Image();
+                    $image->setArticle($articlei18n->getArticle())
+                            ->setFilename($name);
 
-                $imagei18n = new Imagei18n();
-                $imagei18n->setTitle($input['alt'])
-                        ->setLanguage($articlei18n->getLanguage())
-                        ->setImage($image)
-                        ->setArticlei18n($articlei18n)
-                        ->setCaption($input['caption']);
+                    $imagei18n = new Imagei18n();
+                    $imagei18n->setTitle($input['alt'])
+                            ->setLanguage($articlei18n->getLanguage())
+                            ->setImage($image)
+                            ->setArticlei18n($articlei18n)
+                            ->setCaption($input['caption']);
 
-                $image->addi18n($imagei18n);
+                    $image->addi18n($imagei18n);
 
-                $app->db->persist($image);
-                $app->db->flush();
+                    $app->db->persist($image);
+                    $app->db->flush();
 
-                $app->flash(ALERT_SUCCESS, gettext('Image added successfuly'));
-                $app->redirect($app->urlFor('admin.article.image.index', array(
-                            'articlei18n' => $articlei18n->getId()
-                )));
+                    $app->flash(ALERT_SUCCESS, gettext('Image added successfuly'));
+                    $app->redirect($app->urlFor('admin.article.image.index', array(
+                                'articlei18n' => $articlei18n->getId()
+                    )));
+                }
+            } catch (AllOfException $ex) {
+                $data['error'] = new Error($ex->findMessages(array(
+                            'image' => gettext('Please upload an valid image'))
+                ));
             }
         }
 
