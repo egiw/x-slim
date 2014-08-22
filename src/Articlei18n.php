@@ -86,7 +86,7 @@ class Articlei18n {
      *
      * @ManyToMany(targetEntity="Stat", cascade={"persist", "remove", "detach"})
      * @JoinTable(
-     *  name="Articlei18n_Stat", 
+     *  name="articlei18n_stat", 
      *  joinColumns={@JoinColumn(name="articlei18n_id", referencedColumnName="id", onDelete="cascade")}, 
      *  inverseJoinColumns={@JoinColumn(name="stat_id", referencedColumnName="id", unique=true, onDelete="cascade")}
      * )
