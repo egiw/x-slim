@@ -29,8 +29,8 @@ $config = array(
     'db' => array(
         'driver' => 'pdo_mysql',
         'user' => 'root',
-        'password' => '',
-        'dbname' => 'xslim'
+        'password' => 'root',
+        'dbname' => 'XSlim'
     )
 );
 
