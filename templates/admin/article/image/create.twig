@@ -27,25 +27,33 @@
                         {% trans %} Article {% endtrans %}
                     </a>
                 </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {% if articlei18n.article.i18n.count > 1 %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <span class="text-info">{{ articlei18n.language|upper }}</span>
+                            <strong>&middot;</strong>
+                            {{ articlei18n.title }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for i18n in articlei18n.article.i18n if i18n is not sameas(articlei18n) %}
+                                <li>
+                                    <a data-pjax href="{{ urlFor('admin.article.image.create', {articlei18n: i18n.id}) }}">
+                                        <span class="text-info">{{ i18n.language|upper }}</span>
+                                        <strong>&middot;</strong>
+                                        {{ i18n.title }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="active">
                         <span class="text-info">{{ articlei18n.language|upper }}</span>
                         <strong>&middot;</strong>
                         {{ articlei18n.title }}
-                        <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu" role="menu">
-                        {% for i18n in articlei18n.article.i18n if i18n is not sameas(articlei18n) %}
-                            <li>
-                                <a data-pjax href="{{ urlFor('admin.article.image.create', {articlei18n: i18n.id}) }}">
-                                    <span class="text-info">{{ i18n.language|upper }}</span>
-                                    <strong>&middot;</strong>
-                                    {{ i18n.title }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </li>
+                    </li>
+                {% endif %}
                 <li>
                     <a data-pjax href="{{ urlFor('admin.article.image.index', {articlei18n: articlei18n.id}) }}">
                         <i class="fa fa-picture-o"></i> 

@@ -29,3 +29,16 @@ function slugify($text) {
 
     return $text;
 }
+
+function uniqueFilename($filename) {
+    $pathinfo = pathinfo($filename);
+    $result = $filename;
+    $i = 0;
+    while (file_exists($result)) {
+        $result = $pathinfo['dirname'] . DS . $pathinfo['filename'] . '-'
+                . $i . '.' . $pathinfo['extension'];
+        $i++;
+    }
+
+    return $result;
+}

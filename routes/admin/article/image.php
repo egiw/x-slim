@@ -6,51 +6,45 @@ use Respect\Validation\Validator as V;
 use Respect\Validation\Exceptions\AllOfException;
 
 $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
-    $articlei18n = $app->db->find('Articlei18n', $route->getParam('articlei18n'));
-    if (null === $articlei18n) {
-        $app->notFound();
-    }
+    $articlei18n = $app->db->find('Articlei18n', $route->getParam('articlei18n'))
+            or $app->notFound();
+
     $route->setParam('articlei18n', $articlei18n);
 }, function() use($app) {
+
     // INDEX
     $app->get('/', function(Articlei18n $articlei18n) use($app) {
         $app->render('admin/article/image/index.twig', array(
             'articlei18n' => $articlei18n
         ));
     })->setName('admin.article.image.index');
+
     // CREATE
     $app->map('/create', function(Articlei18n $articlei18n) use($app) {
-        $data = array();
+        $data = array('articlei18n' => $articlei18n);
         if ($app->request->isPost()) {
             try {
                 // check if user upload wrong file
                 V::create()->contains('image')->setName('image')
-                        ->assert($_FILES);
-                // check whether file type is wrong
-                V::create()->in(array('image/jpeg'))->setName('image')
-                        ->assert($_FILES['type']);
+                        ->assert(array_keys($_FILES));
+                // check whether file type is wrong or empty
+                V::create()->in(array('image/jpeg'))
+                        ->notEmpty()->setName('image')
+                        ->assert($_FILES['image']['type']);
 
                 $file = $_FILES['image'];
                 $data['input'] = $input = $app->request->post();
-                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                $filename = pathinfo($file['name'], PATHINFO_FILENAME);
 
-                if (!empty($input['alt'])) {
-                    $filename = slugify($input['alt']);
-                }
+                // use original filename or the slug of title
+                $filename = empty($input['alt']) ?
+                        $file['name'] :
+                        slugify($input['alt']) . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
 
-                $destination = ROOT . DS . 'images' . DS . 'article';
-                $i = 0;
-                $name = $filename . '.' . $extension;
-                while (file_exists($destination . DS . $name)) {
-                    $name = $filename . '-' . $i . '.' . $extension;
-                    $i++;
-                }
-
-                if (move_uploaded_file($file['tmp_name'], $destination . DS . $name)) {
+                $destination = uniqueFilename(ROOT . DS . 'images' . DS . 'article' . DS . $filename);
+                if (move_uploaded_file($file['tmp_name'], $destination)) {
                     $image = new Image();
                     $image->setArticle($articlei18n->getArticle())
-                            ->setFilename($name);
+                            ->setFilename(pathinfo($destination, PATHINFO_BASENAME));
 
                     $imagei18n = new Imagei18n();
                     $imagei18n->setTitle($input['alt'])
@@ -71,110 +65,109 @@ $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
                 }
             } catch (AllOfException $ex) {
                 $data['error'] = new Error($ex->findMessages(array(
-                            'image' => gettext('Please upload an valid image'))
+                            'image' => gettext('Please upload a valid image'))
                 ));
             }
         }
 
-        $data['articlei18n'] = $articlei18n;
         $app->render('admin/article/image/create.twig', $data);
     })->via('GET', 'POST')->setName('admin.article.image.create');
+
     // DELETE
     $app->delete('/:id', 'ajax', function(Articlei18n $articlei18n, $id) use($app) {
-        $result = false;
-        $app->contentType('application/json');
-        if ($image = $app->db->find('Image', $id)) {
-            /* @var $image Image */
-            $filename = ROOT . DS . 'images' . DS . 'article' . DS . $image->getFilename();
-            if (file_exists($filename)) {
-                @unlink($filename);
-            }
+        $image = $app->db->find('Image', $id) or $app->notFound();
+        /* @var $image Image */
 
-            $app->db->remove($image);
-            $app->db->flush();
-            $result = true;
-        }
-        return $app->response->write($result, true);
+        $app->db->remove($image);
+        $app->db->flush();
+
+        // delete current associated image if any
+        @unlink(ROOT . DS . 'images' . DS . 'article' . DS . $image->getFilename());
+
+        $app->contentType('application/json');
+        return $app->response->write(true);
     })->setName('admin.article.image.delete');
+
     // EDIT
     $app->map('/:id/edit', function(Articlei18n $articlei18n, $id) use($app) {
-        $image = $app->db->find('Image', $id);
+        $image = $app->db->find('Image', $id) or $app->notFound();
+        /* @var $image Image */
+
         $imagei18n = $app->db->getRepository('Imagei18n')->findOneBy(array(
             'image' => $image,
             'articlei18n' => $articlei18n
         ));
 
-        if (null == $imagei18n) {
+        if (null === $imagei18n) {
             $imagei18n = new Imagei18n();
-            $imagei18n
-                    ->setImage($image)
+            $imagei18n->setImage($image)
                     ->setArticlei18n($articlei18n);
         }
 
-        if ($app->request->isPost()) {
-            $file = $_FILES['image'];
-            $title = $app->request->post('alt');
-            $caption = $app->request->post('caption');
-            $destination = ROOT . DS . 'images' . DS . 'article';
-
-            // change existing image
-            if ($file['size'] > 0) {
-                // upload new image
-                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                $filename = empty($title) ? pathinfo($file['name'], PATHINFO_FILENAME) : slugify($title);
-
-                // handle duplicate filename
-                $i = 0;
-                $name = $filename . '.' . $extension;
-                while (file_exists($destination . DS . $name)) {
-                    $name = $filename . '-' . $i . '.' . $extension;
-                    $i++;
-                }
-
-                // move the uploaded file
-                if (move_uploaded_file($file['tmp_name'], $destination . DS . $name)) {
-                    // remove old image
-                    $oldImage = $destination . DS . $imagei18n->getImage()->getFilename();
-                    $imagei18n->getImage()->setFilename($name);
-                    if (file_exists($oldImage))
-                        @unlink($oldImage);
-                }
-            } elseif (!empty($title) && $imagei18n->getTitle() !== $title && $app->request->post('rename')) {
-                // update filename
-                $image = $imagei18n->getImage();
-                $extension = pathinfo($image->getFilename(), PATHINFO_EXTENSION);
-                $filename = slugify($title);
-
-                // handle duplicate filename
-                $i = 0;
-                $name = $filename . '.' . $extension;
-                while (file_exists($destination . DS . $name)) {
-                    $name = $filename . '-' . $i . '.' . $extension;
-                    $i++;
-                }
-
-                // rename the file
-                if (rename($destination . DS . $image->getFilename(), $destination . DS . $name))
-                    $image->setFilename($name);
-            }
-
-            $imagei18n->setTitle($title)
-                    ->setCaption($caption);
-
-            $app->db->persist($imagei18n);
-            $app->db->flush();
-            $app->flash(ALERT_SUCCESS, gettext('Image successfully updated'));
-            $app->redirect($app->urlFor('admin.article.image.index', array(
-                        'articlei18n' => $articlei18n->getId()
-            )));
-        }
-
-        $app->render('admin/article/image/edit.twig', array(
+        $data = array(
             'articlei18n' => $articlei18n,
             'imagei18n' => $imagei18n,
             'image' => $image
-        ));
+        );
+
+        if ($app->request->isPost()) {
+            try {
+                // check if user uploaded a wrong file
+                V::create()->contains('image')->setName('image')
+                        ->assert(array_keys($_FILES));
+
+                $file = $_FILES['image'];
+                $data['input'] = $input = $app->request->post();
+                $dir = ROOT . DS . 'images' . DS . 'article';
+
+                // change existing image
+                if ($file['size'] > 0) {
+                    // check whether file type is wrong
+                    V::create()->in(array('image/jpeg'))->setName('image')
+                            ->assert($_FILES['image']['type']);
+
+                    // upload new image
+                    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                    $filename = empty($input['alt']) ?
+                            $file['name'] :
+                            slugify($input['alt']) . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+
+                    $destination = uniqueFilename($dir . DS . $filename);
+                    // move the uploaded file
+                    if (move_uploaded_file($file['tmp_name'], $destination)) {
+                        // remove old image
+                        @unlink($dir . DS . $imagei18n->getImage()->getFilename());
+                        $imagei18n->getImage()->setFilename(pathinfo($destination, PATHINFO_BASENAME));
+                    }
+                } elseif (!empty($input['alt']) && $app->request->post('rename')) {
+                    // update filename
+                    $image = $imagei18n->getImage();
+                    $newname = uniqueFilename($dir . DS . slugify($input['alt']) .
+                            '.' . pathinfo($image->getFilename(), PATHINFO_EXTENSION));
+
+                    // rename the file
+                    if (rename($dir . DS . $image->getFilename(), $newname)) {
+                        $image->setFilename(pathinfo($newname, PATHINFO_BASENAME));
+                    }
+                }
+
+                $imagei18n->setTitle($input['alt'])
+                        ->setCaption($input['caption']);
+
+                $app->db->persist($imagei18n);
+                $app->db->flush();
+                $app->flash(ALERT_SUCCESS, gettext('Image successfully updated'));
+                $app->redirect($app->urlFor('admin.article.image.index', array(
+                            'articlei18n' => $articlei18n->getId()
+                )));
+            } catch (AllOfException $ex) {
+                $data['error'] = $ex->findMessages(array('image' => gettext('Please upload a valid image')));
+            }
+        }
+
+        $app->render('admin/article/image/edit.twig', $data);
     })->via('GET', 'POST')->setName('admin.article.image.edit');
+
     // DATATABLE
     $app->get('/datatable', 'ajax', function(Articlei18n $articlei18n) use ($app) {
         $app->contentType("application/json");

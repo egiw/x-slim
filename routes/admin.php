@@ -7,12 +7,6 @@
  * Restrict guest user, redirect to auth page
  */
 $app->group("/admin", function() use($app) {
-    // Restrict guess access, redirect to login page
-    if ($app->user->isGuest()) {
-        $app->flash(ALERT_DANGER, gettext("Restricted area, access denied!"));
-        $app->redirect($app->urlFor("auth"), 401);
-    }
-
     // Set language
     $settings = $app->user->getSettings();
     $locale = "en_US.utf8";

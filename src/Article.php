@@ -75,7 +75,7 @@ class Article {
     private $regions;
 
     /**
-     * @OneToMany(targetEntity="Image", mappedBy="article")
+     * @OneToMany(targetEntity="Image", mappedBy="article", cascade={"remove"})
      * @var \Doctrine\Common\Collections\Collection
      */
     private $images;

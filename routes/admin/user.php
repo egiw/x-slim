@@ -3,7 +3,7 @@
 use Respect\Validation\Validator as V;
 use Respect\Validation\Exceptions\AllOfException;
 
-/* @var $app Slim\Slim */
+/* @var $app Application */
 /* @var $em Doctrine\ORM\EntityManager */
 
 /**
@@ -67,7 +67,8 @@ $app->group('/user', function() use($app) {
                         ->setPassword(password_hash($input['password'], PASSWORD_BCRYPT))
                         ->setRole($input['role']);
 
-                $app->db->flush($user);
+                $app->db->persist($user);
+                $app->db->flush();
 
                 $app->flash(ALERT_SUCCESS, gettext('User has been successfully created'));
                 $app->redirect($app->urlFor("admin.user.index"));
