@@ -63,9 +63,9 @@ $app->group('/category', function() use($app) {
                 }
                 $validator->assert($_input);
                 $filename = $category->getTranslations()->first()->getSlug() . '.jpg';
-                $destination = ROOT . '/images/category/' . $filename;
+                $destination = uniqueFilename(UPLOAD_DIR . DS . $filename);
                 if (move_uploaded_file($image['tmp_name'], $destination)) {
-                    $category->setImage($filename);
+                    $category->setImage(basename($destination));
                     $app->db->persist($category);
                     $app->db->flush();
                     $app->flash(ALERT_SUCCESS, gettext('New category created successfully.'));
@@ -148,14 +148,10 @@ $app->group('/category', function() use($app) {
                     }
 
                     if ($upload) {
-                        $old = ROOT . '/images/category/' . $category->getImage();
-                        if (file_exists($old))
-                            unlink($old);
-                        $name = $category->getTranslations()->first()->getSlug() . '.jpg';
-                        $destination = ROOT . '/images/category/' . $name;
-                        if (move_uploaded_file($_FILES['image']['tmp_name'], $destination)) {
-                            $category->setImage($name);
-                        };
+                        @unlink(UPLOAD_DIR . DS . $category->getImage());
+                        $destination = uniqueFilename(UPLOAD_DIR . DS . $category->getImage());
+                        move_uploaded_file($_FILES['image']['tmp_name'], $destination);
+                        $category->setImage(basename($destination));
                     }
 
                     $app->db->persist($category);
@@ -182,7 +178,7 @@ $app->group('/category', function() use($app) {
         if ($category = $app->db->find('Category', $id)) {
             $app->db->remove($category);
             $app->db->flush();
-            $filename = ROOT . '/images/category/' . $category->getImage();
+            $filename = UPLOAD_DIR . DS . $category->getImage();
             if (file_exists($filename))
                 unlink($filename);
             $app->flash(ALERT_SUCCESS, gettext('Category deleted successfully'));
