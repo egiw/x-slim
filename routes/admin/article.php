@@ -19,7 +19,8 @@ $messages = array(
     'title.notExists' => gettext('Title already exists'),
     'content.notEmpty' => gettext('Content cannot be empty'),
     'content.length' => gettext('Content must be at least 160 characters'),
-    'status.in' => gettext('Invalid status')
+    'status.in' => gettext('Invalid status'),
+    'image.notEmpty' => gettext('Please upload a featured image')
 );
 
 // manage article
@@ -39,6 +40,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
      */
     $app->map('/create', function() use($app, $validator, $messages) {
         $data = array();
+        // Handle Post
         if ($app->request->isPost()) {
             try {
                 $data['input'] = $input = $app->request->post();
@@ -55,12 +57,18 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                 // validation
                 $validator
                         ->key('title', V::create()->callback($notExists)->setName('notExists'))
+                        ->key('image', V::create()->notEmpty())
                         ->assert($input);
+
+                // save dataURI to JPG
+                $filename = uniqueFilename(UPLOAD_DIR . DS . slugify($input['title']) . '.jpg');
+                file_put_contents($filename, file_get_contents($input['image']));
 
                 $article = new Article();
                 $article->setStatus($input['status'])
                         ->setAuthor($app->user)
-                        ->setCreatedAt(new DateTime('now'));
+                        ->setCreatedAt(new DateTime('now'))
+                        ->setFeaturedImage(basename($filename));
 
                 if ($categories = $app->request->post('categories')) {
                     foreach ($categories as $key) {
@@ -108,16 +116,11 @@ $app->group('/article', function() use ($app, $validator, $messages) {
             }
         }
 
-        $data['categories'] = $app->db->getRepository('Category')->findBy(array(
-            'parent' => null
-        ));
-
-        $data['regions'] = $app->db->getRepository('Region')->findBy(array(
-            'parent' => 0
-        ));
-
+        $data['categories'] = $app->db->getRepository('Category')
+                ->findBy(array('parent' => null));
+        $data['regions'] = $app->db->getRepository('Region')
+                ->findBy(array('parent' => 0));
         $data['related'] = $app->db->getRepository('Article')->findAll();
-
         $app->render('admin/article/create.twig', $data);
     })->via("GET", "POST")->name('admin.article.create');
 
@@ -154,6 +157,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                 $validator->key('title', V::create()->callback($notExists)->setName('notExists'))
                         ->assert($input);
 
+                $oldTitle = $i18n->getTitle();
                 $i18n->setTitle($input['title'])
                         ->setSlug(Articlei18n::slugify($input['title']))
                         ->setContent($input['content'])
@@ -181,6 +185,15 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                         ->setCategories($categories)
                         ->setRegions($regions)
                         ->setRelated($related);
+
+                // upload new image and overwrite old image
+                if (!empty($input['image'])) {
+                    // upload new image and overwrite old image
+                    if ($fp = fopen(UPLOAD_DIR . DS . $article->getFeaturedImage(), 'w+')) {
+                        fwrite($fp, file_get_contents($input['image']));
+                        fclose($fp);
+                    }
+                }
 
                 $app->db->flush(array($article, $i18n));
                 $app->flash('succsss', gettext('Article has successfully updated'));
@@ -387,10 +400,9 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     slugify($caption) . '.' . pathinfo($image['name'], PATHINFO_EXTENSION) :
                     $image['name'];
 
-            $destination = uniqueFilename(ROOT . DS . 'images' . DS . 'article' . DS . $filename);
+            $destination = uniqueFilename(UPLOAD_DIR . DS . $filename);
             if (move_uploaded_file($image['tmp_name'], $destination)) {
-                return $app->response->write('/images/article/'
-                                . pathinfo($destination, PATHINFO_BASENAME), true);
+                return $app->response->write('/images/' . basename($destination), true);
             }
         }
         $app->halt(400);

@@ -17,6 +17,7 @@ define('ALERT_INFO', 'alert-info');
 
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
+define('UPLOAD_DIR', ROOT . DS . 'images');
 
 define('ASD', ROOT . 'test');
 

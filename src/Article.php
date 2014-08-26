@@ -87,6 +87,12 @@ class Article {
     private $related;
 
     /**
+     * @Column(type="string", length=255, unique=false, nullable=false)
+     * @var string
+     */
+    private $featuredImage;
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -351,7 +357,18 @@ class Article {
 
         return $this;
     }
+    
+    public function getFeaturedImage() {
+        return $this->featuredImage;
+    }
 
+    public function setFeaturedImage($featuredImage) {
+        $this->featuredImage = $featuredImage;
+        
+        return $this;
+    }
+
+    
     /**
      * Check if article belongs to user
      * 

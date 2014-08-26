@@ -16,6 +16,7 @@
             <p class="blog-post-meta">{{ article.createdAt|date('F d, Y')}} by <a href="#">{{ article.author.fullname }}</a></p>
             <hr />
             <header>
+                <img src="{{ siteUrl('images/' ~ article.article.featuredImage) }}" alt="" />
                 <strong>
                     <a data-pjax href="{{ urlFor('article.archive', params) }}">
                         {{ article.title }}

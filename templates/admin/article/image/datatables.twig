@@ -3,7 +3,7 @@
     {% for image in data %}
         <aaData>
             <preview>
-                <![CDATA[<img src="{{ siteUrl('timthumb.php?src=images/article/' ~ image.filename ) }}" />]]>
+                <![CDATA[<img src="{{ siteUrl('timthumb.php?src=images/' ~ image.filename ) }}" />]]>
             </preview>
             <filename>{{ image.filename }}</filename>
             <title>{{ image.title }}</title>

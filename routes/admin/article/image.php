@@ -40,11 +40,11 @@ $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
                         $file['name'] :
                         slugify($input['alt']) . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
 
-                $destination = uniqueFilename(ROOT . DS . 'images' . DS . 'article' . DS . $filename);
+                $destination = uniqueFilename(UPLOAD_DIR . DS . $filename);
                 if (move_uploaded_file($file['tmp_name'], $destination)) {
                     $image = new Image();
                     $image->setArticle($articlei18n->getArticle())
-                            ->setFilename(pathinfo($destination, PATHINFO_BASENAME));
+                            ->setFilename(basename($destination));
 
                     $imagei18n = new Imagei18n();
                     $imagei18n->setTitle($input['alt'])
@@ -82,7 +82,7 @@ $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
         $app->db->flush();
 
         // delete current associated image if any
-        @unlink(ROOT . DS . 'images' . DS . 'article' . DS . $image->getFilename());
+        @unlink(UPLOAD_DIR . DS . $image->getFilename());
 
         $app->contentType('application/json');
         return $app->response->write(true);
@@ -118,7 +118,6 @@ $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
 
                 $file = $_FILES['image'];
                 $data['input'] = $input = $app->request->post();
-                $dir = ROOT . DS . 'images' . DS . 'article';
 
                 // change existing image
                 if ($file['size'] > 0) {
@@ -132,21 +131,21 @@ $app->group('/:articlei18n/image', function(\Slim\Route $route) use($app) {
                             $file['name'] :
                             slugify($input['alt']) . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
 
-                    $destination = uniqueFilename($dir . DS . $filename);
+                    $destination = uniqueFilename(UPLOAD_DIR . DS . $filename);
                     // move the uploaded file
                     if (move_uploaded_file($file['tmp_name'], $destination)) {
                         // remove old image
-                        @unlink($dir . DS . $imagei18n->getImage()->getFilename());
+                        @unlink(UPLOAD_DIR . DS . $imagei18n->getImage()->getFilename());
                         $imagei18n->getImage()->setFilename(pathinfo($destination, PATHINFO_BASENAME));
                     }
                 } elseif (!empty($input['alt']) && $app->request->post('rename')) {
                     // update filename
                     $image = $imagei18n->getImage();
-                    $newname = uniqueFilename($dir . DS . slugify($input['alt']) .
+                    $newname = uniqueFilename(UPLOAD_DIR . DS . slugify($input['alt']) .
                             '.' . pathinfo($image->getFilename(), PATHINFO_EXTENSION));
 
                     // rename the file
-                    if (rename($dir . DS . $image->getFilename(), $newname)) {
+                    if (rename(UPLOAD_DIR . DS . $image->getFilename(), $newname)) {
                         $image->setFilename(pathinfo($newname, PATHINFO_BASENAME));
                     }
                 }
