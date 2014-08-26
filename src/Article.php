@@ -81,12 +81,19 @@ class Article {
     private $images;
 
     /**
+     * @ManyToMany(targetEntity="Article")
+     * @var Doctrine\Common\Collections\Collection 
+     */
+    private $related;
+
+    /**
      * Constructor
      */
     public function __construct() {
         $this->i18n = new \Doctrine\Common\Collections\ArrayCollection();
         $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
         $this->regions = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->related = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -314,6 +321,22 @@ class Article {
 
     public function setImages(\Doctrine\Common\Collections\Collection $images) {
         $this->images = $images;
+
+        return $this;
+    }
+
+    public function getRelated() {
+        return $this->related;
+    }
+
+    public function setRelated(Doctrine\Common\Collections\Collection $related) {
+        $this->related = $related;
+
+        return $this;
+    }
+
+    public function addRelated(Article $article) {
+        $this->related->add($article);
 
         return $this;
     }

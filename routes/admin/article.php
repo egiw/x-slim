@@ -78,6 +78,14 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     }
                 }
 
+                if ($related = $app->request->post('related')) {
+                    foreach ($related as $articleId) {
+                        if ($relatedArticle = $app->db->find('Article', $articleId)) {
+                            $article->addRelated($relatedArticle);
+                        }
+                    }
+                }
+
                 $i18n = new Articlei18n();
                 $i18n
                         ->setLanguage($input['language'])
@@ -107,6 +115,8 @@ $app->group('/article', function() use ($app, $validator, $messages) {
         $data['regions'] = $app->db->getRepository('Region')->findBy(array(
             'parent' => 0
         ));
+
+        $data['related'] = $app->db->getRepository('Article')->findAll();
 
         $app->render('admin/article/create.twig', $data);
     })->via("GET", "POST")->name('admin.article.create');
@@ -154,6 +164,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                 $article = $i18n->getArticle();
                 $categories = new Doctrine\Common\Collections\ArrayCollection();
                 $regions = new \Doctrine\Common\Collections\ArrayCollection();
+                $related = new \Doctrine\Common\Collections\ArrayCollection();
                 foreach ($app->request->post('categories', array()) as $key) {
                     if ($category = $app->db->find('Category', $key))
                         $categories->add($category);
@@ -162,12 +173,17 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     if ($region = $app->db->find('Region', $key))
                         $regions->add($region);
                 }
+                foreach ($app->request->post('related', array()) as $key) {
+                    if ($relatedArticle = $app->db->find('Article', $key))
+                        $related->add($relatedArticle);
+                }
                 $article->setUpdatedAt(new DateTime('now'))
                         ->setCategories($categories)
-                        ->setRegions($regions);
+                        ->setRegions($regions)
+                        ->setRelated($related);
 
                 $app->db->flush(array($article, $i18n));
-                $app->flash('succsss', 'Article has successfully updated');
+                $app->flash('succsss', gettext('Article has successfully updated'));
                 $app->redirect($app->urlFor("admin.article.index"));
             } catch (InvalidArgumentException $ex) {
                 $data['error'] = new Error($ex->findMessages($messages));
@@ -181,6 +197,8 @@ $app->group('/article', function() use ($app, $validator, $messages) {
         $data['regions'] = $app->db->getRepository('Region')->findBy(array(
             'parent' => 0
         ));
+
+        $data['related'] = $app->db->getRepository('Article')->findAll();
 
         $app->render('admin/article/edit.twig', $data);
     })->via("GET", "POST")->name("admin.article.edit");

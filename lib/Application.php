@@ -11,7 +11,7 @@ use phpbrowscap\Browscap;
  * @property Stat $stat Application statistic object
  * @property mixed $browser
  */
-class Application extends \Slim\Slim {
+class Application extends Slim\Slim {
 
     public function __construct(array $userSettings = array()) {
         parent::__construct($userSettings);
