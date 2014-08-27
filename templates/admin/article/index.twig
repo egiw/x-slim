@@ -27,6 +27,7 @@
             </div>
         </div>
     </div>
+
     <div class="row">
         <div class="col-lg-12">
             <ol class="breadcrumb">
@@ -71,8 +72,7 @@
                     </a>
                 </li>
                 <li>
-                    <a data-pjax href="{{ urlFor('admin.article.create') }}" 
-                       data-placement="left">
+                    <a data-pjax href="{{ urlFor('admin.article.create') }}">
                         <i class="fa fa-plus"></i>
                         {% trans %} Add New {% endtrans %}
                     </a>
@@ -241,12 +241,12 @@
             (loadCountInfo = function() {
                 var type = $('input[name=type]:radio:checked').val();
                 $.get('{{ urlFor('admin.article.count') }}', {type: type}, function(data) {
-                        $("#badge-published").text(data.publish);
-                        $("#badge-draft").text(data.draft);
-                        $("#badge-pending").text(data.pending);
-                        $("#badge-archived").text(data.archive);
-                    })
-                })();
+                    $("#badge-published").text(data.publish);
+                    $("#badge-draft").text(data.draft);
+                    $("#badge-pending").text(data.pending);
+                    $("#badge-archived").text(data.archive);
+                })
+            })();
         {% endset %}
         {{ script|pack|raw }}
     </script>

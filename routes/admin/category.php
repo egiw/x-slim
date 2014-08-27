@@ -14,6 +14,7 @@ $app->group('/category', function() use($app) {
             'categories' => $categories
         ));
     })->setName('admin.category.index');
+    
     $app->map('/create(/:pid)', function($pid = null) use($app) {
         $data = array('pid' => $pid);
         if ($app->request->isPost()) {

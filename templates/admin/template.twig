@@ -15,6 +15,7 @@
                 'lib/jstree/jstree.min.css',
                 'lib/chosen/chosen.min.css',
                 'lib/jcrop/jquery.Jcrop.min.css',
+                'lib/bootstrap-datepicker/css/datepicker.css',
                 'css/admin.css'
             ])
         }}
@@ -63,6 +64,12 @@
                             </a>
                         </li>
                         {% if _user.admin %}
+                            <li>
+                                <a data-pjax href="{{ urlFor('admin.event.index') }}">
+                                    <i class="fa fa-calendar"></i>
+                                    {% trans %} Event {% endtrans %}
+                                </a>
+                            </li>
                             <li>
                                 <a data-pjax 
                                    href="{{ urlFor('admin.user.index') }}">
@@ -126,6 +133,7 @@
                 'lib/jstree/jstree.min.js',
                 'lib/chosen/chosen.jquery.min.js',
                 'lib/jcrop/jquery.Jcrop.min.js',
+                'lib/bootstrap-datepicker/js/bootstrap-datepicker.js',
                 'js/admin.js'
              ]) 
         }}
@@ -164,7 +172,7 @@
                         $.ajax({
                             data: data,
                             type: 'post',
-                            url: '{{ urlFor('admin.article.upload') }}',
+                            url: '{{ urlFor('admin.api.upload') }}',
                             cache: false,
                             contentType: false,
                             processData: false,

@@ -93,6 +93,12 @@ class Article {
     private $featuredImage;
 
     /**
+     * @ManyToMany(targetEntity="Event", inversedBy="relatedArticles")
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $relatedEvents;
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -357,18 +363,17 @@ class Article {
 
         return $this;
     }
-    
+
     public function getFeaturedImage() {
         return $this->featuredImage;
     }
 
     public function setFeaturedImage($featuredImage) {
         $this->featuredImage = $featuredImage;
-        
+
         return $this;
     }
 
-    
     /**
      * Check if article belongs to user
      * 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datatable>
+    {% for event in data %}
+        <aaData>
+            <id>{{ event.id }}</id>
+            <title>{{ event.title }}</title>
+            <start>{{ event.start|date('d/m/Y') }}</start>
+            <end>{{ event.end|date('d/m/Y') }}</end>
+            <control>
+                <![CDATA[
+                <div class="btn-group">
+                    <a data-pjax href="#" class="btn btn-default btn-sm">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <a data-pjax href="#" class="btn btn-danger btn-sm">
+                        <i class="fa fa-trash-o"></i>
+                    </a>
+                </div>
+                ]]>
+            </control>
+        </aaData>
+    {% endfor %}
+</datatable>

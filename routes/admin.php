@@ -45,6 +45,8 @@ $app->group("/admin", function() use($app) {
 
     include 'admin/account.php';
     include 'admin/article.php';
+    include 'admin/event.php';
     include 'admin/category.php';
+    include 'admin/api.php';
     include 'admin/user.php';
 });
