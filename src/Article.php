@@ -93,7 +93,7 @@ class Article {
     private $featuredImage;
 
     /**
-     * @ManyToMany(targetEntity="Event", inversedBy="relatedArticles")
+     * @ManyToMany(targetEntity="Event", mappedBy="relatedArticles")
      * @var \Doctrine\Common\Collections\Collection
      */
     private $relatedEvents;

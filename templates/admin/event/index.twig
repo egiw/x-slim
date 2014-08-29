@@ -31,6 +31,7 @@
                     {% trans %} Event {% endtrans %}
                 </li>
             </ol>
+            {% include 'flash.twig' %}
         </div>
     </div>
 
@@ -46,12 +47,24 @@
                 </li>
             </ul>
 
-            <table id="tbl-event" class="table table-condensed">
+            <table id="tbl-event" class="table table-condensed table-hover">
+                <colgroup>
+                    <col width="5%" />
+                    <col width="15%" />
+                    <col width="25%" />
+                    <col width="5%" />
+                    <col width="5%" />
+                    <col width="5%" />
+                    <col width="15%" />
+                </colgroup>
                 <thead>
                     <tr>
-                        <th>Title</th>
-                        <th>Start</th>
-                        <th>End</th>
+                        <th></th>
+                        <th>{% trans %} Date {% endtrans %}</th>
+                        <th>{% trans %} Title {% endtrans %}</th>
+                        <th>{% trans %} Created {% endtrans %}</th>
+                        <th>{% trans %} Last Modified {% endtrans %}</th>
+                        <th><i class="fa fa-eye"></i></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -67,13 +80,64 @@
             processing: false,
             ordering: true,
             lengthChange: true,
+            stateSave: true,
             ajax: '{{ urlFor('admin.event.datatables') }}',
             columns: [
+                {
+                    "class": 'details-control',
+                    "orderable": false,
+                    "data": null,
+                    "defaultContent": ''
+                },
+                {data: 'date'},
                 {data: 'title'},
-                {data: 'start'},
-                {data: 'end'},
-                {data: 'control'}
-            ]
+                {data: 'created'},
+                {data: 'lastModified'},
+                {data: 'views'},
+                {
+                    data: 'control',
+                    orderable: false
+                }
+            ],
+            createdRow: function(tr, data, index) {
+                var row = $tblEvent.row(tr);
+                row.child($(data.translations));
+            }
         });
+
+        // Add event listener for opening and closing details
+        $('#tbl-event tbody').on('click', 'td.details-control', function() {
+            var tr = $(this).closest('tr');
+            var row = $tblEvent.row(tr);
+
+            if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            }
+            else {
+                // Open this row
+                row.child.show();
+                tr.addClass('shown');
+            }
+        });
+
+        function _delete(url) {
+            var msg = '<h4 class="text-danger">{% trans %} Are you sure want to delete this event? {% endtrans %}</h4>';
+            bootbox.confirm(msg, function(result) {
+                if (result) {
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        data: {_METHOD: 'DELETE'},
+                        success: function(result) {
+                            if (result) {
+                                $tblEvent.ajax.reload();
+                            }
+                        }
+                    });
+                }
+            });
+        }
     </script>
 {% endblock %}

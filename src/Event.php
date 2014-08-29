@@ -27,13 +27,13 @@ class Event {
     private $end;
 
     /**
-     * @OneToMany(targetEntity="Eventi18n", mappedBy="event", cascade={"persist"}, orphanRemoval=true)
-     * @var \Doctrine\Common\Collections\Collection
+     * @OneToOne(targetEntity="Eventi18n", inversedBy="event", cascade={"persist", "remove"})
+     * @var Eventi18n
      */
-    private $i18n;
+    private $detail;
 
     /**
-     * @ManyToMany(targetEntity="Article", mappedBy="relatedEvents")
+     * @ManyToMany(targetEntity="Article", inversedBy="relatedEvents")
      * @var \Doctrine\Common\Collections\Collection
      */
     private $relatedArticles;
@@ -55,12 +55,12 @@ class Event {
         return $this->end;
     }
 
-    public function getI18n() {
-        return $this->i18n;
-    }
-
     public function getRelatedArticles() {
         return $this->relatedArticles;
+    }
+
+    public function getDetail() {
+        return $this->detail;
     }
 
     public function setStart(DateTime $start) {
@@ -75,18 +75,6 @@ class Event {
         return $this;
     }
 
-    public function setI18n(\Doctrine\Common\Collections\Collection $i18n) {
-        $this->i18n = $i18n;
-
-        return $this;
-    }
-
-    public function addi18n(Eventi18n $i18n) {
-        $this->i18n->add($i18n);
-
-        return $this;
-    }
-
     public function setRelatedArticles(\Doctrine\Common\Collections\Collection $relatedArticles) {
         $this->relatedArticles = $relatedArticles;
 
@@ -95,6 +83,12 @@ class Event {
 
     public function addRelatedArticle(Article $article) {
         $this->relatedArticles->add($article);
+
+        return $this;
+    }
+
+    public function setDetail(Eventi18n $detail) {
+        $this->detail = $detail;
 
         return $this;
     }

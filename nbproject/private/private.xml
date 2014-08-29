@@ -2,6 +2,16 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/event/datatables.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/create.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/edit.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/event/create.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/routes/admin/event.php</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/event/index.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/event/translate.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/translate.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/src/Eventi18n.php</file>
+        </group>
     </open-files>
 </project-private>

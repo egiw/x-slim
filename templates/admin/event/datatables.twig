@@ -3,21 +3,137 @@
     {% for event in data %}
         <aaData>
             <id>{{ event.id }}</id>
-            <title>{{ event.title }}</title>
-            <start>{{ event.start|date('d/m/Y') }}</start>
-            <end>{{ event.end|date('d/m/Y') }}</end>
+            <title>
+                <![CDATA[
+                <strong>{{ event.detail.title }}</strong>
+                <div>
+                    {% for i18n in event.detail.i18n %}
+                        <small>
+                            <a data-pjax class="label label-info" 
+                               href="{{ urlFor('admin.event.translate', {id: event.id, language: i18n.language}) }}" 
+                               title="{{ translations[i18n.language] }}">
+                                {{i18n.language|capitalize}}</a>
+                        </small>
+                    {% endfor %}
+                </div>
+                ]]>
+            </title>
+            <date>
+                <![CDATA[
+                {{ event.start|date('d/m/Y') }} &horbar; {{ event.end|date('d/m/Y') }}
+                ]]>
+            </date>
+            <views>
+                <![CDATA[
+                <span class="badge badge-info">{{ event.detail.stats.count }}</span>
+                ]]>
+            </views>
+            <created>
+                <![CDATA[
+                <div>
+                    <small>on</small>
+                    {{ event.detail.createdAt|date('d/m/Y') }}
+                </div>
+                <div>
+                    <small>by</small>
+                    {{ event.detail.createdBy.username }}
+                </div>
+                ]]>
+            </created>
+            <lastModified>
+                <![CDATA[
+                {% if event.detail.updatedAt is not null %}
+                    <div>
+                        <small>on</small>
+                        {{ event.detail.updatedAt|date('d/m/Y') }}
+                    </div>
+                    <div>
+                        <small>by</small>
+                        {{ event.detail.updatedBy.username }}
+                    </div>
+                {% endif %}
+                ]]>
+            </lastModified>
             <control>
                 <![CDATA[
                 <div class="btn-group">
-                    <a data-pjax href="#" class="btn btn-default btn-sm">
+                    <a data-pjax href="{{ urlFor('admin.event.edit', {id: event.id}) }}" 
+                       class="btn btn-default btn-sm" title="{% trans %} Edit {% endtrans %}">
                         <i class="fa fa-edit"></i>
                     </a>
-                    <a data-pjax href="#" class="btn btn-danger btn-sm">
+                    <a href="javascript:_delete('{{urlFor('admin.event.delete', {id: event.id})}}')" class="btn btn-danger btn-sm"
+                       title="{% trans %} Delete {% endtrans %}">
                         <i class="fa fa-trash-o"></i>
                     </a>
                 </div>
                 ]]>
             </control>
+            <translations>
+                {% spaceless %}
+                    <![CDATA[
+                    {% set translated = [] %}
+                    {% for i18n in event.detail.i18n %}
+                        {% set translated = translated|merge([i18n.language]) %}
+                        <tr>
+                            <td>{{ translations[i18n.language]|capitalize }}</td>
+                            <td></td>
+                            <td>
+                                <strong>{{ i18n.title }}</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <small>on</small>
+                                    {{ i18n.createdAt|date('d/m/Y') }}
+                                </div>
+                                <div>
+                                    <small>by</small>
+                                    {{ i18n.createdBy.username }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if i18n.updatedAt is not null %}
+                                    <div>
+                                        <small>on</small>
+                                        {{ i18n.updatedAt|date('d/m/Y') }}
+                                    </div>
+                                    <div>
+                                        <small>by</small>
+                                        {{ i18n.updatedBy.username }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-info">{{ i18n.stats.count }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a data-pjax href="{{ urlFor('admin.event.translate', {id: event.id, language: i18n.language}) }}" 
+                                       class="btn btn-default btn-sm" title="{% trans %} Edit {% endtrans %}">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <a data-pjax href="javascript:_delete('{{ urlFor('admin.event.delete', {id: event.id, language: i18n.language}) }}')" class="btn btn-danger btn-sm"
+                                       title="{% trans %} Delete {% endtrans %}">
+                                        <i class="fa fa-trash-o"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for key, language in translations if key not in translated %}
+                        <tr>
+                            <td>{{ language }}</td>
+                            <td colspan="5"></td>
+                            <td>
+                                <a data-pjax href="{{ urlFor('admin.event.translate', {id: event.id, language: key}) }}" 
+                                   class="btn btn-default" title="{% trans %} Translate {% endtrans %}">
+                                    <i class="fa fa-language"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    ]]>
+                {% endspaceless %}
+            </translations>
         </aaData>
     {% endfor %}
 </datatable>

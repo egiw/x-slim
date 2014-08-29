@@ -29,10 +29,10 @@ class Eventi18n {
      * @Column(type="string", length=2)
      * @var string
      */
-    private $language = "en";
+    private $language = "id";
 
     /**
-     * @ManyToOne(targetEntity="Event", inversedBy="i18n")
+     * @OneToOne(targetEntity="Event", mappedBy="detail", cascade="persist")
      * @var Event
      */
     private $event;
@@ -60,6 +60,18 @@ class Eventi18n {
      * @var DateTime
      */
     private $updatedAt;
+
+    /**
+     * @ManyToOne(targetEntity="Eventi18n", inversedBy="i18n", cascade={"persist"}, fetch="LAZY")
+     * @var Eventi18n
+     */
+    private $base;
+
+    /**
+     * @OneToMany(targetEntity="Eventi18n", mappedBy="base", cascade={"persist"}, orphanRemoval=true)
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $i18n;
 
     /**
      * @ManyToMany(targetEntity="Stat", cascade={"persist", "remove", "detach"})
@@ -116,6 +128,14 @@ class Eventi18n {
         return $this->stats;
     }
 
+    public function getBase() {
+        return $this->base;
+    }
+
+    public function getI18n() {
+        return $this->i18n;
+    }
+
     public function setTitle($title) {
         $this->title = $title;
 
@@ -166,6 +186,24 @@ class Eventi18n {
 
     public function setStats(\Doctrine\Common\Collections\Collection $stats) {
         $this->stats = $stats;
+
+        return $this;
+    }
+
+    public function setBase(Eventi18n $base) {
+        $this->base = $base;
+
+        return $this;
+    }
+
+    public function setI18n(\Doctrine\Common\Collections\Collection $i18n) {
+        $this->i18n = $i18n;
+
+        return $this;
+    }
+
+    public function addI18n(Eventi18n $i18n) {
+        $this->i18n->add($i18n);
 
         return $this;
     }

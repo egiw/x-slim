@@ -1,6 +1,6 @@
 {% extends template %}
 
-{% set title = "Add Event"|trans %}
+{% set title = "Translate Event"|trans %}
 
 {% block content %}
 
@@ -8,8 +8,8 @@
     <div class="row">
         <div class="col-lg-12">
             <h1>
-                <i class="fa fa-plus"></i>
-                {% trans %} Add Event {% endtrans %}
+                <i class="fa fa-language"></i>
+                {% trans %} Translate Event {% endtrans %}
             </h1>
         </div>
     </div>
@@ -31,8 +31,8 @@
                     </a>
                 </li>
                 <li class="active">
-                    <i class="fa fa-plus"></i>
-                    {% trans %} Add New {% endtrans %}
+                    <i class="fa fa-language"></i>
+                    {% trans %} translate {% endtrans %}
                 </li>
             </ol>
         </div>
@@ -40,24 +40,40 @@
 
     <div class="row">
         <div class="col-lg-12">
-            <form data-pjax action="{{ urlFor('admin.event.create') }}"
+
+            <form data-pjax action="{{ urlFor('admin.event.translate', {id: event.id, language: i18n.language|default(language)}) }}"
                   class="form form-horizontal" method="post">
 
-                {#                DATE#}
-                <div class="form-group {% if error.start or error.end %} has-error {% endif %}">
-                    <label for="input-start" class="control-label col-sm-2">
-                        {% trans %} Date {% endtrans %}
+                <div class="form-group">
+                    <label class="control-label col-sm-2">Original</label>
+                    <div class="col-sm-10">
+                        <div class="panel-group" id="translations" style="margin-bottom: 0">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="translations" href="#collpase1">
+                                            {{ event.detail.title }}
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="collpase1" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        {{ event.detail.description|raw }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="select-language" class="control-label col-sm-2">
+                        {% trans %} Language {% endtrans %}
                     </label>
                     <div class="col-sm-7">
-                        <div class="input-daterange input-group" id="input-date">
-                            <input type="text" name="start" id="input-start" value="{{ input['start'] }}"
-                                   class="form-control" placeholder="{% trans %} Start {% endtrans %}"/>
-                            <span class="input-group-addon">{% trans %} to {% endtrans %}</span>
-                            <input type="text" name="end" id="input-end" class="form-control"
-                                   value="{{ input['end'] }}"
-                                   placeholder="{% trans %} End {% endtrans %}"/>
-                        </div>
-                        {{ html.error(error.start|default(error.end)) }}
+                        <p class="form-control-static">
+                            {{ translations[i18n.language]|default(translations[language]) }}
+                        </p>
                     </div>
                 </div>
 
@@ -68,35 +84,20 @@
                     </label>
                     <div class="col-sm-7">
                         <input type="text" class="form-control" id="input-title" 
-                               value="{{ input['title'] }}" name="title" />
+                               value="{{ input['title']|default(i18n.title) }}" name="title" />
                         {{ html.error(error.title) }}
                     </div>
                 </div>
 
                 {#                DESCRIPTION#}
-                <div class="form-group">
+                <div class="form-group {% if error.description %} has-error {% endif %}">
                     <label for="input-description" class="control-label col-sm-2">
                         {% trans %} Description {% endtrans %}
                     </label>
                     <div class="col-sm-10">
                         <textarea name="description" id="input-description" cols="30" 
-                                  rows="10" class="form-control">{{ input['description'] }}</textarea>
-                    </div>
-                </div>
-
-                {#                    RELATED ARTICLES#}
-                <div class="form-group">
-                    <label for="select-related-articles" class="control-label col-sm-2">
-                        {% trans %} Related Articles {% endtrans %}
-                    </label>
-                    <div class="col-sm-10">
-                        <select name="relatedArticles[]" id="select-related-articles" multiple class="form-control">
-                            {% for article in articles %}
-                                <option value="{{ article.id }}" {% if article.id in input['relatedArticles'] %} selected {% endif %}>
-                                    {{ article.i18n.first.title }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                                  rows="10" class="form-control">{{ input['description']|default(i18n.description) }}</textarea>
+                        {{ html.error(error.description) }}
                     </div>
                 </div>
 

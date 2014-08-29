@@ -1,6 +1,6 @@
 {% extends template %}
 
-{% set title = "Add Event"|trans %}
+{% set title = "Edit Event"|trans %}
 
 {% block content %}
 
@@ -8,8 +8,8 @@
     <div class="row">
         <div class="col-lg-12">
             <h1>
-                <i class="fa fa-plus"></i>
-                {% trans %} Add Event {% endtrans %}
+                <i class="fa fa-edit"></i>
+                {% trans %} Edit Event {% endtrans %}
             </h1>
         </div>
     </div>
@@ -31,8 +31,8 @@
                     </a>
                 </li>
                 <li class="active">
-                    <i class="fa fa-plus"></i>
-                    {% trans %} Add New {% endtrans %}
+                    <i class="fa fa-edit"></i>
+                    {% trans %} Edit Event{% endtrans %}
                 </li>
             </ol>
         </div>
@@ -40,7 +40,7 @@
 
     <div class="row">
         <div class="col-lg-12">
-            <form data-pjax action="{{ urlFor('admin.event.create') }}"
+            <form data-pjax action="{{ urlFor('admin.event.edit', {id: event.id}) }}"
                   class="form form-horizontal" method="post">
 
                 {#                DATE#}
@@ -50,11 +50,11 @@
                     </label>
                     <div class="col-sm-7">
                         <div class="input-daterange input-group" id="input-date">
-                            <input type="text" name="start" id="input-start" value="{{ input['start'] }}"
+                            <input type="text" name="start" id="input-start" value="{{ input['start']|default(event.start|date('d/m/Y')) }}"
                                    class="form-control" placeholder="{% trans %} Start {% endtrans %}"/>
                             <span class="input-group-addon">{% trans %} to {% endtrans %}</span>
                             <input type="text" name="end" id="input-end" class="form-control"
-                                   value="{{ input['end'] }}"
+                                   value="{{ input['end']|default(event.end|date('d/m/Y')) }}"
                                    placeholder="{% trans %} End {% endtrans %}"/>
                         </div>
                         {{ html.error(error.start|default(error.end)) }}
@@ -68,7 +68,7 @@
                     </label>
                     <div class="col-sm-7">
                         <input type="text" class="form-control" id="input-title" 
-                               value="{{ input['title'] }}" name="title" />
+                               value="{{ input['title']|default(event.detail.title) }}" name="title" />
                         {{ html.error(error.title) }}
                     </div>
                 </div>
@@ -80,7 +80,9 @@
                     </label>
                     <div class="col-sm-10">
                         <textarea name="description" id="input-description" cols="30" 
-                                  rows="10" class="form-control">{{ input['description'] }}</textarea>
+                                  rows="10" class="form-control">
+                            {{ input['description']|default(event.detail.description) }}
+                        </textarea>
                     </div>
                 </div>
 
@@ -92,8 +94,17 @@
                     <div class="col-sm-10">
                         <select name="relatedArticles[]" id="select-related-articles" multiple class="form-control">
                             {% for article in articles %}
-                                <option value="{{ article.id }}" {% if article.id in input['relatedArticles'] %} selected {% endif %}>
-                                    {{ article.i18n.first.title }}
+                                {% set selected %}
+                                    {% if input['relatedArticles'] is not empty %}
+                                        {% if article.id in input['relatedArticles'] %}
+                                            selected
+                                        {% endif %}
+                                    {% elseif event.relatedArticles.contains(article) %}
+                                        selected
+                                    {% endif %}
+                                {% endset %}
+                                <option value="{{ article.id }}" {{ selected }}>
+                                    {{ article.i18n.first.title }} 
                                 </option>
                             {% endfor %}
                         </select>

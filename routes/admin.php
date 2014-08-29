@@ -6,7 +6,7 @@
  * Administrator section
  * Restrict guest user, redirect to auth page
  */
-$app->group("/admin", function() use($app) {
+$app->group("/admin", function(Slim\Route $route) use($app) {
     if ($app->user->isGuest()) {
         $app->flash(ALERT_DANGER, gettext("Restricted area, access denied!"));
         $app->redirect($app->urlFor("auth"), 401);
@@ -37,6 +37,13 @@ $app->group("/admin", function() use($app) {
         "id" => gettext("Indonesian"),
         "en" => gettext("English")
     ));
+
+    $app->translations = $translations = array(
+        'en' => 'English',
+        'ru' => 'Rusian'
+    );
+
+    $app->view->set('translations', $translations);
 }, function() use ($app) {
     // display dashboard page
     $app->get('/', function() use ($app) {
