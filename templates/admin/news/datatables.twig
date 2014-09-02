@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datatable>
+	{% for news in data %}
+		<aaData>
+			<id>{{ news.id }}</id>
+			<title>
+				<![CDATA[
+				<strong>{{ news.detail.title }}</strong>
+				]]>
+			</title>
+			<created>
+				<![CDATA[
+				<div>
+					<small>
+						{% trans %} on {% endtrans %}
+						<strong>{{ news.detail.createdAt|date('d/m/Y') }}</strong>
+					</small>
+				</div>
+				<div>
+					<small>
+						{% trans %} by {% endtrans %}
+						<strong>
+							{{ news.detail.createdBy.username }}
+						</strong>
+					</small>
+				</div>
+				]]>
+			</created>
+			<updated>
+				<![CDATA[
+				{% if news.detail.updatedBy is not null %}
+					<div>
+						<small>
+							{% trans %} on {% endtrans %}
+							<strong>{{ news.detail.updatedAt|date('d/m/Y') }}</strong>
+						</small>
+					</div>
+					<div>
+						<small>
+							{% trans %} by {% endtrans %}
+							<strong>{{ news.detail.updatedBy.username }}</strong>
+						</small>
+					</div>
+				{% endif %}
+				]]>
+			</updated>
+			<views>
+				<![CDATA[
+				<span class="badge badge-info">{{ news.detail.stats.count }}</span>
+				]]>
+			</views>
+			<control>
+				<![CDATA[
+				<div class="btn-group">
+					<a data-pjax href="{{ urlFor('admin.news.edit', {id: news.id}) }}" title="{% trans %} Edit {% endtrans %}" class="btn btn-sm btn-default">
+						<i class="fa fa-edit"></i>
+					</a>
+					<a href="#" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
+						<i class="fa fa-trash-o"></i>
+					</a>
+				</div>
+				]]>
+			</control>
+			<translations>
+				{% spaceless %}
+					<![CDATA[
+					{% set translated = [] %}
+					{% for i18n in news.detail.i18n %}
+						{% set translated = translated|merge([i18n.language]) %}	
+						<tr>
+							<td>
+								<strong>{{ i18n.title }}</strong>
+							</td>
+							<td>
+								<div>
+									<small>
+										{% trans %} on {% endtrans %}
+										<strong>{{ i18n.detail.createdAt|date('d/m/Y') }}</strong>
+									</small>
+								</div>
+								<div>
+									<small>
+										{% trans %} by {% endtrans %}
+										<strong>
+											{{ i18n.detail.createdBy.username }}
+										</strong>
+									</small>
+								</div>
+							</td>
+							<td>
+								{% if i18n.detail.updatedBy is not null %}
+									<div>
+										<small>
+											{% trans %} on {% endtrans %}
+											<strong>{{ i18n.detail.updatedAt|date('d/m/Y') }}</strong>
+										</small>
+									</div>
+									<div>
+										<small>
+											{% trans %} by {% endtrans %}
+											<strong>{{ i18n.detail.updatedBy.username }}</strong>
+										</small>
+									</div>
+								{% endif %}
+							</td>
+							<td>
+								<span class="badge badge-info">{{ news.detail.stats.count }}</span>
+							</td>
+							<td>
+								<div class="btn-group">
+									<a data-pjax href="{{ urlFor('admin.news.edit', {id: news.id}) }}" title="{% trans %} Edit {% endtrans %}" class="btn btn-sm btn-default">
+										<i class="fa fa-edit"></i>
+									</a>
+									<a href="#" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
+										<i class="fa fa-trash-o"></i>
+									</a>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+					{% for key, language in translations if key not in translated %}
+						<tr>
+							<td>{{ language }}</td>
+							<td colspan="4"></td>
+							<td>
+								<a data-pjax href="#" 
+									 class="btn btn-default" title="{% trans %} Translate {% endtrans %}">
+									<i class="fa fa-language"></i>
+								</a>
+							</td>
+						</tr>
+					{% endfor %}
+
+					]]>
+				{% endspaceless %}
+			</translations>
+		</aaData>
+	{% endfor %}
+</datatable>

@@ -5,11 +5,6 @@
  */
 class News {
 
-    const STATUS_PUBLISH = 'publish';
-    const STATUS_ARCHIVE = 'archive';
-    const STATUS_DRAFT = 'draft';
-    const STATUS_PENDING = 'pending';
-
     /**
      * @Id
      * @GeneratedValue(strategy="UUID")
@@ -19,37 +14,47 @@ class News {
     private $id;
 
     /**
-     * @Column(type="string", columnDefinition="ENUM('publish', 'archive', 'draft', 'pending')")
-     * @var string
-     */
-    private $status;
-
-    /**
-     * @OneToOne(targetEntity="NewsDetail", mappedBy="news")
-     * @var NewsDetail
+     * @OneToOne(targetEntity="Newsi18n", inversedBy="news", cascade={"persist"})
+     * @var Newsi18n
      */
     private $detail;
 
-    public function getId() {
-        return $this->id;
+    /**
+     * @ManyToMany(targetEntity="Article", inversedBy="relatedNews")
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $relatedArticles;
+
+    function __construct() {
+        $this->relatedArticles = new Doctrine\Common\Collections\ArrayCollection();
     }
 
-    public function getStatus() {
-        return $this->status;
+    public function getId() {
+        return $this->id;
     }
 
     public function getDetail() {
         return $this->detail;
     }
 
-    public function setStatus($status) {
-        $this->status = $status;
+    public function getRelatedArticles() {
+        return $this->relatedArticles;
+    }
+
+    public function setDetail(Newsi18n $detail) {
+        $this->detail = $detail;
 
         return $this;
     }
 
-    public function setDetail(NewsDetail $detail) {
-        $this->detail = $detail;
+    public function setRelatedArticles(\Doctrine\Common\Collections\Collection $relatedArticles) {
+        $this->relatedArticles = $relatedArticles;
+
+        return $this;
+    }
+
+    public function addRelatedArticle(Article $article) {
+        $this->relatedArticles->add($article);
 
         return $this;
     }

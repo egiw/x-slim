@@ -1,12 +1,11 @@
 <?php
+
 /**
  * Configuration for "min", the default application built with the Minify
  * library
  * 
  * @package Minify
  */
-
-
 /**
  * Allow use of the Minify URI Builder app. Only set this to true while you need it.
  */
@@ -58,7 +57,7 @@ $min_allowDebugFlag = false;
  */
 //require dirname(__FILE__) . '/lib/Minify/Cache/APC.php';
 //$min_cachePath = new Minify_Cache_APC();
-
+$min_cachePath = realpath(join(DIRECTORY_SEPARATOR, array(__DIR__, '..', 'cache')));
 
 /**
  * Leave an empty string to use PHP's $_SERVER['DOCUMENT_ROOT'].

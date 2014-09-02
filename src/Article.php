@@ -97,6 +97,12 @@ class Article {
      * @var \Doctrine\Common\Collections\Collection
      */
     private $relatedEvents;
+    
+    /**
+     * @ManyToMany(targetEntity="News", mappedBy="relatedArticles")
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $relatedNews;
 
     /**
      * Constructor

@@ -1,0 +1,138 @@
+{% extends template %}
+	
+{% set title = "News"|trans %}
+	
+{% block content %}
+	<div class="row">
+		<div class="col-lg-12">
+			<h1>
+				<i class="fa fa-edit"></i>
+				{% trans %} Edit News {% endtrans %}
+			</h1>
+		</div>
+	</div>
+		
+	<div class="row">
+		<div class="col-lg-12">
+			<ol class="breadcrumb">
+				<li>
+					<a data-pjax href="{{ urlFor('admin.index') }}">
+						<i class="fa fa-dashboard"></i> 
+						{% trans %} Dashboard {% endtrans %}
+					</a>
+				</li>
+				<li> 
+					<a data-pjaxhref="{{ urlFor('admin.news.index') }}">
+						<i class="fa fa-newspaper-o"></i> 
+						{% trans %} news {% endtrans %}
+					</a>
+				</li>
+				<li class="active"><i class="fa fa-edit"></i> 
+					{% trans %} Edit News {% endtrans %}
+				</li>
+			</ol>
+			{% include 'flash.twig' %}
+		</div>
+	</div>
+		
+	<div class="row">
+		<div class="col-lg-12">
+			<form data-pjax action="{{ urlFor('admin.news.edit', {id: news.id}) }}"
+						class="form form-horizontal" method="post">
+							
+				{#                TITLE#}
+				<div class="form-group {% if error.title %} has-error {% endif %}">
+					<label for="input-title" class="control-label col-sm-2">
+						{% trans %} Title {% endtrans %}
+					</label>
+					<div class="col-sm-8">
+						<input type="text" name="title" class="form-control" 
+									 id="input-title" value="{{ input.title|default(news.detail.title) }}"/>
+						{{ html.error(error.title) }}
+					</div>
+				</div>
+					
+				{#                    CONTENT#}
+				<div class="form-group {% if error.content %} has-error {% endif %}">
+					<label for="input-content" class="control-label col-sm-2">
+						{% trans %} Content {% endtrans %}
+					</label>
+					<div class="col-sm-10">
+						<textarea name="content" id="input-content" cols="30" rows="10"
+											class="form-control">
+							{{ input.content|default(news.detail.content) }}
+						</textarea>
+						{{ html.error(error.content) }}
+					</div>
+				</div>
+					
+				{#                    STATUS#}
+				<div class="form-group">
+					<label for="select-status" class="control-label col-sm-2">
+						{% trans %} Status {% endtrans %}
+					</label>
+					<div class="col-sm-2">
+						{{ 
+							html.select({
+								(constant('STATUS_PUBLISH')): 'Publish'|trans,
+								(constant('STATUS_DRAFT')): 'Draft'|trans
+							}, input.status|default(news.detail.status), {
+								name: 'status',
+								class: 'form-control',
+								id: 'select-status'
+							}) 
+						}}
+					</div>
+				</div>
+					
+				<div class="form-group">
+					<label for="select-related-articles" class="col-sm-2 control-label">
+						{% trans %} Related Articles {% endtrans %}
+					</label>
+					<div class="col-sm-10">
+						<select name="relatedArticles[]" multiple id="select-related-articles" class="form-control">
+							{% for article in articles %}
+								{% if article.i18n.first is not null %}
+									{% set selected %}
+										{% if input.relatedArticles is not empty %}
+											{% if article.id in input.relatedArticles %} 
+												selected
+											{% endif %}>
+										{% elseif news.relatedArticles.contains(article) %}
+											selected
+										{% endif %}
+									{% endset %}
+									<option value="{{ article.id }}" {{ selected }}>
+										{{article.i18n.first.title}}
+									</option>
+								{% endif %}
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+					
+				{#                SUBMIT            #}
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						<div class="btn-group">
+							<input type="submit" class="btn btn-primary" 
+										 value="Submit" />
+							<a data-pjax href="{{ urlFor('admin.news.index') }}" 
+								 class="btn btn-default">
+								{% trans %} Cancel {% endtrans %}
+							</a>
+						</div>
+					</div>
+				</div>
+					
+			</form>
+		</div>
+	</div>
+{% endblock %}
+	
+{% block script %}
+	<script type="text/javascript">
+		$('#input-content').summernote({height: 350});
+		$('#select-related-articles').chosen();
+	</script>
+{% endblock %}

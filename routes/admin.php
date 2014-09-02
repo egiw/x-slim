@@ -39,8 +39,7 @@ $app->group("/admin", function(Slim\Route $route) use($app) {
     ));
 
     $app->translations = $translations = array(
-        'en' => 'English',
-        'ru' => 'Rusian'
+        'en' => 'English'
     );
 
     $app->view->set('translations', $translations);
@@ -52,6 +51,7 @@ $app->group("/admin", function(Slim\Route $route) use($app) {
 
     include 'admin/account.php';
     include 'admin/article.php';
+    include 'admin/news.php';
     include 'admin/event.php';
     include 'admin/category.php';
     include 'admin/api.php';

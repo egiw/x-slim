@@ -63,6 +63,13 @@
                                 {% trans %} Article {% endtrans %}
                             </a>
                         </li>
+                        <li>
+                            <a data-pjax 
+                               href="{{ urlFor('admin.news.index') }}">
+                                <i class="fa fa-newspaper-o"></i> 
+                                {% trans %} News {% endtrans %}
+                            </a>
+                        </li>
                         {% if _user.admin %}
                             <li>
                                 <a data-pjax href="{{ urlFor('admin.event.index') }}">

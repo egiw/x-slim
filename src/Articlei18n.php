@@ -24,7 +24,7 @@ class Articlei18n {
      * @Column(type="string", length=2)
      * @var string
      */
-    private $language = "en";
+    private $language = "id";
 
     /**
      * @Column(type="string", length=60)

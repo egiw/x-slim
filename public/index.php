@@ -14,12 +14,14 @@ define('ALERT_SUCCESS', 'alert-success');
 define('ALERT_DANGER', 'alert-danger');
 define('ALERT_WARNING', 'alert-warning');
 define('ALERT_INFO', 'alert-info');
+define('STATUS_PUBLISH', 'publish');
+define('STATUS_DRAFT', 'draft');
+define('STATUS_PENDING', 'pending');
+define('STATUS_ARCHIVE', 'archive');
 
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 define('UPLOAD_DIR', ROOT . DS . 'images');
-
-define('ASD', ROOT . 'test');
 
 include '../lib/functions.php';
 

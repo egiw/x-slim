@@ -1,0 +1,109 @@
+{% extends template %}
+	
+{% set title = "News"|trans %}
+	
+{% block content %}
+	<div class="row">
+		<div class="col-lg-12">
+			<h1>
+				<i class="fa fa-newspaper-o"></i>
+				{% trans %} News {% endtrans %}
+				<small>
+					{% trans %} List, add, or edit news{% endtrans %}
+				</small>
+			</h1>
+		</div>
+	</div>
+		
+	<div class="row">
+		<div class="col-lg-12">
+			<ol class="breadcrumb">
+				<li>
+					<a data-pjax href="{{ urlFor('admin.index') }}">
+						<i class="fa fa-dashboard"></i> 
+						{% trans %} Dashboard {% endtrans %}
+					</a>
+				</li>
+				<li class="active"><i class="fa fa-newspaper-o"></i> 
+					{% trans %} news {% endtrans %}
+				</li>
+			</ol>
+			{% include 'flash.twig' %}
+		</div>
+	</div>
+		
+	<div class="row">
+		<div class="col-lg-12">
+			<ul class="nav nav-tabs">
+				<li>
+					<a data-pjax href="{{ urlFor('admin.news.create') }}">
+						<i class="fa fa-plus"></i>
+						{% trans %} Add New {% endtrans %}
+					</a>
+				</li>
+			</ul>
+				
+			<table id="tbl-news" class="table table-condensed">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Title</th>
+						<th>Created</th>
+						<th>Last Modified</th>
+						<th><i class="fa fa-eye"></i></th>
+						<th></th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+{% endblock %}
+	
+{% block script %}
+	<script type="text/javascript">
+		$tblNews = $('#tbl-news').DataTable({
+			serverSide: true,
+			processing: false,
+			ordering: true,
+			lengthChange: true,
+			pageLength: 10,
+			ajax: '{{ urlFor('admin.news.datatables') }}',
+			columns: [
+				{
+					"class": 'details-control',
+					"orderable": false,
+					"data": null,
+					"defaultContent": ''
+				},
+				{mData: 'title'},
+				{mData: 'created'},
+				{mData: 'updated'},
+				{mData: 'views'},
+				{mData: 'control'}
+			],
+			createdRow: function(tr, data, index) {
+				var row = $tblNews.row(tr);
+				row.child($(data.translations));
+			}
+			
+		});
+		
+		// Add event listener for opening and closing details
+		$('#tbl-news tbody').on('click', 'td.details-control', function() {
+			var tr = $(this).closest('tr');
+			var row = $tblNews.row(tr);
+			
+			if (row.child.isShown()) {
+				// This row is already open - close it
+				row.child.hide();
+				tr.removeClass('shown');
+			}
+			else {
+				// Open this row
+				row.child.show();
+				tr.addClass('shown');
+			}
+		});
+		
+	</script>
+{% endblock %}
