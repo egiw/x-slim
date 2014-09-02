@@ -171,4 +171,29 @@ $app->group('/news', function() use($app) {
 		$data = new DataTables($qb, 'admin/news/datatables.twig');
 		return $app->response->write(json_encode($data));
 	})->setName('admin.news.datatables');
+
+	$app->delete('/:id(/:language)', function($id, $language = null) use($app) {
+		$news = $app->db->find('News', $id);
+		/* @var $news News */
+		if(null === $news)
+			$app->notFound();
+
+		if(null === $language) {
+			$app->db->remove($news);
+		} else {
+			$i18n = $app->db->getRepository('Newsi18n')->findOneBy(array(
+					'base' => $news->getDetail(),
+					'language' => $language
+			));
+
+			if(null === $language)
+				$app->notFound();
+
+			$app->db->remove($i18n);
+		}
+
+		$app->db->flush();
+		$app->contentType('application/json');
+		return $app->response->write(true);
+	})->setName('admin.news.delete');
 });

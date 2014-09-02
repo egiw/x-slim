@@ -105,5 +105,22 @@
 			}
 		});
 		
+		function _delete(url) {
+			var msg = '<h4 class="text-danger">{% trans %} Are you sure want to delete this news ? {% endtrans %}</h4>';
+			bootbox.confirm(msg, function(result){
+				if(result) {
+					$.ajax({
+						url: url,
+						type: 'post',
+						data: {_METHOD: 'delete'},
+						success: function(response) {
+							if(result) {
+								$tblNews.ajax.reload();
+							}
+						}
+					});
+				}
+			});
+		}	
 	</script>
 {% endblock %}

@@ -55,7 +55,7 @@
 					<a data-pjax href="{{ urlFor('admin.news.edit', {id: news.id}) }}" title="{% trans %} Edit {% endtrans %}" class="btn btn-sm btn-default">
 						<i class="fa fa-edit"></i>
 					</a>
-					<a href="#" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
+					<a href="javascript:_delete('{{urlFor('admin.news.delete', {id: news.id})}}')" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
 						<i class="fa fa-trash-o"></i>
 					</a>
 				</div>
@@ -112,7 +112,7 @@
 									<a data-pjax href="{{ urlFor('admin.news.translate', {id: news.id, language: i18n.language}) }}" title="{% trans %} Edit {% endtrans %}" class="btn btn-sm btn-default">
 										<i class="fa fa-edit"></i>
 									</a>
-									<a href="#" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
+									<a href="javascript:_delete('{{urlFor('admin.news.delete', {id: news.id, language: i18n.language})}}')" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
 										<i class="fa fa-trash-o"></i>
 									</a>
 								</div>

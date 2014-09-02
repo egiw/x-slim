@@ -38,7 +38,7 @@ class Newsi18n {
     private $news;
 
     /**
-     * @ManyToOne(targetEntity="Newsi18n", cascade={"all"}, fetch="LAZY", inversedBy="translations")
+     * @ManyToOne(targetEntity="Newsi18n", cascade={"persist"}, fetch="LAZY", inversedBy="translations")
      * @var NewsDetail
      */
     private $base;

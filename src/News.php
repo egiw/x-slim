@@ -14,7 +14,7 @@ class News {
     private $id;
 
     /**
-     * @OneToOne(targetEntity="Newsi18n", inversedBy="news", cascade={"persist"})
+     * @OneToOne(targetEntity="Newsi18n", inversedBy="news", cascade={"persist", "remove"})
      * @var Newsi18n
      */
     private $detail;
