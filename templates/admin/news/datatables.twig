@@ -68,6 +68,7 @@
 					{% for i18n in news.detail.i18n %}
 						{% set translated = translated|merge([i18n.language]) %}	
 						<tr>
+							<td>{{ translations[i18n.language] }}</td>
 							<td>
 								<strong>{{ i18n.title }}</strong>
 							</td>
@@ -75,40 +76,40 @@
 								<div>
 									<small>
 										{% trans %} on {% endtrans %}
-										<strong>{{ i18n.detail.createdAt|date('d/m/Y') }}</strong>
+										<strong>{{ i18n.createdAt|date('d/m/Y') }}</strong>
 									</small>
 								</div>
 								<div>
 									<small>
 										{% trans %} by {% endtrans %}
 										<strong>
-											{{ i18n.detail.createdBy.username }}
+											{{ i18n.createdBy.username }}
 										</strong>
 									</small>
 								</div>
 							</td>
 							<td>
-								{% if i18n.detail.updatedBy is not null %}
+								{% if i18n.updatedBy is not null %}
 									<div>
 										<small>
 											{% trans %} on {% endtrans %}
-											<strong>{{ i18n.detail.updatedAt|date('d/m/Y') }}</strong>
+											<strong>{{ i18n.updatedAt|date('d/m/Y') }}</strong>
 										</small>
 									</div>
 									<div>
 										<small>
 											{% trans %} by {% endtrans %}
-											<strong>{{ i18n.detail.updatedBy.username }}</strong>
+											<strong>{{ i18n.updatedBy.username }}</strong>
 										</small>
 									</div>
 								{% endif %}
 							</td>
 							<td>
-								<span class="badge badge-info">{{ news.detail.stats.count }}</span>
+								<span class="badge badge-info">{{ i18n.stats.count }}</span>
 							</td>
 							<td>
 								<div class="btn-group">
-									<a data-pjax href="{{ urlFor('admin.news.edit', {id: news.id}) }}" title="{% trans %} Edit {% endtrans %}" class="btn btn-sm btn-default">
+									<a data-pjax href="{{ urlFor('admin.news.translate', {id: news.id, language: i18n.language}) }}" title="{% trans %} Edit {% endtrans %}" class="btn btn-sm btn-default">
 										<i class="fa fa-edit"></i>
 									</a>
 									<a href="#" title="{% trans %} Delete {% endtrans %}" class="btn btn-sm btn-danger">
@@ -123,7 +124,7 @@
 							<td>{{ language }}</td>
 							<td colspan="4"></td>
 							<td>
-								<a data-pjax href="#" 
+								<a data-pjax href="{{ urlFor('admin.news.translate', {id: news.id, language: key}) }}" 
 									 class="btn btn-default" title="{% trans %} Translate {% endtrans %}">
 									<i class="fa fa-language"></i>
 								</a>

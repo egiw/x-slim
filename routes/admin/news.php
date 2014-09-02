@@ -72,6 +72,8 @@ $app->group('/news', function() use($app) {
 								->assert($input);
 
 				$news->getDetail()
+								->setUpdatedAt(new DateTime('now'))
+								->setUpdatedBy($app->user)
 								->setStatus($input['status'])
 								->setTitle($input['title'])
 								->setContent($input['content']);
@@ -108,12 +110,12 @@ $app->group('/news', function() use($app) {
 	})->via('GET', 'POST')->setName('admin.news.edit');
 
 	$app->map('/:id/translate/:language', function($id, $language) use($app) {
-		$news = $app->db->find('News', $id);
+		$data['news'] = $news = $app->db->find('News', $id);
 		/* @var $news News */
 		if(null === $news)
 			$app->notFound();
 
-		$data['i18n'] = $i18n = $app->db->getRepository('Newsi18n')->findBy(array(
+		$data['i18n'] = $i18n = $app->db->getRepository('Newsi18n')->findOneBy(array(
 				'base' => $news->getDetail(),
 				'language' => $language
 		));
@@ -122,13 +124,43 @@ $app->group('/news', function() use($app) {
 			$data['i18n'] = $i18n = new Newsi18n();
 			$i18n->setBase($news->getDetail())
 							->setCreatedAt(new DateTime('now'))
-							->setCreatedBy($app->user);
+							->setCreatedBy($app->user)
+							->setLanguage($language);
 		} else {
 			$i18n->setUpdatedAt(new DateTime('now'))
 							->setUpdatedBy($app->user);
 		}
 
-	})->setName('admin.news.translate', $data);
+		if($app->request->isPost()) {
+			try {
+				$data['input'] = $input = $app->request->post();
+
+				V::create()
+								->key('title', V::create()->notEmpty())
+								->key('content', V::create()->notEmpty()->length(160))
+								->assert($input);
+
+				$i18n->setTitle($input['title'])
+								->setContent($input['content'])
+								->setStatus($input['status']);
+
+				$app->db->persist($i18n);
+				$app->db->flush();
+				
+				$app->flash(ALERT_SUCCESS, gettext('News translation updated successfully'));
+				$app->redirect($app->urlFor('admin.news.index'));
+			} catch (AllOfException $ex) {
+				$data['error'] = new Error($ex->findMessages(array(
+						'title.notEmpty' => gettext('Title cannot be empty'),
+						'content.notEmpty' => gettext('Content cannot be empty'),
+						'content.length' => gettext('Content must be at least 160 characters')
+				)));
+			}
+		
+		}
+
+		$app->render('admin/news/translate.twig', $data);
+	})->via('GET', 'POST')->setName('admin.news.translate');
 
 	$app->get('/datatable', function() use($app) {
 		$qb = $app->db

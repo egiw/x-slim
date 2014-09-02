@@ -1,202 +1,201 @@
 {% import 'macro/html.twig' as html %}
 <!DOCTYPE HTML>
 <html lang="en-US">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        {{
-            html.minify_styles([    
-                'lib/bootstrap/css/bootstrap.min.css',
-                'lib/jasny-bootstrap/css/jasny-bootstrap.min.css',
-                'lib/summernote/summernote.css',
-                'lib/fontawesome/css/font-awesome.min.css',
-                'lib/datatables/css/dataTables.bootstrap.css',
-                'lib/jstree/jstree.min.css',
-                'lib/chosen/chosen.min.css',
-                'lib/jcrop/jquery.Jcrop.min.css',
-                'lib/bootstrap-datepicker/css/datepicker.css',
-                'css/admin.css'
-            ])
-        }}
-
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-        <!--[if lt IE 9]>
-          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-        <![endif]-->
-        <title>{{ title }} - My Blog</title>
-    </head>
-    <body>
-        <div id="wrapper">
-            {# sidebar #}
-            <nav class="navbar navbar-inverse navbar-fixed-top"
-                 role="navigation">
-                <div class="navbar-header">
-                    <button class="navbar-toggle" data-toggle="collapse" 
-                            data-target=".navbar-ex1-collapse">
-                        <span class="sr-only">
-                            {% trans %} Toggle navigation {% endtrans %}
-                        </span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="{{ urlFor("admin.index") }}" class="navbar-brand">
-                        &horbar;
-                    </a>
-                </div>
-                {# nav links#}
-                <div class="collapse navbar-collapse navbar-ex1-collapse">
-                    <ul class="nav navbar-nav side-nav">
-                        <li>
-                            <a data-pjax href="{{ urlFor('admin.index') }}">
-                                <i class="fa fa-dashboard"></i> 
-                                {% trans %} Dashboard {% endtrans %}
-                            </a>
-                        </li>
-                        <li>
-                            <a data-pjax 
-                               href="{{ urlFor('admin.article.index') }}">
-                                <i class="fa fa-book"></i> 
-                                {% trans %} Article {% endtrans %}
-                            </a>
-                        </li>
-                        <li>
-                            <a data-pjax 
-                               href="{{ urlFor('admin.news.index') }}">
-                                <i class="fa fa-newspaper-o"></i> 
-                                {% trans %} News {% endtrans %}
-                            </a>
-                        </li>
-                        {% if _user.admin %}
-                            <li>
-                                <a data-pjax href="{{ urlFor('admin.event.index') }}">
-                                    <i class="fa fa-calendar"></i>
-                                    {% trans %} Event {% endtrans %}
-                                </a>
-                            </li>
-                            <li>
-                                <a data-pjax 
-                                   href="{{ urlFor('admin.user.index') }}">
-                                    <i class="fa fa-users"></i> 
-                                    {% trans %} User {% endtrans %}
-                                </a>
-                            </li>
-                            <li>
-                                <a data-pjax 
-                                   href="{{ urlFor('admin.category.index') }}">
-                                    <i class="fa fa-tags"></i> 
-                                    {% trans %} Category {% endtrans %}
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-
-                    <ul class="nav navbar-nav navbar-right navbar-user">
-                        <li class="dropdown user-dropdown">
-                            <a href="#" class="dropdown-toggle" 
-                               data-toggle="dropdown">
-                                <i class="fa fa-user"></i> {{ _user.username }}
-                                <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#"><i class="fa fa-user"></i> {% trans %} Profile {% endtrans %}</a></li>
-                                <li><a href="#"><i class="fa fa-envelope"></i> {% trans %} Inbox {% endtrans %} <span class="badge">7</span></a></li>
-                                <li>
-                                    <a href="{{ urlFor('account.settings') }}">
-                                        <i class="fa fa-gear"></i> {% trans %} Settings {% endtrans %}
-                                    </a>
-                                </li>
-                                <li class="divider"></li>
-                                <li>
-                                    <a href="{{ urlFor('account.logout')  }}">
-                                        <i class="fa fa-power-off"></i> {% trans %} Log Out {% endtrans %}
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-            <div id="page-wrapper">{{ block('content') }}</div>
-        </div>
-
-        <footer id="footer">
-            <small>{% trans %} Copyright &copy;2014 My Custom Blog {% endtrans %}</small>
-        </footer>
-
-        {{
-             html.minify_scripts([
-                'lib/jquery-1.11.0.min.js',
-                'lib/summernote/summernote.min.js',
-                'lib/bootstrap/js/bootstrap.min.js',
-                'lib/jasny-bootstrap/js/jasny-bootstrap.min.js',
-                'lib/bootbox.min.js',
-                'lib/jquery.pjax.js',
-                'lib/datatables/js/jquery.dataTables.min.js',
-                'lib/datatables/js/dataTables.bootstrap.js',
-                'lib/jstree/jstree.min.js',
-                'lib/chosen/chosen.jquery.min.js',
-                'lib/jcrop/jquery.Jcrop.min.js',
-                'lib/bootstrap-datepicker/js/bootstrap-datepicker.js',
-                'js/admin.js'
-             ]) 
-        }}
-        <script type="text/javascript">
-            {% set script %}
-                $.extend($.fn.dataTable.defaults, {
-                    language: {
-                        emptyTable: "{% trans %} No data available in table {% endtrans %}",
-                        info: "{% trans %} Showing _START_ to _END_ of _TOTAL_ entries {% endtrans %}",
-                        infoEmpty: "{% trans %} Showing 0 to 0 of 0 entries {% endtrans %}",
-                        infoFiltered: "({% trans %} filtered from _MAX_ total entries {% endtrans %})",
-                        infoPostFix: "",
-                        lengthMenu: "{% trans %} Show _MENU_ entries {% endtrans %}",
-                        loadingRecords: "{% trans %} Loading... {% endtrans %}",
-                        processing: "{% trans %} Processing... {% endtrans %}",
-                        search: "{% trans %} Search {% endtrans %}:",
-                        zeroRecords: "{% trans %} No matching records found {% endtrans %}",
-                        paginate: {
-                            first: "{% trans %} First {% endtrans %}",
-                            last: "{% trans %} Last {% endtrans %}",
-                            next: "{% trans %} Next {% endtrans %}",
-                            previous: "{% trans %} Previous {% endtrans %}"
-                        },
-                        aria: {
-                            sortAscending: ": {% trans %} activate to sort column ascending {% endtrans %}",
-                            sortDescending: ": {% trans %} activate to sort column descending {% endtrans %}"
-                        }
-                    }
-                });
-
-                $.summernote.options.onImageUpload = function(files, editor, editable) {
-                    bootbox.prompt('{% trans %} Type the image title {% endtrans %}', function(alt) {
-                        data = new FormData();
-                        data.append('image', files[0]);
-                        data.append('caption', alt);
-                        $.ajax({
-                            data: data,
-                            type: 'post',
-                            url: '{{ urlFor('admin.api.upload') }}',
-                            cache: false,
-                            contentType: false,
-                            processData: false,
-                            success: function(result) {
-                                var $image = $('<img>', {src: result, alt: alt});
-                                editable.data('range').insertNode($image[0]);
-                                $image.css({
-                                    width: Math.min(editable.width(), $image.width),
-                                    padding: '5px 10px'
-                                });
-                            }
-                        });
-                    });
-                }
-            {% endset %}
-            {{ script|pack|raw }}
-        </script>
-        {{ block('script') }}
-    </body>
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		{{
+			html.minify_styles([    
+				'lib/bootstrap/css/bootstrap.min.css',
+				'lib/jasny-bootstrap/css/jasny-bootstrap.min.css',
+				'lib/summernote/summernote.css',
+				'lib/fontawesome/css/font-awesome.min.css',
+				'lib/datatables/css/dataTables.bootstrap.css',
+				'lib/jstree/jstree.min.css',
+				'lib/chosen/chosen.min.css',
+				'lib/jcrop/jquery.Jcrop.min.css',
+				'lib/bootstrap-datepicker/css/datepicker.css',
+				'css/admin.css'
+			])
+		}}
+			
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+		<title>{{ title }} - My Blog</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			{# sidebar #}
+			<nav class="navbar navbar-inverse navbar-fixed-top"
+					 role="navigation">
+				<div class="navbar-header">
+					<button class="navbar-toggle" data-toggle="collapse" 
+									data-target=".navbar-ex1-collapse">
+						<span class="sr-only">
+							{% trans %} Toggle navigation {% endtrans %}
+						</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a href="{{ urlFor("admin.index") }}" class="navbar-brand">
+						&horbar;
+					</a>
+				</div>
+				{# nav links#}
+				<div class="collapse navbar-collapse navbar-ex1-collapse">
+					<ul class="nav navbar-nav side-nav">
+						<li>
+							<a data-pjax href="{{ urlFor('admin.index') }}">
+								<i class="fa fa-dashboard"></i> 
+								{% trans %} Dashboard {% endtrans %}
+							</a>
+						</li>
+						<li>
+							<a data-pjax 
+								 href="{{ urlFor('admin.article.index') }}">
+								<i class="fa fa-book"></i> 
+								{% trans %} Article {% endtrans %}
+							</a>
+						</li>
+						<li>
+							<a data-pjax 
+								 href="{{ urlFor('admin.news.index') }}">
+								<i class="fa fa-newspaper-o"></i> 
+								{% trans %} News {% endtrans %}
+							</a>
+						</li>
+						{% if _user.admin %}
+							<li>
+								<a data-pjax href="{{ urlFor('admin.event.index') }}">
+									<i class="fa fa-calendar"></i>
+									{% trans %} Event {% endtrans %}
+								</a>
+							</li>
+							<li>
+								<a data-pjax 
+									 href="{{ urlFor('admin.user.index') }}">
+									<i class="fa fa-users"></i> 
+									{% trans %} User {% endtrans %}
+								</a>
+							</li>
+							<li>
+								<a data-pjax 
+									 href="{{ urlFor('admin.category.index') }}">
+									<i class="fa fa-tags"></i> 
+									{% trans %} Category {% endtrans %}
+								</a>
+							</li>
+						{% endif %}
+					</ul>
+						
+					<ul class="nav navbar-nav navbar-right navbar-user">
+						<li class="dropdown user-dropdown">
+							<a href="#" class="dropdown-toggle" 
+								 data-toggle="dropdown">
+								<i class="fa fa-user"></i> {{ _user.username }}
+								<b class="caret"></b>
+							</a>
+							<ul class="dropdown-menu">
+								<li><a href="#"><i class="fa fa-user"></i> {% trans %} Profile {% endtrans %}</a></li>
+								<li><a href="#"><i class="fa fa-envelope"></i> {% trans %} Inbox {% endtrans %} <span class="badge">7</span></a></li>
+								<li>
+									<a href="{{ urlFor('account.settings') }}">
+										<i class="fa fa-gear"></i> {% trans %} Settings {% endtrans %}
+									</a>
+								</li>
+								<li class="divider"></li>
+								<li>
+									<a href="{{ urlFor('account.logout')  }}">
+										<i class="fa fa-power-off"></i> {% trans %} Log Out {% endtrans %}
+									</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</nav>
+			<div id="page-wrapper">{{ block('content') }}</div>
+		</div>
+			
+		<footer id="footer">
+			<small>{% trans %} Copyright &copy;2014 My Custom Blog {% endtrans %}</small>
+		</footer>
+		{{
+		 html.minify_scripts([
+			'lib/jquery-1.11.0.min.js',
+			'lib/summernote/summernote.min.js',
+			'lib/bootstrap/js/bootstrap.min.js',
+			'lib/jasny-bootstrap/js/jasny-bootstrap.min.js',
+			'lib/bootbox.min.js',
+			'lib/jquery.pjax.js',
+			'lib/datatables/js/jquery.dataTables.min.js',
+			'lib/datatables/js/dataTables.bootstrap.js',
+			'lib/jstree/jstree.min.js',
+			'lib/chosen/chosen.jquery.min.js',
+			'lib/jcrop/jquery.Jcrop.min.js',
+			'lib/bootstrap-datepicker/js/bootstrap-datepicker.js',
+			'js/admin.js'
+		 ]) 
+		}}
+		<script type="text/javascript">
+			{% set script %}
+				$.extend($.fn.dataTable.defaults, {
+					language: {
+						emptyTable: "{% trans %} No data available in table {% endtrans %}",
+						info: "{% trans %} Showing _START_ to _END_ of _TOTAL_ entries {% endtrans %}",
+						infoEmpty: "{% trans %} Showing 0 to 0 of 0 entries {% endtrans %}",
+						infoFiltered: "({% trans %} filtered from _MAX_ total entries {% endtrans %})",
+						infoPostFix: "",
+						lengthMenu: "{% trans %} Show _MENU_ entries {% endtrans %}",
+						loadingRecords: "{% trans %} Loading... {% endtrans %}",
+						processing: "{% trans %} Processing... {% endtrans %}",
+						search: "{% trans %} Search {% endtrans %}:",
+						zeroRecords: "{% trans %} No matching records found {% endtrans %}",
+						paginate: {
+							first: "{% trans %} First {% endtrans %}",
+							last: "{% trans %} Last {% endtrans %}",
+							next: "{% trans %} Next {% endtrans %}",
+							previous: "{% trans %} Previous {% endtrans %}"
+						},
+						aria: {
+							sortAscending: ": {% trans %} activate to sort column ascending {% endtrans %}",
+							sortDescending: ": {% trans %} activate to sort column descending {% endtrans %}"
+						}
+					}
+				});
+				
+				$.summernote.options.onImageUpload = function(files, editor, editable) {
+					bootbox.prompt('{% trans %} Type the image title {% endtrans %}', function(alt) {
+						data = new FormData();
+						data.append('image', files[0]);
+						data.append('caption', alt);
+						$.ajax({
+							data: data,
+							type: 'post',
+							url: '{{ urlFor('admin.api.upload') }}',
+							cache: false,
+							contentType: false,
+							processData: false,
+							success: function(result) {
+								var $image = $('<img>', {src: result, alt: alt});
+								editable.data('range').insertNode($image[0]);
+								$image.css({
+									width: Math.min(editable.width(), $image.width),
+									padding: '5px 10px'
+								});
+							}
+						});
+					});
+				}
+			{% endset %}
+			{{ script|pack|raw }}
+		</script>
+		{{ block('script') }}
+	</body>
 </html>
