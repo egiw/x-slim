@@ -3,9 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/news/index.twig</file>
-            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/news/datatables.twig</file>
-            <file>file:/home/egiw/NetBeansProjects/x-slim/routes/admin/news.php</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/create.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/article/edit.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/src/News.php</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/news/create.twig</file>
+            <file>file:/home/egiw/NetBeansProjects/x-slim/templates/admin/news/edit.twig</file>
         </group>
     </open-files>
 </project-private>

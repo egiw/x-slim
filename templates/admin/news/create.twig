@@ -1,7 +1,7 @@
 {% extends template %}
-	
+
 {% set title = "News"|trans %}
-	
+
 {% block content %}
 	<div class="row">
 		<div class="col-lg-12">
@@ -11,7 +11,7 @@
 			</h1>
 		</div>
 	</div>
-		
+
 	<div class="row">
 		<div class="col-lg-12">
 			<ol class="breadcrumb">
@@ -34,12 +34,12 @@
 			{% include 'flash.twig' %}
 		</div>
 	</div>
-		
+
 	<div class="row">
 		<div class="col-lg-12">
 			<form data-pjax action="{{ urlFor('admin.news.create') }}"
 						class="form form-horizontal" method="post">
-							
+
 				{#                TITLE#}
 				<div class="form-group {% if error.title %} has-error {% endif %}">
 					<label for="input-title" class="control-label col-sm-2">
@@ -51,7 +51,7 @@
 						{{ html.error(error.title) }}
 					</div>
 				</div>
-					
+
 				{#                    CONTENT#}
 				<div class="form-group {% if error.content %} has-error {% endif %}">
 					<label for="input-content" class="control-label col-sm-2">
@@ -63,7 +63,7 @@
 						{{ html.error(error.content) }}
 					</div>
 				</div>
-					
+
 				{#                    STATUS#}
 				<div class="form-group">
 					<label for="select-status" class="control-label col-sm-2">
@@ -82,7 +82,44 @@
 						}}
 					</div>
 				</div>
-					
+
+				{#					featured image#}
+				<div class="form-group {% if error.image %} has-error {% endif %}">
+					<label for="input-image" class="control-label col-sm-2">
+						{% trans %} Featured Imgae {% endtrans %}
+					</label>
+					<div class="col-sm-5">
+						<img src="http://placehold.it/320x240" id="img-preview" class="thumbnail" style="margin-bottom: 5px;"/>
+						<input type="hidden" name="image" id="input-image" />
+						<div class="fileinput fileinput-new" data-provides="fileinput">
+							<span class="btn btn-default btn-file">
+								<span class="fileinput-new">Select file</span>
+								<span class="fileinput-exists">Change</span>
+								<input type="file" id="select-image" accept="image/jpeg"/>
+							</span>
+						</div>
+
+						<div class="modal" id="modal-crop">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+										<h4 class="modal-title">Crop Image</h4>
+									</div>
+									<div class="modal-body">
+										<img id="image-crop-preview" />
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+										<button type="button" class="btn btn-primary" id="btn-crop-done">Finish</button>
+									</div>
+								</div><!-- /.modal-content -->
+							</div><!-- /.modal-dialog -->
+						</div><!-- /.modal -->
+						{{ html.error(error.image) }}
+					</div>
+				</div>
+
 				<div class="form-group">
 					<label for="select-related-articles" class="col-sm-2 control-label">
 						{% trans %} Related Articles {% endtrans %}
@@ -101,7 +138,7 @@
 						</select>
 					</div>
 				</div>
-					
+
 				{#                SUBMIT            #}
 				<div class="form-group">
 					<div class="col-sm-offset-2 col-sm-10">
@@ -115,15 +152,95 @@
 						</div>
 					</div>
 				</div>
-					
+
 			</form>
 		</div>
 	</div>
 {% endblock %}
-	
+
 {% block script %}
 	<script type="text/javascript">
+		var jcrop_api;
 		$('#input-content').summernote({height: 350});
 		$('#select-related-articles').chosen();
+
+		$('#select-image').click(function() {
+			this.value = null;
+			if (jcrop_api != null) {
+				jcrop_api.destroy();
+			}
+		});
+
+		$('#select-image').change(function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			var file = event.target.files[0];
+
+			if (file.type !== 'image/jpeg')
+				return;
+
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				var image = new Image();
+				var maxWidth = $(window).innerWidth();
+
+				image.src = e.target.result;
+				image.onload = function() {
+					var canvas = document.createElement('canvas');
+					if (image.width > maxWidth) {
+						var width = canvas.width = maxWidth - 40;
+						canvas.height = image.height * (width / image.height);
+						$('#modal-crop .modal-dialog').css({
+							width: maxWidth,
+							margin: 0
+						});
+					} else {
+						canvas.width = image.width;
+						canvas.height = image.height;
+						$('#modal-crop .modal-dialog').css({
+							width: image.width + 40,
+							marginTop: 30,
+							marginLeft: 'auto',
+							marginRight: 'auto'
+						});
+					}
+
+					$('#modal-crop .modal-content').css('border-radius', 0);
+					$('.jcrop-holder img').css('max-width', 'none');
+
+					var ctx = canvas.getContext('2d');
+					ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+					$('#image-crop-preview')
+									.attr('src', canvas.toDataURL('image/jpeg'))
+									.Jcrop({
+										bgColor: 'black',
+										bgOpacity: .6,
+										setSelect: [0, 0, 320, 240],
+										aspectRatio: 4 / 3
+									}, function() {
+										jcrop_api = this;
+									});
+
+					$('#btn-crop-done').click(function(e) {
+						canvas.width = 320;
+						canvas.height = 240;
+						var image = $('#image-crop-preview')[0];
+						var ctx = canvas.getContext('2d');
+						var selection = jcrop_api.tellSelect();
+						ctx.drawImage(image, selection.x, selection.y, selection.w, selection.h, 0, 0, canvas.width, canvas.height);
+
+						var dataURL = canvas.toDataURL('image/jpeg');
+
+						$('#img-preview').attr('src', dataURL);
+						$('#input-image').val(dataURL);
+						$('#modal-crop').modal('hide');
+					});
+
+					$('#modal-crop').modal('show');
+				}
+			};
+			reader.readAsDataURL(file);
+		});
 	</script>
 {% endblock %}

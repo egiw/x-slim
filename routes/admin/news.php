@@ -13,13 +13,18 @@ $app->group('/news', function() use($app) {
 		if ($app->request->isPost()) {
 			try {
 				$data['input'] = $input = $app->request->post();
-
 				V::create()->key('title', V::create()->notEmpty())
 								->key('content', V::create()->notEmpty()->length(160))
+								->key('image', V::create()->notEmpty())
 								->assert($input);
 
+				// save dataURI to JPG
+				$filename = uniqueFilename(UPLOAD_DIR . DS . slugify($input['title']) . '.jpg');
+				file_put_contents($filename, file_get_contents($input['image']));
+
 				$news = new News();
-				$news->setDetail(new Newsi18n());
+				$news->setDetail(new Newsi18n())
+								->setFeaturedImage(basename($filename));
 
 				$news->getDetail()
 								->setTitle($input['title'])
@@ -35,6 +40,7 @@ $app->group('/news', function() use($app) {
 					}
 				}
 
+
 				$app->db->persist($news);
 				$app->db->flush();
 
@@ -44,7 +50,8 @@ $app->group('/news', function() use($app) {
 				$data['error'] = new Error($ex->findMessages(array(
 										'title.notEmpty' => gettext('Title cannot be empty'),
 										'content.notEmpty' => gettext('Content cannot be empty'),
-										'content.length' => gettext('Content must at least 160 characters')
+										'content.length' => gettext('Content must at least 160 characters'),
+										'image.notEmpty' => gettext('Please upload a featured image')
 				)));
 			}
 		}
@@ -88,6 +95,15 @@ $app->group('/news', function() use($app) {
 
 				$news->setRelatedArticles($relatedArticles);
 
+				// overwrite existing image
+				if (!empty($input['image'])) {
+					$fp = fopen(UPLOAD_DIR . DS . $news->getFeaturedImage(), 'w+');
+					if ($fp !== FALSE) {
+						fwrite($fp, file_get_contents($input['image']));
+						fclose($fp);
+					}
+				}
+
 				$app->db->persist($news);
 				$app->db->flush();
 
@@ -112,7 +128,7 @@ $app->group('/news', function() use($app) {
 	$app->map('/:id/translate/:language', function($id, $language) use($app) {
 		$data['news'] = $news = $app->db->find('News', $id);
 		/* @var $news News */
-		if(null === $news)
+		if (null === $news)
 			$app->notFound();
 
 		$data['i18n'] = $i18n = $app->db->getRepository('Newsi18n')->findOneBy(array(
@@ -120,7 +136,7 @@ $app->group('/news', function() use($app) {
 				'language' => $language
 		));
 
-		if(null === $i18n) {
+		if (null === $i18n) {
 			$data['i18n'] = $i18n = new Newsi18n();
 			$i18n->setBase($news->getDetail())
 							->setCreatedAt(new DateTime('now'))
@@ -131,7 +147,7 @@ $app->group('/news', function() use($app) {
 							->setUpdatedBy($app->user);
 		}
 
-		if($app->request->isPost()) {
+		if ($app->request->isPost()) {
 			try {
 				$data['input'] = $input = $app->request->post();
 
@@ -146,17 +162,16 @@ $app->group('/news', function() use($app) {
 
 				$app->db->persist($i18n);
 				$app->db->flush();
-				
+
 				$app->flash(ALERT_SUCCESS, gettext('News translation updated successfully'));
 				$app->redirect($app->urlFor('admin.news.index'));
 			} catch (AllOfException $ex) {
 				$data['error'] = new Error($ex->findMessages(array(
-						'title.notEmpty' => gettext('Title cannot be empty'),
-						'content.notEmpty' => gettext('Content cannot be empty'),
-						'content.length' => gettext('Content must be at least 160 characters')
+										'title.notEmpty' => gettext('Title cannot be empty'),
+										'content.notEmpty' => gettext('Content cannot be empty'),
+										'content.length' => gettext('Content must be at least 160 characters')
 				)));
 			}
-		
 		}
 
 		$app->render('admin/news/translate.twig', $data);
@@ -175,10 +190,10 @@ $app->group('/news', function() use($app) {
 	$app->delete('/:id(/:language)', function($id, $language = null) use($app) {
 		$news = $app->db->find('News', $id);
 		/* @var $news News */
-		if(null === $news)
+		if (null === $news)
 			$app->notFound();
 
-		if(null === $language) {
+		if (null === $language) {
 			$app->db->remove($news);
 		} else {
 			$i18n = $app->db->getRepository('Newsi18n')->findOneBy(array(
@@ -186,7 +201,7 @@ $app->group('/news', function() use($app) {
 					'language' => $language
 			));
 
-			if(null === $language)
+			if (null === $language)
 				$app->notFound();
 
 			$app->db->remove($i18n);

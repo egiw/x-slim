@@ -5,58 +5,74 @@
  */
 class News {
 
-    /**
-     * @Id
-     * @GeneratedValue(strategy="UUID")
-     * @Column(type="string", length=36, unique=true, nullable=false)
-     * @var string
-     */
-    private $id;
+	/**
+	 * @Id
+	 * @GeneratedValue(strategy="UUID")
+	 * @Column(type="string", length=36, unique=true, nullable=false)
+	 * @var string
+	 */
+	private $id;
 
-    /**
-     * @OneToOne(targetEntity="Newsi18n", inversedBy="news", cascade={"persist", "remove"})
-     * @var Newsi18n
-     */
-    private $detail;
+	/**
+	 * @OneToOne(targetEntity="Newsi18n", inversedBy="news", cascade={"persist", "remove"})
+	 * @var Newsi18n
+	 */
+	private $detail;
 
-    /**
-     * @ManyToMany(targetEntity="Article", inversedBy="relatedNews")
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $relatedArticles;
+	/**
+	 * @Column(type="string", length=255)
+	 * @var string
+	 */
+	private $featuredImage;
 
-    function __construct() {
-        $this->relatedArticles = new Doctrine\Common\Collections\ArrayCollection();
-    }
+	/**
+	 * @ManyToMany(targetEntity="Article", inversedBy="relatedNews")
+	 * @var \Doctrine\Common\Collections\Collection
+	 */
+	private $relatedArticles;
 
-    public function getId() {
-        return $this->id;
-    }
+	function __construct() {
+		$this->relatedArticles = new Doctrine\Common\Collections\ArrayCollection();
+	}
 
-    public function getDetail() {
-        return $this->detail;
-    }
+	public function getId() {
+		return $this->id;
+	}
 
-    public function getRelatedArticles() {
-        return $this->relatedArticles;
-    }
+	public function getDetail() {
+		return $this->detail;
+	}
 
-    public function setDetail(Newsi18n $detail) {
-        $this->detail = $detail;
+	public function getRelatedArticles() {
+		return $this->relatedArticles;
+	}
 
-        return $this;
-    }
+	public function getFeaturedImage() {
+		return $this->featuredImage;
+	}
 
-    public function setRelatedArticles(\Doctrine\Common\Collections\Collection $relatedArticles) {
-        $this->relatedArticles = $relatedArticles;
+	public function setDetail(Newsi18n $detail) {
+		$this->detail = $detail;
 
-        return $this;
-    }
+		return $this;
+	}
 
-    public function addRelatedArticle(Article $article) {
-        $this->relatedArticles->add($article);
+	public function setRelatedArticles(\Doctrine\Common\Collections\Collection $relatedArticles) {
+		$this->relatedArticles = $relatedArticles;
 
-        return $this;
-    }
+		return $this;
+	}
+
+	public function addRelatedArticle(Article $article) {
+		$this->relatedArticles->add($article);
+
+		return $this;
+	}
+
+	public function setFeaturedImage($featuredImage) {
+		$this->featuredImage = $featuredImage;
+
+		return $this;
+	}
 
 }
