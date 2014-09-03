@@ -97,7 +97,12 @@ $app->group('/news', function() use($app) {
 
 				// overwrite existing image
 				if (!empty($input['image'])) {
-					$fp = fopen(UPLOAD_DIR . DS . $news->getFeaturedImage(), 'w+');
+					$filename = UPLOAD_DIR . DS . $news->getFeaturedImage();
+					if (!is_file($filename)) {
+						$filename = uniqueFilename(UPLOAD_DIR . DS . slugify($news->getDetail()->getTitle()) . '.jpg');
+						$news->setFeaturedImage(basename($filename));
+					}
+					$fp = fopen($filename, 'w+');
 					if ($fp !== FALSE) {
 						fwrite($fp, file_get_contents($input['image']));
 						fclose($fp);
