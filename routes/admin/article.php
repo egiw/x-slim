@@ -98,7 +98,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 				$i18n
 					->setLanguage($input['language'])
 					->setTitle($input['title'])
-					->setSlug(Articlei18n::slugify($input['title']))
+					->setSlug(slugify($input['title']))
 					->setContent($input['content'])
 					->setCreatedAt(new DateTime('now'))
 					->setAuthor($app->user)
@@ -159,7 +159,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 
 				$oldTitle = $i18n->getTitle();
 				$i18n->setTitle($input['title'])
-					->setSlug(Articlei18n::slugify($input['title']))
+					->setSlug(slugify($input['title']))
 					->setContent($input['content'])
 					->setUpdatedAt(new DateTime("now"))
 					->setUpdatedBy($app->user)
@@ -248,7 +248,7 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 				$i18n
 					->setLanguage($input['language'])
 					->setTitle($input['title'])
-					->setSlug(Articlei18n::slugify($input['title']))
+					->setSlug(slugify($input['title']))
 					->setContent($input['content'])
 					->setCreatedAt(new DateTime("now"))
 					->setAuthor($app->user)
