@@ -50,25 +50,25 @@
         <div class="col-lg-12">
             <ul id="nav-filter-status" class="nav nav-tabs">
                 <li class="pull-right">
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_ARCHIVE')}) }}">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('STATUS_ARCHIVE')}) }}">
                         {% trans %} Trash {% endtrans %}
                         <span id="badge-archived" class="badge badge-default"></span>
                     </a>
                 </li>
                 <li class="pull-right">
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_DRAFT')}) }}">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('STATUS_DRAFT')}) }}">
                         {% trans %} Draft {% endtrans %}
                         <span id="badge-draft" class="badge badge-default"></span>
                     </a>
                 </li>
                 <li class="pull-right">
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PENDING')}) }}">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('STATUS_PENDING')}) }}">
                         {% trans %} Need Review {% endtrans %}
                         <span id="badge-pending" class="badge badge-default"></span>
                     </a>
                 </li>
                 <li class="active pull-right">
-                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('Article::STATUS_PUBLISH')}) }}">
+                    <a href="#" data-toggle="tab" data-url="{{ urlFor('admin.article.datatables', {status: constant('STATUS_PUBLISH')}) }}">
                         {% trans %} Published {% endtrans %}
                         <span id="badge-published" class="badge badge-default"></span>
                     </a>
@@ -83,21 +83,12 @@
 
 
             <table class="table table-condensed" id="tbl-article">
-                <colgroup>
-                    <col width="3%"/>
-                    <col width="38%"/>
-                    <col width="15%"/>
-                    <col width="15%"/>
-                    <col width="5%"/>
-                    <col width="10%"/>
-                </colgroup>
                 <thead>
                     <tr>
                         <th></th>
-                        <th></th>
                         <th>{% trans %} Title {% endtrans %}</th>
                         <th>{% trans %} Created {% endtrans %}</th>
-                        <th>{% trans %} Last Update {% endtrans %}</th>
+                        <th>{% trans %} Last Modified  {% endtrans %}</th>
                         <th><i class="fa fa-eye"></i></th>
                         <th></th>
                     </tr>
@@ -117,7 +108,7 @@
                 ordering: true,
                 lengthChange: true,
                 ajax: {
-                    url: '{{ urlFor('admin.article.datatables', {'status': constant('Article::STATUS_PUBLISH')}) }}',
+                    url: '{{ urlFor('admin.article.datatables', {'status': constant('STATUS_PUBLISH')}) }}',
                     data: function(data) {
                         data.type = $('input[name=type]:radio:checked').val();
                     }
@@ -126,46 +117,31 @@
                 order: [[3, 'desc']],
                 columns: [
                     {
-                        data: "group",
-                        visible: false
-                    },
-                    {
                         class: 'details-control',
                         orderable: false,
                         data: null,
                         defaultContent: ''
                     },
-                    {
-                        data: "title",
-                        orderable: false
-                    },
-                    {data: "createdAt"},
-                    {data: "lastUpdate"},
-                    {data: "views", orderable: false},
+                    {data: "title", },
+                    {data: "created"},
+                    {data: "updated"},
+                    {data: "views"},
                     {
                         data: "control",
                         orderable: false
                     }
                 ],
-                drawCallback: function(settings) {
-                    var api = this.api();
-                    var rows = api.rows({page: 'current'}).nodes();
-                    var last = null;
-                    api.column(0, {page: 'current'}).data().each(function(group, i) {
-                        if (last !== group) {
-                            var $toolbar = this.row(i).data().toolbar;
-                            $(rows).eq(i).before($toolbar);
-                            last = group;
-                        }
-                    });
+                createdRow: function(tr, data, index) {
+                    var row = $tblArticle.row(tr);
+                    row.child($(data.translations));
                 }
+
             });
 
             // Add event listener for opening and closing details
             $tblArticle.on('click', 'td.details-control', function() {
                 var tr = $(this).closest('tr');
                 var row = $tblArticle.row(tr);
-                var data = row.data();
 
                 if (row.child.isShown()) {
                     // This row is already open - close it
@@ -173,12 +149,9 @@
                     tr.removeClass('shown');
                 }
                 else {
-                    row.child('loading...').show();
-                    tr.addClass('shown');
                     // Open this row
-                    $.get(data.id, function(response) {
-                        row.child(response);
-                    });
+                    row.child.show();
+                    tr.addClass('shown');
                 }
             });
 
@@ -188,12 +161,11 @@
                     });
 
             $('input[name=type]:radio').change(function() {
-
                 loadCountInfo();
                 $tblArticle.ajax.reload();
             });
 
-            function _remove(url) {
+            function _archive(url) {
                 var msg = "<h4 class='text-warning'><i class='fa fa-warning'></i> {% trans %} This item will be moved to archive. Are you sure ? {% endtrans %}</h4>";
                 request(url, 'put', msg);
             }
@@ -206,21 +178,6 @@
             function _delete(url) {
                 var msg = "<h4 class='text-danger'><i class='fa fa-warning'></i> {% trans %} This item will be completely deleted. Are you sure ? {% endtrans %}</h4>";
                 request(url, 'delete', msg);
-            }
-
-            function _publish(url) {
-                var msg = "<h4 class='text-info'><i class='fa fa-info-circle'></i> {% trans %} This item will be published. Are you sure ? {% endtrans %}</h4>";
-                request(url, 'put', msg);
-            }
-
-            function _unpublish(url) {
-                var msg = "<h4 class='text-info'><i class='fa fa-warning'></i> {% trans %} This item will no longer published. Are you sure ? {% endtrans %}</h4>";
-                request(url, 'put', msg);
-            }
-
-            function _pending(url) {
-                var msg = "<h4 class='text-info'><i class='fa fa-warning'></i> {% trans %} This item will be mark as need review. Are you sure ? {% endtrans %}</h4>";
-                request(url, 'put', msg);
             }
 
             function request(url, method, confirmMsg) {
@@ -240,6 +197,7 @@
                     }
                 });
             }
+
             (loadCountInfo = function() {
                 var type = $('input[name=type]:radio:checked').val();
                 $.get('{{ urlFor('admin.article.count') }}', {type: type}, function(data) {

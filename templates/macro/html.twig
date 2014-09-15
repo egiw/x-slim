@@ -31,14 +31,14 @@
         e.g:
         minify_scripts(["jquery.js", "main.js"]) #}
 {% macro minify_scripts(scripts, debug) %}
-	{% if debug|default(false)	 %}
-		{% for script in scripts %}
-			<script type="text/javascript" src="{{ siteUrl(script) }}"></script>
-		{% endfor %}
-	{% else %}
-    <script type="text/javascript" 
-    src="{{siteUrl('min?f=' ~ scripts|join(','))}}"></script>
-	{% endif %}
+    {% if debug|default(false)	 %}
+        {% for script in scripts %}
+            <script type="text/javascript" src="{{ siteUrl(script) }}"></script>
+        {% endfor %}
+    {% else %}
+        <script type="text/javascript" 
+        src="{{siteUrl('min?f=' ~ scripts|join(','))}}"></script>
+    {% endif %}
 {% endmacro %}
 
 {#	Minify a set of css files into one request
@@ -46,13 +46,13 @@
         e.g:
         minify_styles(["bootstrap.min.css", "layout.css"])	#}
 {% macro minify_styles(styles, debug) %}
-	{% if debug|default(false) %}
-		{% for style in styles %}
-			<link rel="stylesheet" href="{{ siteUrl(style) }}" />
-		{% endfor %}
-	{% else %}
-    <link rel="stylesheet" href="{{siteUrl('min?f=' ~ styles|join(','))}}" />
-	{% endif %}
+    {% if debug|default(false) %}
+        {% for style in styles %}
+            <link rel="stylesheet" href="{{ siteUrl(style) }}" />
+        {% endfor %}
+    {% else %}
+        <link rel="stylesheet" href="{{siteUrl('min?f=' ~ styles|join(','))}}" />
+    {% endif %}
 {% endmacro %}
 
 {% macro error(error) %}

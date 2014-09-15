@@ -1,90 +1,89 @@
 {% extends template %}
-	
+
 {% set title= "Translate News"|trans %}
-	
+
 {% block content %}
-	{#	HEADER#}
-	<div class="row">
-		<div class="col-sm-12">
-			<h1>
-				<i class="fa fa-language"></i>
-				{% trans %} Translate News {% endtrans %}
-			</h1>
-		</div>
-	</div>	
-		
-	{#    BREADCRUMBS#}
-	<div class="row">
-		<div class="col-lg-12">
-			<ol class="breadcrumb">
-				<li>
-					<a data-pjax href="{{ urlFor('admin.index') }}">
-						<i class="fa fa-dashboard"></i> 
-						{% trans %} Dashboard {% endtrans %}
-					</a>
-				</li>
-				<li>
-					<a data-pjax href="{{ urlFor('admin.news.index') }}">
-						<i class="fa fa-newspaper-o"></i> 
-						{% trans %} news {% endtrans %}
-					</a>
-				</li>
-				<li class="active">
-					<i class="fa fa-language"></i>
-					{% trans %} translate {% endtrans %}
-				</li>
-			</ol>
-		</div>
-	</div>
-		
-		
-	<div class="row">
-		<div class="col-lg-12">
-			<form data-pjax action="{{ urlFor('admin.news.translate', {id: news.id, language: i18n.language }) }}"
-						method="post" class="form-horizontal">
-							
-				<div class="form-group">
-					<label class="control-label col-sm-2">
-						{% trans %} Language {% endtrans %}
-					</label>
-					<div class="col-sm-5">
-						<p class="form-control-static">{{ translations[i18n.language] }}</p>
-					</div>
-				</div>
-					
-				{#				TITLE#}
-				<div class="form-group {% if error.title %} has-error {% endif %}">
-					<label for="input-title" class="control-label col-sm-2">
-						{% trans %} Title {% endtrans %}
-					</label>
-					<div class="col-sm-8">
-						<input type="text" class="form-control" name="title" id="input-title"
-									 value="{{ input.title|default(i18n.title) }}"/>
-						{{ html.error(error.title) }}
-					</div>
-				</div>
-					
-				{#					CONTENT#}
-				<div class="form-group {% if error.content %} has-error {% endif %}">
-					<label for="input-content" class="control-label col-sm-2">
-						{% trans %} Content {% endtrans %}
-					</label>
-					<div class="col-sm-10">
-						<textarea name="content" id="input-content" cols="30" rows="10" class="form-control">
-							{{ input.content|default(i18n.content) }}
-						</textarea>
-						{{ html.error(error.content) }}
-					</div>
-				</div>
-					
-					
-				{#					STATUS#}
-				<div class="form-group">
-					<label for="select-status" class="control-label col-sm-2">
-						{% trans %} Status {% endtrans %}
-					</label>
-					<div class="col-sm-4">
-						{{
+    {#	HEADER#}
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>
+                <i class="fa fa-language"></i>
+                {% trans %} Translate News {% endtrans %}
+            </h1>
+        </div>
+    </div>	
+
+    {#    BREADCRUMBS#}
+    <div class="row">
+        <div class="col-lg-12">
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.news.index') }}">
+                        <i class="fa fa-newspaper-o"></i> 
+                        {% trans %} news {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-language"></i>
+                    {% trans %} translate {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-lg-12">
+            <form data-pjax action="{{ urlFor('admin.news.translate', {id: news.id, language: i18n.language }) }}"
+                  method="post" class="form-horizontal">
+
+                <div class="form-group">
+                    <label class="control-label col-sm-2">
+                        {% trans %} Language {% endtrans %}
+                    </label>
+                    <div class="col-sm-5">
+                        <p class="form-control-static">{{ translations[i18n.language] }}</p>
+                    </div>
+                </div>
+
+                {#				TITLE#}
+                <div class="form-group {% if error.title %} has-error {% endif %}">
+                    <label for="input-title" class="control-label col-sm-2">
+                        {% trans %} Title {% endtrans %}
+                    </label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="title" id="input-title"
+                               value="{{ input.title|default(i18n.title) }}"/>
+                        {{ html.error(error.title) }}
+                    </div>
+                </div>
+
+                {#					CONTENT#}
+                <div class="form-group {% if error.content %} has-error {% endif %}">
+                    <label for="input-content" class="control-label col-sm-2">
+                        {% trans %} Content {% endtrans %}
+                    </label>
+                    <div class="col-sm-10">
+                        <textarea name="content" id="input-content" cols="30" rows="10" class="form-control">
+                            {{ input.content|default(i18n.content) }}
+                        </textarea>
+                        {{ html.error(error.content) }}
+                    </div>
+                </div>
+
+                {#					STATUS#}
+                <div class="form-group">
+                    <label for="select-status" class="control-label col-sm-2">
+                        {% trans %} Status {% endtrans %}
+                    </label>
+                    <div class="col-sm-4">
+                        {{
 							html.select({
 								(constant('STATUS_PUBLISH')): 'Publish'|trans,
 								(constant('STATUS_DRAFT')): 'Draft'|trans
@@ -93,31 +92,31 @@
 								id: 'select-status',
 								class: 'form-control'
 							})
-						}}
-					</div>
-				</div>
-					
-				{#						BUTTON#}
-				<div class="form-group">
-					<div class="col-sm-10 col-sm-offset-2">
-						<div class="btn-group">
-							<input type="submit" class="btn btn-primary" 
-										 value="Submit" />
-							<a data-pjax href="{{ urlFor('admin.news.index') }}" 
-								 class="btn btn-default">
-								{% trans %} Cancel {% endtrans %}
-							</a>
-						</div>
-					</div>
-				</div>
-					
-			</form>			
-		</div>
-	</div>
+                        }}
+                    </div>
+                </div>
+
+                {#						BUTTON#}
+                <div class="form-group">
+                    <div class="col-sm-10 col-sm-offset-2">
+                        <div class="btn-group">
+                            <input type="submit" class="btn btn-primary" 
+                                   value="Submit" />
+                            <a data-pjax href="{{ urlFor('admin.news.index') }}" 
+                               class="btn btn-default">
+                                {% trans %} Cancel {% endtrans %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </form>			
+        </div>
+    </div>
 {% endblock %}
-	
+
 {% block script %}
-	<script type="text/javascript">
-		$('#input-content').summernote({height:350});
-	</script>
+    <script type="text/javascript">
+        $('#input-content').summernote({height: 350});
+    </script>
 {% endblock %}

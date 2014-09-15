@@ -18,7 +18,6 @@ define('STATUS_PUBLISH', 'publish');
 define('STATUS_DRAFT', 'draft');
 define('STATUS_PENDING', 'pending');
 define('STATUS_ARCHIVE', 'archive');
-
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 define('UPLOAD_DIR', ROOT . DS . 'images');

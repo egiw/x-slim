@@ -6,396 +6,202 @@
  */
 class Article {
 
-    const STATUS_PUBLISH = 'publish';
-    const STATUS_ARCHIVE = 'archive';
-    const STATUS_DRAFT = 'draft';
-    const STATUS_PENDING = 'pending';
+	/**
+	 * @Id
+	 * @GeneratedValue(strategy="UUID")
+	 * @Column(type="string", length=36)
+	 * @var string
+	 */
+	private $id;
 
-    /**
-     * @Id
-     * @GeneratedValue(strategy="UUID")
-     * @Column(type="string", length=36)
-     * @var string
-     */
-    private $id;
+	/**
+	 * @ManyToMany(targetEntity="Category", inversedBy="articles")
+	 * @var Doctrine\Common\Collections\Collection
+	 */
+	private $categories;
 
-    /**
-     * @Column(type="string", columnDefinition="ENUM('publish', 'archive', 'draft', 'pending')")
-     * @var string
-     */
-    private $status;
+	/**
+	 * @ManyToMany(targetEntity="Region", inversedBy="articles")
+	 * @var Doctrine\Common\Collections\Collection
+	 */
+	private $regions;
 
-    /**
-     * @ManyToOne(targetEntity="User")
-     * @JoinColumn(name="created_by", referencedColumnName="id", onDelete="SET NULL")
-     * @var \User
-     */
-    private $author;
+	/**
+	 * @OneToMany(targetEntity="Image", mappedBy="article", cascade={"remove"})
+	 * @var \Doctrine\Common\Collections\Collection
+	 */
+	private $images;
 
-    /**
-     * @Column(type="datetime", name="created_at")
-     * @var \DateTime
-     */
-    private $createdAt;
+	/**
+	 * @Column(type="string", length=255, unique=false, nullable=false)
+	 * @var string
+	 */
+	private $featuredImage;
 
-    /**
-     * @Column(type="datetime", name="updated_at", nullable=true)
-     * @var \DateTime
-     */
-    private $updatedAt;
+	/**
+	 * @OneToOne(targetEntity="Articlei18n", inversedBy="article", cascade={"persist"})
+	 * @var Articlei18n
+	 */
+	private $detail;
 
-    /**
-     * @ManyToOne(targetEntity="User")
-     * @JoinColumn(name="updated_by", referencedColumnName="id")
-     * @var \User
-     */
-    private $updatedBy;
+	/**
+	 * @ManyToMany(targetEntity="Article")
+	 * @var Doctrine\Common\Collections\Collection 
+	 */
+	private $related;
 
-    /**
-     * @OneToMany(
-     *      targetEntity="Articlei18n", 
-     *      mappedBy="article", 
-     *      cascade={"persist", "remove", "detach"},
-     *      orphanRemoval=true
-     * )
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $i18n;
+	/**
+	 * @ManyToMany(targetEntity="Event", mappedBy="relatedArticles")
+	 * @var \Doctrine\Common\Collections\Collection
+	 */
+	private $relatedEvents;
 
-    /**
-     * @ManyToMany(targetEntity="Category", inversedBy="articles")
-     * @var Doctrine\Common\Collections\Collection
-     */
-    private $categories;
+	/**
+	 * @ManyToMany(targetEntity="News", mappedBy="relatedArticles")
+	 * @var \Doctrine\Common\Collections\Collection
+	 */
+	private $relatedNews;
 
-    /**
-     * @ManyToMany(targetEntity="Region", inversedBy="articles")
-     * @var Doctrine\Common\Collections\Collection
-     */
-    private $regions;
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		$this->categories = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->regions = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->related = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->relatedNews = new Doctrine\Common\Collections\ArrayCollection();
+		$this->relatedEvents = new Doctrine\Common\Collections\ArrayCollection();
+	}
 
-    /**
-     * @OneToMany(targetEntity="Image", mappedBy="article", cascade={"remove"})
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $images;
+	public function getId() {
+		return $this->id;
+	}
 
-    /**
-     * @ManyToMany(targetEntity="Article")
-     * @var Doctrine\Common\Collections\Collection 
-     */
-    private $related;
+	public function getCategories() {
+		return $this->categories;
+	}
 
-    /**
-     * @Column(type="string", length=255, unique=false, nullable=false)
-     * @var string
-     */
-    private $featuredImage;
+	public function getRegions() {
+		return $this->regions;
+	}
 
-    /**
-     * @ManyToMany(targetEntity="Event", mappedBy="relatedArticles")
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $relatedEvents;
-    
-    /**
-     * @ManyToMany(targetEntity="News", mappedBy="relatedArticles")
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $relatedNews;
+	public function getImages() {
+		return $this->images;
+	}
 
-    /**
-     * Constructor
-     */
-    public function __construct() {
-        $this->i18n = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->regions = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->related = new \Doctrine\Common\Collections\ArrayCollection();
-    }
+	public function getFeaturedImage() {
+		return $this->featuredImage;
+	}
 
-    /**
-     * Set author
-     *
-     * @param \User $author
-     * @return Article
-     */
-    public function setAuthor(\User $author = null) {
-        $this->author = $author;
+	public function getDetail() {
+		return $this->detail;
+	}
 
-        return $this;
-    }
+	public function getRelated() {
+		return $this->related;
+	}
 
-    /**
-     * Get author
-     *
-     * @return \User 
-     */
-    public function getAuthor() {
-        return $this->author;
-    }
+	public function getRelatedEvents() {
+		return $this->relatedEvents;
+	}
 
-    /**
-     * Set status
-     *
-     * @param string $status
-     * @return Article
-     */
-    public function setStatus($status) {
-        $this->status = $status;
+	public function getRelatedNews() {
+		return $this->relatedNews;
+	}
 
-        return $this;
-    }
+	public function setCategories(Doctrine\Common\Collections\Collection $categories) {
+		$this->categories = $categories;
 
-    /**
-     * Get status
-     *
-     * @return string 
-     */
-    public function getStatus() {
-        return $this->status;
-    }
+		return $this;
+	}
 
-    /**
-     * Get id
-     *
-     * @return string 
-     */
-    public function getId() {
-        return $this->id;
-    }
+	public function setRegions(Doctrine\Common\Collections\Collection $regions) {
+		$this->regions = $regions;
 
-    /**
-     * Add i18n
-     *
-     * @param \Articlei18n $i18n
-     * @return Article
-     */
-    public function addI18n(\Articlei18n $i18n) {
-        $this->i18n[] = $i18n;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function setImages(\Doctrine\Common\Collections\Collection $images) {
+		$this->images = $images;
 
-    /**
-     * Remove i18n
-     *
-     * @param \Articlei18n $i18n
-     */
-    public function removeI18n(\Articlei18n $i18n) {
-        $this->i18n->removeElement($i18n);
-    }
+		return $this;
+	}
 
-    /**
-     * Get i18n
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getI18n() {
-        return $this->i18n;
-    }
+	public function setFeaturedImage($featuredImage) {
+		$this->featuredImage = $featuredImage;
 
-    /**
-     * Check if article is publish
-     * 
-     * @return bool
-     */
-    public function isPublish() {
-        return $this->getStatus() === self::STATUS_PUBLISH;
-    }
+		return $this;
+	}
 
-    /**
-     * Check if article is draft
-     * 
-     * @return bool
-     */
-    public function isDraft() {
-        return $this->getStatus() === self::STATUS_DRAFT;
-    }
+	public function setDetail(Articlei18n $detail) {
+		$this->detail = $detail;
 
-    /**
-     * Check ifarticle is archive
-     * 
-     * @return bool
-     */
-    public function isArchive() {
-        return $this->getStatus() === self::STATUS_ARCHIVE;
-    }
+		return $this;
+	}
 
-    /**
-     * Check if article is pending
-     * @return bool
-     */
-    public function isPending() {
-        return $this->getStatus() == self::STATUS_PENDING;
-    }
+	public function setRelated(Doctrine\Common\Collections\Collection $related) {
+		$this->related = $related;
 
-    /**
-     * Set createdAt
-     *
-     * @param \DateTime $createdAt
-     * @return Article
-     */
-    public function setCreatedAt($createdAt) {
-        $this->createdAt = $createdAt;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function setRelatedEvents(\Doctrine\Common\Collections\Collection $relatedEvents) {
+		$this->relatedEvents = $relatedEvents;
 
-    /**
-     * Get createdAt
-     *
-     * @return \DateTime 
-     */
-    public function getCreatedAt() {
-        return $this->createdAt;
-    }
+		return $this;
+	}
 
-    /**
-     * Set updatedAt
-     *
-     * @param \DateTime $updatedAt
-     * @return Article
-     */
-    public function setUpdatedAt($updatedAt) {
-        $this->updatedAt = $updatedAt;
+	public function setRelatedNews(\Doctrine\Common\Collections\Collection $relatedNews) {
+		$this->relatedNews = $relatedNews;
 
-        return $this;
-    }
+		return $this;
+	}
 
-    /**
-     * Get updatedAt
-     *
-     * @return \DateTime 
-     */
-    public function getUpdatedAt() {
-        return $this->updatedAt;
-    }
+	public function addCategory(Category $category) {
+		$this->categories->add($category);
 
-    /**
-     * Set updatedBy
-     *
-     * @param \User $updatedBy
-     * @return Article
-     */
-    public function setUpdatedBy(\User $updatedBy = null) {
-        $this->updatedBy = $updatedBy;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function addRegion(Region $region) {
+		$this->regions->add($region);
 
-    /**
-     * Get updatedBy
-     *
-     * @return \User 
-     */
-    public function getUpdatedBy() {
-        return $this->updatedBy;
-    }
+		return $this;
+	}
 
-    /**
-     * 
-     * @return Doctrine\Common\Collections\Collection
-     */
-    public function getCategories() {
-        return $this->categories;
-    }
+	public function addRelated(Article $article) {
+		$this->related->add($article);
 
-    /**
-     * 
-     * @param Doctrine\Common\Collections\Collection $categories
-     * @return \Article
-     */
-    public function setCategories(Doctrine\Common\Collections\Collection $categories) {
-        $this->categories = $categories;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function addRelatedNews(News $news) {
+		$this->relatedNews->add($news);
 
-    /**
-     * 
-     * @param Category $category
-     * @return \Article
-     */
-    public function addCategory(Category $category) {
-        $this->categories[] = $category;
+		return $this;
+	}
 
-        return $this;
-    }
+	public function addRelatedEvent(Event $event) {
+		$this->relatedEvents->add($event);
 
-    public function getRegions() {
-        return $this->regions;
-    }
+		return $this;
+	}
 
-    public function setRegions(Doctrine\Common\Collections\Collection $regions) {
-        $this->regions = $regions;
+	/**
+	 * Check if article belongs to user
+	 * @param User $user
+	 */
+	public function belongsTo(User $user) {
+		return $this->author === $user;
+	}
 
-        return $this;
-    }
-
-    public function getImages() {
-        return $this->images;
-    }
-
-    public function setImages(\Doctrine\Common\Collections\Collection $images) {
-        $this->images = $images;
-
-        return $this;
-    }
-
-    public function getRelated() {
-        return $this->related;
-    }
-
-    public function setRelated(Doctrine\Common\Collections\Collection $related) {
-        $this->related = $related;
-
-        return $this;
-    }
-
-    public function addRelated(Article $article) {
-        $this->related->add($article);
-
-        return $this;
-    }
-
-    /**
-     * 
-     * @param Region $region
-     * @return \Article
-     */
-    public function addRegion(Region $region) {
-        $this->regions[] = $region;
-
-        return $this;
-    }
-
-    public function getFeaturedImage() {
-        return $this->featuredImage;
-    }
-
-    public function setFeaturedImage($featuredImage) {
-        $this->featuredImage = $featuredImage;
-
-        return $this;
-    }
-
-    /**
-     * Check if article belongs to user
-     * 
-     * @param User $user
-     */
-    public function belongsTo(User $user) {
-        return $this->author === $user;
-    }
-
-    /**
-     * Check if user is permitted to modify this article
-     * @param User $user
-     * @return bool
-     */
-    public function isPermitted(User $user) {
-        return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
-    }
+	/**
+	 * Check if user is permitted to modify this article
+	 * @param User $user
+	 * @return bool
+	 */
+	public function isPermitted(User $user) {
+		return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
+	}
 
 }

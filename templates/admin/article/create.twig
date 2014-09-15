@@ -1,335 +1,319 @@
 {% extends template %}
-	
+
 {% set title %}
-	{% trans %} Create Article {% endtrans %}
+    {% trans %} Create Article {% endtrans %}
 {% endset %}
-	
+
 {% block content %}
-	<div class="row">
-		<div class="col-lg-12">
-			<h1>
-				<fa class="fa fa-plus"></fa>
-				{% trans %} Add Article {% endtrans %}
-				<small>
-					{% trans %} Publish or save as draft new article {% endtrans %}
-				</small>
-			</h1>
-			<ol class="breadcrumb">
-				<li>
-					<a data-pjax href="{{ urlFor('admin.index') }}">
-						<i class="fa fa-dashboard"></i> 
-						{% trans %} Dashboard {% endtrans %}
-					</a>
-				</li>
-				<li>
-					<a data-pjax href="{{ urlFor('admin.article.index') }}">
-						<i class="fa fa-file"></i> 
-						{% trans %} Article {% endtrans %}
-					</a>
-				</li>
-				<li class="active">
-					<i class="fa fa-pencil"></i> 
-					{% trans %} Add {% endtrans %}
-				</li>
-			</ol>
-		</div>
-	</div>
-		
-	<form data-pjax method="post" role="form" 
-				class="form-horizontal" action="{{ urlFor('admin.article.create') }}">
-					
-		{#        LANGUAGE      #}
-		<div class="form-group">
-			<label for="select-language" class="control-label col-sm-2">
-				{% trans %} Language {% endtrans %}
-			</label>
-			<div class="col-sm-3">
-				{{
-                    html.select(languages, input['language'] , {
-                        name: 'language',
-                        class: 'form-control',
-                        id: 'select-language'
-                    })
-				}}
-			</div>
-		</div>
-			
-		{#            TITLE         #}
-		<div class="form-group {% if error.title %} has-error {% endif %}">
-			<label class="control-label col-sm-2" for="title">
-				{% trans %} Title {% endtrans %}
-			</label>
-			<div class="col-sm-10">
-				<input type="text" class="form-control" 
-							 name="title" 
-							 value="{{ input['title'] }}" 
-							 placeholder="{% trans 'Enter Title' %}"/>
-				{{ html.error(error.title) }}
-			</div>
-		</div>
-			
-		{#         CATEGORIES        #}
-		<div class="form-group">
-			<label for="select-categories" class="control-label col-sm-2">
-				{% trans %} Categories {% endtrans %}
-			</label>
-			<div class="col-sm-10">
-				<select name="categories[]" id="select-categories" class="form-control" multiple>
-					{% for category in categories %}
-						{% set label %}
-							{% for translation in category.translations %} 
-								{{ translation.name }} 
-								{% if not loop.last %} &middot; {% endif %} 
-							{% endfor %}
-						{% endset %}
-						<optgroup label="{{ label }}">
-							{% for subcategory in category.subcategories %}
-								<option value="{{ subcategory.id }}"> 
-									{% for translation in subcategory.translations %}
-										{{ translation.name }}
-										{% if not loop.last %} &middot; {% endif %}
-									{% endfor %}
-								</option>
-							{% endfor %}    
-						</optgroup>
-					{% endfor %}
-				</select>
-			</div>
-		</div>
-			
-		{#           REGION           #}
-		<div class="form-group">
-			<label for="select-regions" class="control-label col-sm-2">
-				{% trans %} Regions {% endtrans %}
-			</label>
-			<div class="col-sm-10">
-				<select name="regions[]" id="select-regions" class="form-control" multiple>
-					{% for region in regions  %}
-						<optgroup label="{{ region.name }}">
-							{% for province in region.children %}
-								<option value="{{ province.id }}">{{ province.name }}</option>
-							{% endfor %}
-							{% for province in region.children %}
-							<optgroup label="{{ province.name }}">
-								{% for city in province.children %}
-									<option value="{{ city.id }}">{{ city.name }}</option>
-								{% endfor %}
-							</optgroup>
-						{% endfor %}
-						</optgroup>
-					{% endfor %}
-				</select>
-			</div>
-		</div>
-			
-		{#        CONTENT       #}
-		<div class="form-group {% if error.content %} has-error {% endif %}">
-			<label class="control-label col-sm-2" for="content">
-				{% trans %} Content {% endtrans %}
-			</label>
-			<div class="col-sm-10">
-				<textarea id="textarea-content" 
-									name="content" 
-									class="form-control" 
-									cols="30" 
-									rows="10"
-									placeholder="Content">{{ input['content'] }}
-				</textarea>
-				{{ html.error(error.content) }}
-			</div>
-		</div>
-			
-		{#       RELATED ARTICLE    #}
-		<div class="form-group">
-			<label for="select-related" class="control-label col-sm-2">
-				{% trans %} Related {% endtrans %}
-			</label>
-			<div class="col-sm-10">
-				<select name="related[]" id="select-related" class="form-control" multiple>
-					{% for article in related %}
-						<option value="{{ article.id }}">
-							{{ article.i18n.first.title }}
-						</option>
-					{% endfor %}
-				</select>
-			</div>
-		</div>
-			
-		{#           FEATURED IMAGE        #}
-		<div class="form-group {% if error.image %} has-error {% endif %}">
-			<label for="select-image" class="control-label col-sm-2">
-				{% trans %} Featured Image {% endtrans %}
-			</label>
-			<div class="col-sm-10">
-				<img src="http://placehold.it/320x240" id="img-preview" class="thumbnail" style="margin-bottom: 5px;"/>
-				<input type="hidden" name="image" id="input-image" />
-				<div class="fileinput fileinput-new" data-provides="fileinput">
-					<span class="btn btn-default btn-file">
-						<span class="fileinput-new">Select file</span>
-						<span class="fileinput-exists">Change</span>
-						<input type="file" id="select-image" accept="image/jpeg"/>
-					</span>
-				</div>
-				<div class="modal" id="modal-crop">
-					<div class="modal-dialog">
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-								<h4 class="modal-title">Crop Image</h4>
-							</div>
-							<div class="modal-body">
-								<img id="image-crop-preview" />
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-								<button type="button" class="btn btn-primary" id="btn-crop-done">Finish</button>
-							</div>
-						</div><!-- /.modal-content -->
-					</div><!-- /.modal-dialog -->
-				</div><!-- /.modal -->
-				{{ html.error(error.image) }}
-			</div>
-		</div>
-			
-		{#            STATUS        #}
-		<div class="form-group {% if error.status %} has-error {% endif %}">
-			<label for="select-status" class="control-label col-sm-2">
-				{% trans %} Status {% endtrans %}
-			</label>
-			<div class="col-sm-2">
-				<select name="status" id="select-status" class="form-control">
-					{% if not _user.contributor %} 
-						<option value="{{ constant('Article::STATUS_PUBLISH') }}"
-										{% if input['status'] == constant('Article::STATUS_PUBLISH') %}
-											selected
-										{% endif %}>
-							{% trans %} Publish {% endtrans %}
-						</option>
-					{% endif %}>
-					<option value="{{ constant('Article::STATUS_PENDING') }}"
-									{% if input['status'] == constant('Article::STATUS_PENDING') %}
-										selected
-									{% endif %}>
-						{% trans %} Need Review {% endtrans %}
-					</option>
-					<option value="{{ constant('Article::STATUS_DRAFT') }}"
-									{% if input['status'] == constant('Article::STATUS_DRAFT') %}
-										selected
-									{% endif %}>
-						{% trans %} Draft {% endtrans %}
-					</option>
-				</select>
-				{{ html.error(error.status) }}
-			</div>
-		</div>
-			
-		{#                SUBMIT            #}
-		<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-10">
-				<div class="btn-group">
-					<input type="submit" class="btn btn-primary" 
-								 value="Submit" />
-					<a data-pjax href="{{ urlFor('admin.article.index') }}" 
-						 class="btn btn-default">
-						{% trans %} Cancel {% endtrans %}
-					</a>
-				</div>
-			</div>
-		</div>
-	</form>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>
+                <fa class="fa fa-plus"></fa>
+                {% trans %} Add Article {% endtrans %}
+                <small>
+                    {% trans %} Publish or save as draft new article {% endtrans %}
+                </small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.index') }}">
+                        <i class="fa fa-dashboard"></i> 
+                        {% trans %} Dashboard {% endtrans %}
+                    </a>
+                </li>
+                <li>
+                    <a data-pjax href="{{ urlFor('admin.article.index') }}">
+                        <i class="fa fa-file"></i> 
+                        {% trans %} Article {% endtrans %}
+                    </a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-pencil"></i> 
+                    {% trans %} Add {% endtrans %}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <form data-pjax method="post" role="form" 
+          class="form-horizontal" action="{{ urlFor('admin.article.create') }}">
+
+        {#            TITLE         #}
+        <div class="form-group {% if error.title %} has-error {% endif %}">
+            <label class="control-label col-sm-2" for="title">
+                {% trans %} Title {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" 
+                       name="title" 
+                       value="{{ input['title'] }}" 
+                       placeholder="{% trans 'Enter Title' %}"/>
+                {{ html.error(error.title) }}
+            </div>
+        </div>
+
+        {#         CATEGORIES        #}
+        <div class="form-group">
+            <label for="select-categories" class="control-label col-sm-2">
+                {% trans %} Categories {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="categories[]" id="select-categories" class="form-control" multiple>
+                    {% for category in categories %}
+                        {% set label %}
+                            {% for translation in category.translations %} 
+                                {{ translation.name }} 
+                                {% if not loop.last %} &middot; {% endif %} 
+                            {% endfor %}
+                        {% endset %}
+                        <optgroup label="{{ label }}">
+                            {% for subcategory in category.subcategories %}
+                                <option value="{{ subcategory.id }}"> 
+                                    {% for translation in subcategory.translations %}
+                                        {{ translation.name }}
+                                        {% if not loop.last %} &middot; {% endif %}
+                                    {% endfor %}
+                                </option>
+                            {% endfor %}    
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {#           REGION           #}
+        <div class="form-group">
+            <label for="select-regions" class="control-label col-sm-2">
+                {% trans %} Regions {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="regions[]" id="select-regions" class="form-control" multiple>
+                    {% for region in regions  %}
+                        <optgroup label="{{ region.name }}">
+                            {% for province in region.children %}
+                                <option value="{{ province.id }}">{{ province.name }}</option>
+                            {% endfor %}
+                            {% for province in region.children %}
+                            <optgroup label="{{ province.name }}">
+                                {% for city in province.children %}
+                                    <option value="{{ city.id }}">{{ city.name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {#        CONTENT       #}
+        <div class="form-group {% if error.content %} has-error {% endif %}">
+            <label class="control-label col-sm-2" for="content">
+                {% trans %} Content {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <textarea id="textarea-content" 
+                          name="content" 
+                          class="form-control" 
+                          cols="30" 
+                          rows="10"
+                          placeholder="Content">{{ input['content'] }}
+                </textarea>
+                {{ html.error(error.content) }}
+            </div>
+        </div>
+
+        {#       RELATED ARTICLE    #}
+        <div class="form-group">
+            <label for="select-related" class="control-label col-sm-2">
+                {% trans %} Related {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <select name="related[]" id="select-related" class="form-control" multiple>
+                    {% for article in related %}
+                        <option value="{{ article.id }}">
+                            {{ article.detail.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {#           FEATURED IMAGE        #}
+        <div class="form-group {% if error.image %} has-error {% endif %}">
+            <label for="select-image" class="control-label col-sm-2">
+                {% trans %} Featured Image {% endtrans %}
+            </label>
+            <div class="col-sm-10">
+                <img src="http://placehold.it/320x240" id="img-preview" class="thumbnail" style="margin-bottom: 5px;"/>
+                <input type="hidden" name="image" id="input-image" />
+                <div class="fileinput fileinput-new" data-provides="fileinput">
+                    <span class="btn btn-default btn-file">
+                        <span class="fileinput-new">Select file</span>
+                        <span class="fileinput-exists">Change</span>
+                        <input type="file" id="select-image" accept="image/jpeg"/>
+                    </span>
+                </div>
+                <div class="modal" id="modal-crop">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                <h4 class="modal-title">Crop Image</h4>
+                            </div>
+                            <div class="modal-body">
+                                <img id="image-crop-preview" />
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" id="btn-crop-done">Finish</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+                {{ html.error(error.image) }}
+            </div>
+        </div>
+
+        {#            STATUS        #}
+        <div class="form-group {% if error.status %} has-error {% endif %}">
+            <label for="select-status" class="control-label col-sm-2">
+                {% trans %} Status {% endtrans %}
+            </label>
+            <div class="col-sm-2">
+                <select name="status" id="select-status" class="form-control">
+                    {% if not _user.contributor %} 
+                        <option value="{{ constant('STATUS_PUBLISH') }}"
+                                {% if input['status'] == constant('STATUS_PUBLISH') %}
+                                    selected
+                                {% endif %}>
+                            {% trans %} Publish {% endtrans %}
+                        </option>
+                    {% endif %}>
+                    <option value="{{ constant('STATUS_PENDING') }}"
+                            {% if input['status'] == constant('STATUS_PENDING') %}
+                                selected
+                            {% endif %}>
+                        {% trans %} Need Review {% endtrans %}
+                    </option>
+                    <option value="{{ constant('STATUS_DRAFT') }}"
+                            {% if input['status'] == constant('STATUS_DRAFT') %}
+                                selected
+                            {% endif %}>
+                        {% trans %} Draft {% endtrans %}
+                    </option>
+                </select>
+                {{ html.error(error.status) }}
+            </div>
+        </div>
+
+        {#                SUBMIT            #}
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <div class="btn-group">
+                    <input type="submit" class="btn btn-primary" 
+                           value="Submit" />
+                    <a data-pjax href="{{ urlFor('admin.article.index') }}" 
+                       class="btn btn-default">
+                        {% trans %} Cancel {% endtrans %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
 {% endblock %}
-	
+
 {% block script %}
-	<script type="text/javascript">
-		{% set script %}
-			var jcrop_api;
-			$('#textarea-content').summernote({height: 350});
-			$('#select-categories, #select-regions, #select-related').chosen();
-			$('#modal-crop').modal({
-				backdrop: 'static',
-				keyboard: false,
-				show: false
-			});
-			
-			$('#select-image').click(function() {
-				this.value = null;
-				if (jcrop_api != null) {
-					jcrop_api.destroy();
-				}
-			});
-			
-			$('#select-image').change(function(event) {
-				event.stopPropagation();
-				event.preventDefault();
-				var file = event.target.files[0];
-				
-				if (file.type !== 'image/jpeg')
-					return;
-				
-				var reader = new FileReader();
-				reader.onload = function(e) {
-					var image = new Image();
-					var maxWidth = $(window).innerWidth();
-					
-					image.src = e.target.result;
-					image.onload = function() {
-						var canvas = document.createElement('canvas');
-						if (image.width > maxWidth) {
-							var width = canvas.width = maxWidth - 40;
-							canvas.height = image.height * (width / image.height);
-							$('#modal-crop .modal-dialog').css({
-								width: maxWidth,
-								margin: 0
-							});
-						} else {
-							canvas.width = image.width;
-							canvas.height = image.height;
-							$('#modal-crop .modal-dialog').css({
-								width: image.width + 40,
-								marginTop: 30,
-								marginLeft: 'auto',
-								marginRight: 'auto'
-							});
-						}
-						
-						$('#modal-crop .modal-content').css('border-radius', 0);
-						$('.jcrop-holder img').css('max-width', 'none');
-						
-						var ctx = canvas.getContext('2d');
-						ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-						
-						$('#image-crop-preview')
-										.attr('src', canvas.toDataURL('image/jpeg'))
-										.Jcrop({
-											bgColor: 'black',
-							bgOpacity: .6,
-							setSelect: [0, 0, 320, 240],
-							aspectRatio: 4 / 3
-						}, function() {
-							jcrop_api = this;
-						});
-						
-						$('#btn-crop-done').click(function(e) {
-							canvas.width = 320;
-							canvas.height = 240;
-							var image = $('#image-crop-preview')[0];
-							var ctx = canvas.getContext('2d');
-							var selection = jcrop_api.tellSelect();
-							ctx.drawImage(image, selection.x, selection.y, selection.w, selection.h, 0, 0, canvas.width, canvas.height);
-							
-							var dataURL = canvas.toDataURL('image/jpeg');
-							
-							$('#img-preview').attr('src', dataURL);
-							$('#input-image').val(dataURL);
-							$('#modal-crop').modal('hide');
-						});
-						
-						$('#modal-crop').modal('show');
-					}
-				};
-				reader.readAsDataURL(file);
-			});
-		{% endset %}
-		{{ script|pack|raw }}
-	</script>
+    <script type="text/javascript">
+        {% set script %}
+            var jcrop_api;
+            $('#textarea-content').summernote({height: 350});
+            $('#select-categories, #select-regions, #select-related').chosen();
+            $('#modal-crop').modal({
+                backdrop: 'static',
+                keyboard: false,
+                show: false
+            });
+
+            $('#select-image').click(function() {
+                this.value = null;
+                if (jcrop_api != null) {
+                    jcrop_api.destroy();
+                }
+            });
+
+            $('#select-image').change(function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                var file = event.target.files[0];
+
+                if (file.type !== 'image/jpeg')
+                    return;
+
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var image = new Image();
+                    var maxWidth = $(window).innerWidth();
+
+                    image.src = e.target.result;
+                    image.onload = function() {
+                        var canvas = document.createElement('canvas');
+                        if (image.width > maxWidth) {
+                            var width = canvas.width = maxWidth - 40;
+                            canvas.height = image.height * (width / image.height);
+                            $('#modal-crop .modal-dialog').css({
+                                width: maxWidth,
+                                margin: 0
+                            });
+                        } else {
+                            canvas.width = image.width;
+                            canvas.height = image.height;
+                            $('#modal-crop .modal-dialog').css({
+                                width: image.width + 40,
+                                marginTop: 30,
+                                marginLeft: 'auto',
+                                marginRight: 'auto'
+                            });
+                        }
+
+                        $('#modal-crop .modal-content').css('border-radius', 0);
+                        $('.jcrop-holder img').css('max-width', 'none');
+
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                        $('#image-crop-preview')
+                                .attr('src', canvas.toDataURL('image/jpeg'))
+                                .Jcrop({
+                                    bgColor: 'black',
+                                    bgOpacity: .6,
+                                    setSelect: [0, 0, 320, 240],
+                                    aspectRatio: 4 / 3
+                                }, function() {
+                                    jcrop_api = this;
+                                });
+
+                        $('#btn-crop-done').click(function(e) {
+                            canvas.width = 320;
+                            canvas.height = 240;
+                            var image = $('#image-crop-preview')[0];
+                            var ctx = canvas.getContext('2d');
+                            var selection = jcrop_api.tellSelect();
+                            ctx.drawImage(image, selection.x, selection.y, selection.w, selection.h, 0, 0, canvas.width, canvas.height);
+
+                            var dataURL = canvas.toDataURL('image/jpeg');
+
+                            $('#img-preview').attr('src', dataURL);
+                            $('#input-image').val(dataURL);
+                            $('#modal-crop').modal('hide');
+                        });
+
+                        $('#modal-crop').modal('show');
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        {% endset %}
+        {{ script|pack|raw }}
+    </script>
 {% endblock %}

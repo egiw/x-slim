@@ -1,16 +1,17 @@
 <?php
 
 use Respect\Validation\Validator as V;
+use Respect\Validation\Exceptions\AllOfException;
 
 /* @var $app Application */
 $validator = V::create()
-	->key('title', V::create()->notEmpty()->length(16, 60))
-	->key('content', V::create()->notEmpty()->length(160))
-	->key('status', V::create()->in(array(
-	    Article::STATUS_PUBLISH,
-	    Article::STATUS_PENDING,
-	    Article::STATUS_DRAFT
-	)));
+        ->key('title', V::create()->notEmpty()->length(16, 60))
+        ->key('content', V::create()->notEmpty()->length(160))
+        ->key('status', V::create()->in(array(
+            STATUS_PUBLISH,
+            STATUS_PENDING,
+            STATUS_DRAFT
+        )));
 
 // validation messages
 $messages = array(
@@ -26,370 +27,390 @@ $messages = array(
 // manage article
 $app->group('/article', function() use ($app, $validator, $messages) {
 
-	/**
-	 * Display tabular data of articles
-	 */
-	$app->get('/', function() use ($app) {
-		$app->render("admin/article/index.twig");
-	})->name('admin.article.index');
+    // INDEX
+    $app->get('/', function() use ($app) {
+        $app->render("admin/article/index.twig");
+    })->name('admin.article.index');
 
-	/**
-	 * Create an article
-	 * Contributor can't publish article
-	 * article may either pending review or draft
-	 */
-	$app->map('/create', function() use($app, $validator, $messages) {
-		$data = array();
-		// Handle Post
-		if ($app->request->isPost()) {
-			try {
-				$data['input'] = $input = $app->request->post();
+    // CREATE
+    $app->map('/create', function() use($app, $validator, $messages) {
+        $data = array();
 
-				if ($input['status'] == Article::STATUS_PUBLISH && $app->user->isContributor()) {
-					$app->notFound();
-				}
+        // handle post
+        if ($app->request->isPost()) {
+            try {
+                $data['input'] = $input = $app->request->post();
 
-				$notExists = function($title) use ($app) {
-					return $app->db->getRepository("Articlei18n")
-							->findOneBy(array("title" => $title)) === null;
-				};
+                // contributor is prohibited to publish posts
+                if ($input['status'] == STATUS_PUBLISH && $app->user->isContributor()) {
+                    $app->halt(401, gettext('Not authorized to publish articles'));
+                }
 
-				// validation
-				$validator
-					->key('title', V::create()->callback($notExists)->setName('notExists'))
-					->key('image', V::create()->notEmpty())
-					->assert($input);
+                // title shouldn't be exists
+                $notExists = function($title) use ($app) {
+                    return $app->db->getRepository("Articlei18n")
+                                    ->findOneBy(array("title" => $title)) === null;
+                };
 
-				// save dataURI to JPG
-				$filename = uniqueFilename(UPLOAD_DIR . DS . slugify($input['title']) . '.jpg');
-				file_put_contents($filename, file_get_contents($input['image']));
+                // test input data
+                $validator
+                        ->key('title', V::create()->callback($notExists)->setName('notExists'))
+                        ->key('image', V::create()->notEmpty())
+                        ->assert($input);
 
-				$article = new Article();
-				$article->setStatus($input['status'])
-					->setAuthor($app->user)
-					->setCreatedAt(new DateTime('now'))
-					->setFeaturedImage(basename($filename));
+                // save dataURI to JPG
+                $filename = uniqueFilename(UPLOAD_DIR . DS . slugify($input['title']) . '.jpg');
+                if (!file_put_contents($filename, file_get_contents($input['image']))) {
+                    $app->halt(500, gettext('Featured image cannot be saved'));
+                };
 
-				if ($categories = $app->request->post('categories')) {
-					foreach ($categories as $key) {
-						if ($category = $app->db->find('Category', $key)) {
-							$article->addCategory($category);
-						}
-					}
-				}
+                $article = new Article();
+                $article->setDetail(new Articlei18n())
+                        ->setFeaturedImage(basename($filename));
 
-				if ($regions = $app->request->post('regions')) {
-					foreach ($regions as $key) {
-						if ($region = $app->db->find('Region', $key)) {
-							$article->addRegion($region);
-						}
-					}
-				}
+                $article->getDetail()
+                        ->setTitle($input['title'])
+                        ->setSlug(slugify($input['title']))
+                        ->setContent($input['content'])
+                        ->setAuthor($app->user)
+                        ->setCreatedAt(new DateTime('now'))
+                        ->setStatus($input['status']);
 
-				if ($related = $app->request->post('related')) {
-					foreach ($related as $articleId) {
-						if ($relatedArticle = $app->db->find('Article', $articleId)) {
-							$article->addRelated($relatedArticle);
-						}
-					}
-				}
+                foreach ($app->request->post('categories', array()) as $key) {
+                    $category = $app->db->find('Category', $key);
+                    if (null !== $category) {
+                        $article->addCategory($category);
+                    }
+                }
 
-				$i18n = new Articlei18n();
-				$i18n
-					->setLanguage($input['language'])
-					->setTitle($input['title'])
-					->setSlug(slugify($input['title']))
-					->setContent($input['content'])
-					->setCreatedAt(new DateTime('now'))
-					->setAuthor($app->user)
-					->setStatus($input['status'])
-					->setArticle($article);
+                foreach ($app->request->post('regions', array()) as $key) {
+                    $region = $app->db->find('Region', $key);
+                    if (null !== $region) {
+                        $article->addRegion($region);
+                    }
+                }
 
-				$article->addI18n($i18n);
-				$app->db->persist($article);
-				$app->db->persist($i18n);
-				$app->db->flush();
-				$app->flash('success', 'Article has successfully created');
-				$app->redirect($app->urlFor('admin.article.index'));
-			} catch (InvalidArgumentException $ex) {
-				$data['error'] = new Error($ex->findMessages($messages));
-			}
-		}
+                foreach ($app->request->post('related', array()) as $articleId) {
+                    $relatedArticle = $app->db->find('Article', $articleId);
+                    if (null !== $relatedArticle) {
+                        $article->addRelated($relatedArticle);
+                    }
+                }
 
-		$data['categories'] = $app->db->getRepository('Category')
-			->findBy(array('parent' => null));
-		$data['regions'] = $app->db->getRepository('Region')
-			->findBy(array('parent' => 0));
-		$data['related'] = $app->db->getRepository('Article')->findAll();
-		$app->render('admin/article/create.twig', $data);
-	})->via("GET", "POST")->name('admin.article.create');
+                $app->db->persist($article);
+                $app->db->flush();
 
-	/**
-	 * Edit an article
-	 * Contributor or Author can't edit other's article
-	 */
-	$app->map("/:id/edit", function($id) use ($app, $validator, $messages) {
-		$i18n = $app->db->find("Articlei18n", $id) or $app->notFound();
-		$i18n->isPermitted($app->user) or $app->notFound();
-		/* @var $i18n Articlei18n */
+                $app->flash(ALERT_SUCCESS, 'Article successfully created');
+                $app->redirect($app->urlFor('admin.article.index'));
+            } catch (AllOfException $ex) {
+                $data['error'] = new Error($ex->findMessages($messages));
+            }
+        }
 
-		$data = array("i18n" => $i18n);
-		if ($app->request->isPost()) {
-			try {
-				$data['input'] = $input = $app->request->post();
+        $data['categories'] = $app->db->getRepository('Category')
+                ->findBy(array('parent' => null));
+        $data['regions'] = $app->db->getRepository('Region')
+                ->findBy(array('parent' => 0));
+        $data['related'] = $app->db->getRepository('Article')->findAll();
 
-				if ($input['status'] == Article::STATUS_PUBLISH && $app->user->isContributor()) {
-					$app->notFound();
-				}
+        $app->render('admin/article/create.twig', $data);
+    })->via("GET", "POST")->name('admin.article.create');
 
-				$notExists = function($title) use ($app, $i18n) {
-					if ($i18n->getTitle() == $title) {
-						return true;
-					}
-					$_i18n = $app->db->getRepository("Articlei18n")
-						->findOneBy(array("title" => $title));
-					if (null === $_i18n || $i18n->getArticle() === $_i18n->getArticle()) {
-						return true;
-					}
-					return false;
-				};
+    // EDIT
+    $app->map("/:id/edit", function($id) use ($app, $validator, $messages) {
+        $data['article'] = $article = $app->db->find("Article", $id);
+        /* @var $article Article */
 
-				$validator->key('title', V::create()->callback($notExists)->setName('notExists'))
-					->assert($input);
+        if (null === $article) {
+            $app->notFound();
+        }
 
-				$oldTitle = $i18n->getTitle();
-				$i18n->setTitle($input['title'])
-					->setSlug(slugify($input['title']))
-					->setContent($input['content'])
-					->setUpdatedAt(new DateTime("now"))
-					->setUpdatedBy($app->user)
-					->setStatus($input['status']);
+        if ($article->getDetail()->isArchive()) {
+            $app->halt(403, gettext('It\'s not allowed to edit archived article'));
+        }
 
-				$article = $i18n->getArticle();
-				$categories = new Doctrine\Common\Collections\ArrayCollection();
-				$regions = new \Doctrine\Common\Collections\ArrayCollection();
-				$related = new \Doctrine\Common\Collections\ArrayCollection();
-				foreach ($app->request->post('categories', array()) as $key) {
-					if ($category = $app->db->find('Category', $key))
-						$categories->add($category);
-				}
-				foreach ($app->request->post('regions', array()) as $key) {
-					if ($region = $app->db->find('Region', $key))
-						$regions->add($region);
-				}
-				foreach ($app->request->post('related', array()) as $key) {
-					if ($relatedArticle = $app->db->find('Article', $key))
-						$related->add($relatedArticle);
-				}
-				$article->setUpdatedAt(new DateTime('now'))
-					->setCategories($categories)
-					->setRegions($regions)
-					->setRelated($related);
+        if (!$article->getDetail()->isPermitted($app->user)) {
+            $app->halt(401, gettext('Not authorized to edit this article'));
+        };
 
-				// upload new image and overwrite old image
-				if (!empty($input['image'])) {
-					// upload new image and overwrite old image
-					if ($fp = fopen(UPLOAD_DIR . DS . $article->getFeaturedImage(), 'w+')) {
-						fwrite($fp, file_get_contents($input['image']));
-						fclose($fp);
-					}
-				}
+        /* @var $i18n Articlei18n */
+        if ($app->request->isPost()) {
+            try {
+                $data['input'] = $input = $app->request->post();
 
-				$app->db->flush(array($article, $i18n));
-				$app->flash('succsss', gettext('Article has successfully updated'));
-				$app->redirect($app->urlFor("admin.article.index"));
-			} catch (InvalidArgumentException $ex) {
-				$data['error'] = new Error($ex->findMessages($messages));
-			}
-		}
+                // contributor is prohibited to publish posts
+                if ($input['status'] == STATUS_PUBLISH && $app->user->isContributor()) {
+                    $app->halt(401, gettext('Not authorized to publish articles'));
+                }
 
-		$data['categories'] = $app->db->getRepository('Category')->findBy(array(
-		    'parent' => null
-		));
+                // the article must not be exists
+                $notExists = function($title) use ($app, $article) {
+                    if ($article->getDetail()->getTitle() === $title) {
+                        return true;
+                    }
+                    $_i18n = $app->db->getRepository("Articlei18n")
+                            ->findOneBy(array("title" => $title));
 
-		$data['regions'] = $app->db->getRepository('Region')->findBy(array(
-		    'parent' => 0
-		));
+                    if (null === $_i18n) {
+                        return true;
+                    }
+                    return false;
+                };
 
-		$data['related'] = $app->db->getRepository('Article')->findAll();
+                $validator->key('title', V::create()->callback($notExists)->setName('notExists'))
+                        ->assert($input);
 
-		$app->render('admin/article/edit.twig', $data);
-	})->via("GET", "POST")->name("admin.article.edit");
+                $article->getDetail()
+                        ->setTitle($input['title'])
+                        ->setSlug(slugify($input['title']))
+                        ->setContent($input['content'])
+                        ->setUpdatedAt(new DateTime('now'))
+                        ->setUpdatedBy($app->user)
+                        ->setStatus($input['status']);
 
-	/**
-	 * Add an article translation
-	 */
-	$app->map('/:id/translate', function($id) use($app, $validator, $messages) {
-		$article = $app->db->find("Article", $id) or $app->notFound();
-		$article->isPermitted($app->user) or $app->notFound();
-		/* @var $article Article */
+                $categories = new Doctrine\Common\Collections\ArrayCollection();
+                $regions = new \Doctrine\Common\Collections\ArrayCollection();
+                $related = new \Doctrine\Common\Collections\ArrayCollection();
+                foreach ($app->request->post('categories', array()) as $key) {
+                    $category = $app->db->find('Category', $key);
+                    if (null !== $category) {
+                        $categories->add($category);
+                    }
+                }
+                foreach ($app->request->post('regions', array()) as $key) {
+                    $region = $app->db->find('Region', $key);
+                    if (null !== $region) {
+                        $regions->add($region);
+                    }
+                }
+                foreach ($app->request->post('related', array()) as $key) {
+                    $relatedArticle = $app->db->find('Article', $key);
+                    if (null !== $relatedArticle) {
+                        $related->add($relatedArticle);
+                    }
+                }
+                $article->setCategories($categories)
+                        ->setRegions($regions)
+                        ->setRelated($related);
 
-		$data = array('article' => $article);
-		if ($app->request->isPost()) {
-			try {
-				$data['input'] = $input = $app->request->post();
+                // upload new image and overwrite old image
+                if (!empty($input['image'])) {
+                    $fp = fopen(UPLOAD_DIR . DS . $article->getFeaturedImage(), 'w+');
+                    if ($fp !== FALSE) {
+                        fwrite($fp, file_get_contents($input['image']));
+                        fclose($fp);
+                    }
+                }
 
-				if ($app->user->isContributor() && $input['status'] === Article::STATUS_PUBLISH) {
-					$app->notFound();
-				}
+                $app->db->persist($article);
+                $app->db->flush();
+                $app->flash(ALERT_SUCCESS, gettext('Article successfully updated'));
+                $app->redirect($app->urlFor("admin.article.index"));
+            } catch (InvalidArgumentException $ex) {
+                $data['error'] = new Error($ex->findMessages($messages));
+            }
+        }
 
-				$notExists = function($title) use($app, $article) {
-					$i18n = $app->db->getRepository("Articlei18n")
-						->findOneBy(array("title" => $title));
-					return null == $i18n || $i18n->getArticle() == $article;
-				};
+        $data['categories'] = $app->db->getRepository('Category')->findBy(array(
+            'parent' => null
+        ));
 
-				// validation
-				$validator
-					->key("title", V::create()->callback($notExists)->setName("notExists"))
-					->assert($input);
+        $data['regions'] = $app->db->getRepository('Region')->findBy(array(
+            'parent' => 0
+        ));
 
-				$i18n = new Articlei18n();
-				$i18n
-					->setLanguage($input['language'])
-					->setTitle($input['title'])
-					->setSlug(slugify($input['title']))
-					->setContent($input['content'])
-					->setCreatedAt(new DateTime("now"))
-					->setAuthor($app->user)
-					->setStatus($input['status'])
-					->setArticle($article);
+        $data['related'] = $app->db->getRepository('Article')->findAll();
 
-				$article->addI18n($i18n)
-					->setUpdatedAt(new DateTime("now"));
+        $app->render('admin/article/edit.twig', $data);
+    })->via("GET", "POST")->name("admin.article.edit");
 
-				$app->db->persist($article);
-				$app->db->persist($i18n);
-				$app->db->flush();
-				$app->flash('success', gettext('Translation has successfully created'));
-				$app->redirect($app->urlFor("admin.article.index"));
-			} catch (InvalidArgumentException $ex) {
-				$data['error'] = new Error($ex->findMessages($messages));
-			}
-		}
-		$app->render("admin/article/translate.twig", $data);
-	})->via("GET", "POST")->name("admin.article.translate");
+    // TRANSLATE
+    $app->map('/:id/translate/:language', function($id, $language) use($app, $validator, $messages) {
+        $data['article'] = $article = $app->db->find('Article', $id);
+        /* @var $article Article */
 
-	// SET STATUS
-	$app->put('/:id/set/:status', 'ajax', function($id, $status) use($app) {
-		// contributor can't publish any post
-		if ($status === Article::STATUS_PUBLISH && $app->user->isContributor())
-			$app->notFound();
-		$article = $app->db->find('Article', $id) or $app->notFound();
-		$article->isPermitted($app->user) or $app->notFound();
+        if (null === $article) {
+            $app->notFound();
+        }
 
-		/* @var $article Article */
-		$article->setStatus($status)
-			->setUpdatedAt(new DateTime("now"))
-			->setUpdatedBy($app->user);
-		$app->db->persist($article);
-		$app->db->flush();
-		return $app->response->write(true);
-	})->conditions(array("status" => "(" . Article::STATUS_PUBLISH . "|" . Article::STATUS_DRAFT . "|" . Article::STATUS_PENDING . "|" . Article::STATUS_ARCHIVE . ")"))->name('admin.article.set');
+        if (!$article->isPermitted($app->user)) {
+            $app->halt(401, gettext('Not authorized to translate this article'));
+        }
 
-	// DELETE
-	$app->delete("/:id(/:cid)", 'ajax', function($id, $cid = null) use($app) {
-		if ($article = $app->db->find("Article", $id)) {
-			/* @var $article Article */
-			if ($cid && $i18n = $app->db->find('Articlei18n', $cid)) {
-				/* @var $i18n Articlei18n */
-				if (!$i18n->isPermitted($app->user))
-					$app->notFound();
-				$article->removeI18n($i18n);
-				$app->db->remove($i18n);
-				if (!$article->getI18n()->count()) {
-					$app->db->remove($article);
-				}
-			} elseif ($article->getStatus() == Article::STATUS_ARCHIVE) {
-				if (!$article->isPermitted($app->user))
-					$app->notFound();
-				$app->db->remove($article);
-			} else {
-				$app->notFound();
-			}
-			$app->db->flush();
-			return $app->response->write(true);
-		}
-		$app->notFound();
-	})->name("admin.article.delete");
+        $data['i18n'] = $i18n = $app->db->getRepository('Articlei18n')->findOneBy(array(
+            'base' => $article->getDetail(),
+            'language' => $language
+        ));
 
-	/**
-	 * Serve datatables data
-	 * Admin or editor are allowed to see all posts
-	 * Contributor or author are only allowed to see own posts
-	 */
-	$app->get('/datatables(/:status)', 'ajax', function($status = null) use($app) {
-		$qb = $app->db
-			->getRepository("Articlei18n")
-			->createQueryBuilder("a")
-			->join("a.article", "b");
+        if (null === $i18n) {
+            $data['i18n'] = $i18n = new Articlei18n();
+            $i18n
+                    ->setLanguage($language)
+                    ->setBase($article->getDetail())
+                    ->setAuthor($app->user)
+                    ->setCreatedAt(new DateTime('now'));
+        } else {
+            $i18n->setUpdatedAt(new DateTime('now'))
+                    ->setUpdatedBy($app->user);
+        }
 
-		if ($app->request->get('type') == 1 || $app->user->isContributor() || $app->user->isAuthor()) {
-			$qb->where("b.author = :author")
-				->setParameter("author", $app->user);
-		}
+        if ($app->request->isPost()) {
+            try {
+                $data['input'] = $input = $app->request->post();
 
-		if ($status) {
-			$qb->andWhere("b.status = :status")
-				->setParameter("status", $status);
-		}
+                if ($app->user->isContributor() && $input['status'] === STATUS_PUBLISH) {
+                    $app->halt(401, gettext('Not authorized to publish translations'));
+                }
 
-		foreach ($app->request->get('order') as $order) {
-			switch ((int) $order['column']) {
-				case 3:
-					$qb->addOrderBy("b.createdAt", $order['dir'])
-						->addOrderBy("a.createdAt", $order['dir']);
-					break;
-				case 4:
-					$qb->addOrderBy("b.updatedAt", $order['dir'])
-						->addOrderBy("a.updatedAt", $order['dir']);
-					break;
-			}
-		}
+                $notExists = function($title) use($app, $i18n) {
+                    $exists = $app->db->getRepository("Articlei18n")
+                            ->findOneBy(array('title' => $title));
+                    /* @var $exists Articlei18n */
+                    return null === $exists || $exists === $i18n->getBase();
+                };
 
-		$app->contentType("application/json");
-		$data = new DataTables($qb, 'admin/article/datatables.twig', array('a.title'));
-		return $app->response->write(json_encode($data));
-	})->name('admin.article.datatables');
+                // validation
+                $validator
+                        ->key("title", V::create()->callback($notExists)->setName("notExists"))
+                        ->assert($input);
 
-	// DETAIL
-	$app->get('/:id', 'ajax', function($id) use($app) {
-		if ($i18n = $app->db->find('Articlei18n', $id)) {
-			$app->render('admin/article/detail.twig', array(
-			    'i18n' => $i18n
-			));
-		} else {
-			$app->notFound();
-		}
-	})->name('admin.article.detail')->conditions(array('id' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'));
+                $i18n
+                        ->setTitle($input['title'])
+                        ->setSlug(slugify($input['title']))
+                        ->setContent($input['content'])
+                        ->setStatus($input['status']);
 
-	/**
-	 * AJAX
-	 * Get count summary
-	 */
-	$app->get('/count', 'ajax', function() use ($app) {
-		$qb = $app->db->getRepository("Article")
-			->createQueryBuilder("a")
-			->select("COUNT(a)")
-			->where("a.status = :status");
+                $app->db->persist($i18n);
+                $app->db->flush();
+                $app->flash('success', gettext('Translations updated successfully'));
+                $app->redirect($app->urlFor("admin.article.index"));
+            } catch (InvalidArgumentException $ex) {
+                $data['error'] = new Error($ex->findMessages($messages));
+            }
+        }
+        $app->render("admin/article/translate.twig", $data);
+    })->via("GET", "POST")->name("admin.article.translate");
 
-		if ($app->request->get('type') == 1 || $app->user->isContributor() || $app->user->isAuthor()) {
-			$qb->andWhere("a.author = :author")
-				->setParameter("author", $app->user);
-		}
+    // SET STATUS
+    $app->put('/:id/set/:status', 'ajax', function($id, $status) use($app) {
+        $article = $app->db->find('Article', $id);
+        /* @var $article Article */
+        if (null === $article) {
+            $app->notFound();
+        }
 
-		$data['publish'] = $qb->setParameter("status", Article::STATUS_PUBLISH)
-				->getQuery()->getSingleScalarResult();
-		$data['draft'] = $qb->setParameter("status", Article::STATUS_DRAFT)
-				->getQuery()->getSingleScalarResult();
-		$data['pending'] = $qb->setParameter("status", Article::STATUS_PENDING)
-				->getQuery()->getSingleScalarResult();
-		$data['archive'] = $qb->setParameter("status", Article::STATUS_ARCHIVE)
-				->getQuery()->getSingleScalarResult();
+        if (// contributor is publishing an article
+                ($status === STATUS_PUBLISH && $app->user->isContributor())
+                // or the article is not belongs to user(author or contributor)
+                || !$article->isPermitted($app->user)) {
+            $app->halt(401);
+        };
 
-		$app->contentType("application/json");
-		return $app->response->body(json_encode($data));
-	})->name('admin.article.count');
+        $article->getDetail()
+                ->setStatus($status)
+                ->setUpdatedAt(new DateTime("now"))
+                ->setUpdatedBy($app->user);
 
-	include 'article/image.php';
+        $app->db->persist($article);
+        $app->db->flush();
+        return $app->response->write(true);
+    })->conditions(array("status" => "(" . STATUS_PUBLISH . "|" . STATUS_DRAFT . "|" . STATUS_PENDING . "|" . STATUS_ARCHIVE . ")"))->name('admin.article.set');
+
+    // DELETE
+    $app->delete("/:id(/:language)", 'ajax', function($id, $language = null) use($app) {
+        $article = $app->db->find('Article', $id);
+        /* @var $article Article */
+
+        if (null === $article) {
+            $app->notFound();
+        }
+
+        if (!$article->getDetail()->isPermitted($app->user)) {
+            $app->halt(401, gettext('Not authorized to delete this article'));
+        }
+
+        if (null === $language) {
+            if (!$article->getDetail()->isArchive()) {
+                $app->halt(403, gettext('It\'s not allowed to delete non-archived articles'));
+            }
+            $app->db->remove($article);
+        } else {
+            $i18n = $app->db->getRepository('Articlei18n')->findOneBy(array(
+                'base' => $article->getDetail(),
+                'language' => $language
+            ));
+
+            if (null === $i18n) {
+                $app->notFound();
+            }
+
+            $app->db->remove($i18n);
+        }
+        $app->db->flush();
+        $app->contentType('application/json');
+        return $app->response->write(true);
+    })->name("admin.article.delete");
+
+    // DATATABLE
+    $app->get('/datatables(/:status)', function($status = null) use($app) {
+        $qb = $app->db
+                ->getRepository("Article")
+                ->createQueryBuilder("a")
+                ->join('a.detail', 'b');
+
+//		if ($app->request->get('type') == 1 || $app->user->isContributor() || $app->user->isAuthor()) {
+//			$qb->where("b.author = :author")
+//					->setParameter("author", $app->user);
+//		}
+//
+        if (null !== $status) {
+            $qb->andWhere("b.status = :status")
+                    ->setParameter("status", $status);
+        }
+//
+//		foreach ($app->request->get('order') as $order) {
+//			switch ((int) $order['column']) {
+//				case 3:
+//					$qb->addOrderBy("b.createdAt", $order['dir'])
+//							->addOrderBy("a.createdAt", $order['dir']);
+//					break;
+//				case 4:
+//					$qb->addOrderBy("b.updatedAt", $order['dir'])
+//							->addOrderBy("a.updatedAt", $order['dir']);
+//					break;
+//			}
+//		}
+//
+        $app->contentType("application/json");
+        $data = new DataTables($qb, 'admin/article/datatables.twig');
+        return $app->response->write(json_encode($data));
+    })->name('admin.article.datatables');
+
+    // COUNT SUMMARY
+    $app->get('/count', 'ajax', function() use ($app) {
+        $qb = $app->db->getRepository("Article")
+                ->createQueryBuilder("a")
+                ->join('a.detail', 'b')
+                ->select("COUNT(a)")
+                ->where("b.status = :status");
+
+        if ($app->request->get('type') == 1 || $app->user->isContributor() || $app->user->isAuthor()) {
+            $qb->andWhere("b.author = :author")
+                    ->setParameter("author", $app->user);
+        }
+
+        $data['publish'] = $qb->setParameter("status", STATUS_PUBLISH)
+                        ->getQuery()->getSingleScalarResult();
+        $data['draft'] = $qb->setParameter("status", STATUS_DRAFT)
+                        ->getQuery()->getSingleScalarResult();
+        $data['pending'] = $qb->setParameter("status", STATUS_PENDING)
+                        ->getQuery()->getSingleScalarResult();
+        $data['archive'] = $qb->setParameter("status", STATUS_ARCHIVE)
+                        ->getQuery()->getSingleScalarResult();
+
+        $app->contentType("application/json");
+        return $app->response->body(json_encode($data));
+    })->name('admin.article.count');
+
+    include 'article/image.php';
 });

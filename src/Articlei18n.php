@@ -8,406 +8,284 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Articlei18n {
 
-	const STATUS_PUBLISH = 'publish';
-	const STATUS_DRAFT = 'draft';
-	const STATUS_PENDING = 'pending';
+    /**
+     * @Id
+     * @GeneratedValue(strategy="UUID")
+     * @Column(type="string", length=36)
+     * @var string
+     */
+    private $id;
 
-	/**
-	 * @Id
-	 * @GeneratedValue(strategy="UUID")
-	 * @Column(type="string", length=36)
-	 * @var string
-	 */
-	private $id;
+    /**
+     * @Column(type="string", length=2)
+     * @var string
+     */
+    private $language = "id";
 
-	/**
-	 * @Column(type="string", length=2)
-	 * @var string
-	 */
-	private $language = "id";
+    /**
+     * @Column(type="string", length=60)
+     * @var string
+     */
+    private $title;
 
-	/**
-	 * @Column(type="string", length=60)
-	 * @var string
-	 */
-	private $title;
+    /**
+     * @Column(type="string", length=80)
+     * @var string
+     */
+    private $slug;
 
-	/**
-	 * @Column(type="string", length=80)
-	 * @var string
-	 */
-	private $slug;
+    /**
+     * @Column(type="text")
+     * @var string
+     */
+    private $content;
 
-	/**
-	 * @Column(type="text")
-	 * @var string
-	 */
-	private $content;
+    /**
+     * @Column(type="string", length=8, columnDefinition="ENUM('publish', 'draft', 'pending', 'archive')")
+     * @var string
+     */
+    private $status;
 
-	/**
-	 * @Column(type="string", length=8, columnDefinition="ENUM('publish', 'draft', 'pending')")
-	 * @var string
-	 */
-	private $status;
+    /**
+     * @Column(type="datetime", name="created_at")
+     * @var \DateTime
+     */
+    private $createdAt;
 
-	/**
-	 * @Column(type="datetime", name="created_at")
-	 * @var \DateTime
-	 */
-	private $createdAt;
+    /**
+     * @Column(type="datetime", name="updated_at", nullable=true)
+     * @var \DateTime
+     */
+    private $updatedAt;
 
-	/**
-	 * @Column(type="datetime", name="updated_at", nullable=true)
-	 * @var \DateTime
-	 */
-	private $updatedAt;
+    /**
+     * @ManyToOne(targetEntity="User", inversedBy="articles")
+     * @JoinColumn(name="created_by", referencedColumnName="id", onDelete="SET NULL")
+     * @var \User
+     */
+    private $author;
 
-	/**
-	 * @ManyToOne(targetEntity="User", inversedBy="articles")
-	 * @JoinColumn(name="created_by", referencedColumnName="id", onDelete="SET NULL")
-	 * @var \User
-	 */
-	private $author;
+    /**
+     * @ManyToOne(targetEntity="User")
+     * @JoinColumn(name="updated_by", referencedColumnName="id")
+     * @var \User
+     */
+    private $updatedBy;
 
-	/**
-	 * @ManyToOne(targetEntity="User")
-	 * @JoinColumn(name="updated_by", referencedColumnName="id")
-	 * @var \User
-	 */
-	private $updatedBy;
+    /**
+     * @ManyToOne(targetEntity="Articlei18n", cascade={"persist"}, fetch="LAZY", inversedBy="translations")
+     * @var Articlei18n
+     */
+    private $base;
 
-	/**
-	 * @ManyToOne(targetEntity="Article", inversedBy="i18n", cascade={"persist"})
-	 * @var \Article
-	 */
-	private $article;
+    /**
+     * @OneToMany(targetEntity="Articlei18n", mappedBy="base", cascade={"persist"}, orphanRemoval=true)
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $i18n;
 
-	/**
-	 *
-	 * @ManyToMany(targetEntity="Stat", cascade={"persist", "remove", "detach"})
-	 * @JoinTable(
-	 *  name="articlei18n_stat", 
-	 *  joinColumns={@JoinColumn(name="articlei18n_id", referencedColumnName="id", onDelete="cascade")}, 
-	 *  inverseJoinColumns={@JoinColumn(name="stat_id", referencedColumnName="id", unique=true, onDelete="cascade")}
-	 * )
-	 * @var \Doctrine\Common\Collections\Collection 
-	 */
-	private $stats;
+    /**
+     * @OneToOne(targetEntity="Article", mappedBy="detail", cascade={"persist"})
+     * @var Article 
+     */
+    private $article;
 
-	/**
-	 * @OneToMany(targetEntity="Imagei18n", mappedBy="articlei18n", cascade={"persist"}, orphanRemoval=true)
-	 * @var \Doctrine\Common\Collections\Collection
-	 */
-	private $images;
+    /**
+     *
+     * @ManyToMany(targetEntity="Stat", cascade={"persist", "remove", "detach"})
+     * @JoinTable(
+     *  name="articlei18n_stat", 
+     *  joinColumns={@JoinColumn(name="articlei18n_id", referencedColumnName="id", onDelete="cascade")}, 
+     *  inverseJoinColumns={@JoinColumn(name="stat_id", referencedColumnName="id", unique=true, onDelete="cascade")}
+     * )
+     * @var \Doctrine\Common\Collections\Collection 
+     */
+    private $stats;
 
-	public function __construct() {
-		$this->stats = new \Doctrine\Common\Collections\ArrayCollection();
-	}
+    public function __construct() {
+        $this->stats = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
-	/**
-	 * Add article statistic
-	 * @param Stat $stat
-	 * @return \Articlei18n
-	 */
-	public function addStat(Stat $stat) {
-		$this->stats[] = $stat;
+    public function getId() {
+        return $this->id;
+    }
 
-		return $this;
-	}
+    public function getLanguage() {
+        return $this->language;
+    }
 
-	/**
-	 * get article statistics
-	 * @return Doctrine\Common\Collections\ArrayCollection
-	 */
-	public function getStats() {
-		return $this->stats;
-	}
+    public function getTitle() {
+        return $this->title;
+    }
 
-	/**
-	 * Set language
-	 *
-	 * @param string $language
-	 * @return Articlei18n
-	 */
-	public function setLanguage($language) {
-		$this->language = $language;
+    public function getSlug() {
+        return $this->slug;
+    }
 
-		return $this;
-	}
+    public function getContent() {
+        return $this->content;
+    }
 
-	/**
-	 * Get language
-	 *
-	 * @return string 
-	 */
-	public function getLanguage() {
-		return $this->language;
-	}
+    public function getStatus() {
+        return $this->status;
+    }
 
-	/**
-	 * Set title
-	 *
-	 * @param string $title
-	 * @return Articlei18n
-	 */
-	public function setTitle($title) {
-		$this->title = $title;
+    public function getCreatedAt() {
+        return $this->createdAt;
+    }
 
-		return $this;
-	}
+    public function getUpdatedAt() {
+        return $this->updatedAt;
+    }
 
-	/**
-	 * Get title
-	 *
-	 * @return string 
-	 */
-	public function getTitle() {
-		return $this->title;
-	}
+    public function getAuthor() {
+        return $this->author;
+    }
 
-	/**
-	 * Set slug
-	 *
-	 * @param string $slug
-	 * @return Articlei18n
-	 */
-	public function setSlug($slug) {
-		$this->slug = $slug;
+    public function getUpdatedBy() {
+        return $this->updatedBy;
+    }
 
-		return $this;
-	}
+    public function getArticle() {
+        return $this->article;
+    }
 
-	/**
-	 * Get slug
-	 *
-	 * @return string 
-	 */
-	public function getSlug() {
-		return $this->slug;
-	}
+    public function getBase() {
+        return $this->base;
+    }
 
-	/**
-	 * Set content
-	 *
-	 * @param string $content
-	 * @return Articlei18n
-	 */
-	public function setContent($content) {
-		$this->content = $content;
+    public function getI18n() {
+        return $this->i18n;
+    }
 
-		return $this;
-	}
+    public function getStats() {
+        return $this->stats;
+    }
 
-	/**
-	 * Get content
-	 *
-	 * @return string 
-	 */
-	public function getContent() {
-		return $this->content;
-	}
+    public function setLanguage($language) {
+        $this->language = $language;
 
-	/**
-	 * Set status
-	 *
-	 * @param string $status
-	 * @return Articlei18n
-	 */
-	public function setStatus($status) {
-		$this->status = $status;
+        return $this;
+    }
 
-		return $this;
-	}
+    public function setTitle($title) {
+        $this->title = $title;
 
-	/**
-	 * Get status
-	 *
-	 * @return string 
-	 */
-	public function getStatus() {
-		return $this->status;
-	}
+        return $this;
+    }
 
-	/**
-	 * Set createdAt
-	 *
-	 * @param \DateTime $createdAt
-	 * @return Articlei18n
-	 */
-	public function setCreatedAt($createdAt) {
-		$this->createdAt = $createdAt;
+    public function setSlug($slug) {
+        $this->slug = $slug;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Get createdAt
-	 *
-	 * @return \DateTime 
-	 */
-	public function getCreatedAt() {
-		return $this->createdAt;
-	}
+    public function setContent($content) {
+        $this->content = $content;
 
-	/**
-	 * Set updatedAt
-	 *
-	 * @param \DateTime $updatedAt
-	 * @return Articlei18n
-	 */
-	public function setUpdatedAt($updatedAt) {
-		$this->updatedAt = $updatedAt;
+        return $this;
+    }
 
-		return $this;
-	}
+    public function setStatus($status) {
+        $this->status = $status;
 
-	/**
-	 * Get updatedAt
-	 *
-	 * @return \DateTime 
-	 */
-	public function getUpdatedAt() {
-		return $this->updatedAt;
-	}
+        return $this;
+    }
 
-	/**
-	 * Get id
-	 *
-	 * @return string 
-	 */
-	public function getId() {
-		return $this->id;
-	}
+    public function setCreatedAt(\DateTime $createdAt) {
+        $this->createdAt = $createdAt;
 
-	/**
-	 * Set author
-	 *
-	 * @param \User $author
-	 * @return Articlei18n
-	 */
-	public function setAuthor(\User $author = null) {
-		$this->author = $author;
+        return $this;
+    }
 
-		return $this;
-	}
+    public function setUpdatedAt(\DateTime $updatedAt) {
+        $this->updatedAt = $updatedAt;
 
-	/**
-	 * Get author
-	 *
-	 * @return \User 
-	 */
-	public function getAuthor() {
-		return $this->author;
-	}
+        return $this;
+    }
 
-	/**
-	 * Set updatedBy
-	 *
-	 * @param \User $updatedBy
-	 * @return Articlei18n
-	 */
-	public function setUpdatedBy(\User $updatedBy = null) {
-		$this->updatedBy = $updatedBy;
+    public function setAuthor(\User $author) {
+        $this->author = $author;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Get updatedBy
-	 *
-	 * @return \User 
-	 */
-	public function getUpdatedBy() {
-		return $this->updatedBy;
-	}
+    public function setUpdatedBy(\User $updatedBy) {
+        $this->updatedBy = $updatedBy;
 
-	/**
-	 * Set article
-	 *
-	 * @param \Article $article
-	 * @return Articlei18n
-	 */
-	public function setArticle(\Article $article = null) {
-		$this->article = $article;
+        return $this;
+    }
 
-		return $this;
-	}
+    public function setArticle(Article $article) {
+        $this->article = $article;
 
-	/**
-	 * Get article
-	 *
-	 * @return \Article 
-	 */
-	public function getArticle() {
-		return $this->article;
-	}
+        return $this;
+    }
 
-	public function getImages() {
-		return $this->images;
-	}
+    public function setBase(Articlei18n $base) {
+        $this->base = $base;
 
-	public function setImages(\Doctrine\Common\Collections\Collection $images) {
-		$this->images = $images;
+        return $this;
+    }
 
-		return $this;
-	}
+    public function setI18n(\Doctrine\Common\Collections\Collection $i18n) {
+        $this->i18n = $i18n;
 
-	public function addImage(Imagei18n $imagei18n) {
-		$this->images->add($imagei18n);
+        return $this;
+    }
 
-		return $this;
-	}
+    public function setStats(\Doctrine\Common\Collections\Collection $stats) {
+        $this->stats = $stats;
 
-	/**
-	 * Check if article is published
-	 * @return bool
-	 */
-	public function isPublish() {
-		return $this->getStatus() === self::STATUS_PUBLISH;
-	}
+        return $this;
+    }
 
-	/**
-	 * Check if article is draft
-	 * @return bool
-	 */
-	public function isDraft() {
-		return $this->getStatus() === self::STATUS_DRAFT;
-	}
+    /**
+     * Check if article is published
+     * @return bool
+     */
+    public function isPublish() {
+        return $this->getStatus() === STATUS_PUBLISH;
+    }
 
-	/**
-	 * Check if article is pending
-	 * 
-	 * @return bool
-	 */
-	public function isPending() {
-		return $this->getStatus() === self::STATUS_PENDING;
-	}
+    /**
+     * Check if article is draft
+     * @return bool
+     */
+    public function isDraft() {
+        return $this->getStatus() === STATUS_DRAFT;
+    }
 
-	/**
-	 * Check if this article is belongs to user
-	 * 
-	 * @param User $user
-	 * @return bool
-	 */
-	public function belongsTo(User $user) {
-		return $this->author === $user;
-	}
+    /**
+     * Check if article is pending
+     * 
+     * @return bool
+     */
+    public function isPending() {
+        return $this->getStatus() === STATUS_PENDING;
+    }
 
-	/**
-	 * Shorthand get parent article categories
-	 * @return Doctrine\Common\Collections\Collection
-	 */
-	public function getCategories() {
-		return $this->getArticle()->getCategories();
-	}
+    public function isArchive() {
+        return $this->getStatus() === STATUS_ARCHIVE;
+    }
 
-	/**
-	 * Check if user is permitted to modify this article
-	 * @param User $user
-	 * @return bool
-	 */
-	public function isPermitted(User $user) {
-		return !(($user->isAuthor() || $user->isContributor()) && !($this->belongsTo($user) || $this->article->belongsTo($user)));
-	}
+    /**
+     * Check if this article is belongs to user
+     * 
+     * @param User $user
+     * @return bool
+     */
+    public function belongsTo(User $user) {
+        return $this->author === $user;
+    }
+
+    /**
+     * Check if user is permitted to modify this article
+     * @param User $user
+     * @return bool
+     */
+    public function isPermitted(User $user) {
+        return !(($user->isAuthor() || $user->isContributor()) && !($this->belongsTo($user) || $this->article->belongsTo($user)));
+    }
 
 }

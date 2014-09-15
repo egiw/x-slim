@@ -35,42 +35,38 @@
         </div>
     </div>
 
-    <div class="panel-group" id="translations">
-        {% set translated = [] %}
-        {% for i18n in article.i18n %}
-            {% set translated = translated|merge([i18n.language]) %}
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <span class="label label-primary">{{ i18n.language|upper }}</span>
-                        <a data-toggle="collapse" data-parent="translations" href="#collpase{{ loop.index }}">
-                            {{ i18n.title }}
-                        </a>
-                    </h4>
-                </div>
-                <div id="collpase{{ loop.index }}" class="panel-collapse collapse">
-                    <div class="panel-body">
-                        {{ i18n.content|raw }}
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
     <form data-pjax method="post" role="form" 
-          class="form-horizontal" action="{{ urlFor('admin.article.translate', {id: article.id}) }}">
+          class="form-horizontal" action="{{ urlFor('admin.article.translate', {id: article.id, language: i18n.language}) }}">
+
         <div class="form-group">
-            <label for="select-language" class="control-label col-sm-2">
+            <label class="control-label col-sm-2">
                 {% trans %} Language {% endtrans %}
             </label>
             <div class="col-sm-2">
-                <select name="language" class="form-control" id="select-language">
-                    {% for language, text in languages %}
-                        <option {% if language in translated %} disabled {% endif %} value="{{ language }}" >
-                            {{ text }}
-                        </option>
-                    {% endfor %}
-                </select>
+                <p class="form-control-static">{{ translations[i18n.language] }}</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">{% trans %} Original {% endtrans %}</label>
+            <div class="col-sm-10">
+                {#                    ORIGINAL#}
+                <div class="panel-group" id="translations" style="margin-bottom: 0">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="translations" href="#collpase1">
+                                    {{ article.detail.title }}
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collpase1" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                {{ article.detail.content|raw }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -81,7 +77,7 @@
             <div class="col-sm-10">
                 <input type="text" class="form-control" 
                        name="title" 
-                       value="{{ input['title'] }}" 
+                       value="{{ input.title|default(i18n.title) }}" 
                        placeholder="{% trans 'Enter Title' %}"/>
                 {{ html.error(error.title) }}
             </div>
@@ -96,7 +92,7 @@
                           class="form-control" 
                           cols="30" 
                           rows="10"
-                          placeholder="Content">{{ input['content'] }}
+                          placeholder="Content">{{ input.content|default(i18n.content) }}
                 </textarea>
                 {{ html.error(error.content) }}
             </div>
@@ -107,17 +103,17 @@
             <div class="col-sm-2">
                 <select name="status" id="select-status" class="form-control">
                     {% if not _user.contributor %}
-                        <option value="{{ constant('Article::STATUS_PUBLISH') }}"
-                                {% if article.publish %} selected {% endif %}>
+                        <option value="{{ constant('STATUS_PUBLISH') }}"
+                                {% if i18n.publish %} selected {% endif %}>
                             {% trans %} Publish {% endtrans %}
                         </option>
                     {% endif %}
-                    <option value="{{ constant('Article::STATUS_PENDING') }}"
-                            {% if article.pending %} selected {% endif %}>
+                    <option value="{{ constant('STATUS_PENDING') }}"
+                            {% if i18n.pending %} selected {% endif %}>
                         {% trans %} Need Review {% endtrans %}
                     </option>
-                    <option value="{{ constant('Article::STATUS_DRAFT') }}"
-                            {% if article.draft %} selected {% endif %}>
+                    <option value="{{ constant('STATUS_DRAFT') }}"
+                            {% if i18n.draft %} selected {% endif %}>
                         {% trans %} Draft {% endtrans %}
                     </option>
                 </select>
