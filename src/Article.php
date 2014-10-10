@@ -187,21 +187,4 @@ class Article {
 		return $this;
 	}
 
-	/**
-	 * Check if article belongs to user
-	 * @param User $user
-	 */
-	public function belongsTo(User $user) {
-		return $this->author === $user;
-	}
-
-	/**
-	 * Check if user is permitted to modify this article
-	 * @param User $user
-	 * @return bool
-	 */
-	public function isPermitted(User $user) {
-		return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
-	}
-
 }

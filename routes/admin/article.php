@@ -41,18 +41,18 @@ $app->group('/article', function() use ($app, $validator, $messages) {
             try {
                 $data['input'] = $input = $app->request->post();
 
-                // contributor is prohibited to publish posts
+                // contributor can't publish articles
                 if ($input['status'] == STATUS_PUBLISH && $app->user->isContributor()) {
                     $app->halt(401, gettext('Not authorized to publish articles'));
                 }
 
-                // title shouldn't be exists
+                // prevent duplicate title
                 $notExists = function($title) use ($app) {
                     return $app->db->getRepository("Articlei18n")
                                     ->findOneBy(array("title" => $title)) === null;
                 };
 
-                // test input data
+                // validate
                 $validator
                         ->key('title', V::create()->callback($notExists)->setName('notExists'))
                         ->key('image', V::create()->notEmpty())
@@ -100,7 +100,22 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                 $app->db->persist($article);
                 $app->db->flush();
 
-                $app->flash(ALERT_SUCCESS, 'Article successfully created');
+                switch ($input['status']) {
+                    case STATUS_PUBLISH:
+                        $flashMessage = gettext('Article has published successfully');
+                        break;
+                    case STATUS_PENDING:
+                        $flashMessage = gettext('Article has created successfully but need a review');
+                        break;
+                    case STATUS_DRAFT:
+                        $flashMessage = gettext('Aritlce has successfully saved as draft');
+                        break;
+                    default :
+                        $flashMessage = gettext('Article has created successfully');
+                        break;
+                }
+
+                $app->flash(ALERT_SUCCESS, $flashMessage);
                 $app->redirect($app->urlFor('admin.article.index'));
             } catch (AllOfException $ex) {
                 $data['error'] = new Error($ex->findMessages($messages));
@@ -229,19 +244,23 @@ $app->group('/article', function() use ($app, $validator, $messages) {
         $data['article'] = $article = $app->db->find('Article', $id);
         /* @var $article Article */
 
+        // the article must be exists
         if (null === $article) {
             $app->notFound();
         }
 
-        if (!$article->isPermitted($app->user)) {
+        // unauthorized user cannot edit translations
+        if (!$article->getDetail()->isPermitted($app->user)) {
             $app->halt(401, gettext('Not authorized to translate this article'));
         }
 
+        // get the translated version of article if any
         $data['i18n'] = $i18n = $app->db->getRepository('Articlei18n')->findOneBy(array(
             'base' => $article->getDetail(),
             'language' => $language
         ));
 
+        // if not created yet, create a new one otherwise edit the existing
         if (null === $i18n) {
             $data['i18n'] = $i18n = new Articlei18n();
             $i18n
@@ -254,10 +273,12 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     ->setUpdatedBy($app->user);
         }
 
+        /// handle form submission via POST
         if ($app->request->isPost()) {
             try {
                 $data['input'] = $input = $app->request->post();
 
+                // contributor cannot publish any posts
                 if ($app->user->isContributor() && $input['status'] === STATUS_PUBLISH) {
                     $app->halt(401, gettext('Not authorized to publish translations'));
                 }
@@ -266,10 +287,11 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                     $exists = $app->db->getRepository("Articlei18n")
                             ->findOneBy(array('title' => $title));
                     /* @var $exists Articlei18n */
-                    return null === $exists || $exists === $i18n->getBase();
+
+                    return null === $exists || $exists === $i18n || $exists == $i18n->getBase();
                 };
 
-                // validation
+                // validate input
                 $validator
                         ->key("title", V::create()->callback($notExists)->setName("notExists"))
                         ->assert($input);
@@ -282,12 +304,13 @@ $app->group('/article', function() use ($app, $validator, $messages) {
 
                 $app->db->persist($i18n);
                 $app->db->flush();
-                $app->flash('success', gettext('Translations updated successfully'));
-                $app->redirect($app->urlFor("admin.article.index"));
+                $app->flash(ALERT_SUCCESS, gettext('Translations updated successfully'));
+                $app->redirect($app->urlFor('admin.article.index'));
             } catch (InvalidArgumentException $ex) {
                 $data['error'] = new Error($ex->findMessages($messages));
             }
         }
+
         $app->render("admin/article/translate.twig", $data);
     })->via("GET", "POST")->name("admin.article.translate");
 
@@ -329,18 +352,19 @@ $app->group('/article', function() use ($app, $validator, $messages) {
             $app->halt(401, gettext('Not authorized to delete this article'));
         }
 
+        // delete entire article include its translations
         if (null === $language) {
             if (!$article->getDetail()->isArchive()) {
                 $app->halt(403, gettext('It\'s not allowed to delete non-archived articles'));
             }
             $app->db->remove($article);
-        } else {
+        } else { // only delete one of its translation
             $i18n = $app->db->getRepository('Articlei18n')->findOneBy(array(
                 'base' => $article->getDetail(),
                 'language' => $language
             ));
 
-            if (null === $i18n) {
+            if (null === $i18n) { // oops not available
                 $app->notFound();
             }
 
@@ -358,29 +382,16 @@ $app->group('/article', function() use ($app, $validator, $messages) {
                 ->createQueryBuilder("a")
                 ->join('a.detail', 'b');
 
-//		if ($app->request->get('type') == 1 || $app->user->isContributor() || $app->user->isAuthor()) {
-//			$qb->where("b.author = :author")
-//					->setParameter("author", $app->user);
-//		}
-//
+        if ($app->request->get('type') == 1 || $app->user->isContributor() || $app->user->isAuthor()) {
+            $qb->where("b.author = :author")
+                    ->setParameter("author", $app->user);
+        }
+        
         if (null !== $status) {
             $qb->andWhere("b.status = :status")
                     ->setParameter("status", $status);
         }
-//
-//		foreach ($app->request->get('order') as $order) {
-//			switch ((int) $order['column']) {
-//				case 3:
-//					$qb->addOrderBy("b.createdAt", $order['dir'])
-//							->addOrderBy("a.createdAt", $order['dir']);
-//					break;
-//				case 4:
-//					$qb->addOrderBy("b.updatedAt", $order['dir'])
-//							->addOrderBy("a.updatedAt", $order['dir']);
-//					break;
-//			}
-//		}
-//
+
         $app->contentType("application/json");
         $data = new DataTables($qb, 'admin/article/datatables.twig');
         return $app->response->write(json_encode($data));

@@ -285,7 +285,7 @@ class Articlei18n {
      * @return bool
      */
     public function isPermitted(User $user) {
-        return !(($user->isAuthor() || $user->isContributor()) && !($this->belongsTo($user) || $this->article->belongsTo($user)));
+        return !(($user->isAuthor() || $user->isContributor()) && !$this->belongsTo($user));
     }
 
 }

@@ -7,8 +7,7 @@ require_once "../vendor/autoload.php";
 
 session_start();
 
-if (!defined('LC_MESSAGES'))
-    define('LC_MESSAGES', 5);
+if (!defined('LC_MESSAGES')) define('LC_MESSAGES', 5);
 
 define('ALERT_SUCCESS', 'alert-success');
 define('ALERT_DANGER', 'alert-danger');
@@ -85,6 +84,10 @@ $app->get('/test', function() use($app, $twig) {
             $twig->loadTemplate(str_replace($app->config('templates.path') . '/', '', $file));
         }
     }
+});
+
+$app->get('/chrometest', function() use($app) {
+    var_dump($_SERVER);
 });
 
 // Run app

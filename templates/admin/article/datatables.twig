@@ -84,8 +84,23 @@
                         <td>{{ translations[i18n.language]|capitalize }}</td>
                         <td>
                             <a href="#">
-                                {{ i18n.title }}
+                                <strong>{{ i18n.title }}</strong>
                             </a>
+                            <div>
+                                {% if i18n.status == constant('STATUS_PUBLISH') %}
+                                    <span class="label label-success">
+                                        {{ i18n.status }}
+                                    </span>
+                                {% elseif i18n.status == constant('STATUS_DRAFT') %}
+                                    <span class="label label-default">
+                                        {{ i18n.status }}
+                                    </span>
+                                {% elseif i18n.status == constant('STATUS_PENDING') %}
+                                    <span class="label label-warning">
+                                        {{ i18n.status }}
+                                    </span>
+                                {% endif %}
+                            </div>
                         </td>
                         <td>
                             <div>
