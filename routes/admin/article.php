@@ -5,7 +5,7 @@ use Respect\Validation\Exceptions\AllOfException;
 
 /* @var $app Application */
 $validator = V::create()
-        ->key('title', V::create()->notEmpty()->length(16, 60))
+        ->key('title', V::create()->notEmpty()->length(6, 60))
         ->key('content', V::create()->notEmpty()->length(160))
         ->key('status', V::create()->in(array(
             STATUS_PUBLISH,

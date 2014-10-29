@@ -51,7 +51,7 @@
                 <![CDATA[
                 <div class="btn-group">
                     {% if article.detail.publish or article.detail.draft or article.detail.pending%}
-                        <a href="{{ urlFor('admin.article.edit', {id: article.id}) }}" 
+                        <a data-pjax href="{{ urlFor('admin.article.edit', {id: article.id}) }}" 
                            class="btn btn-default btn-sm" title="{% trans %} Edit {% endtrans %}">
                             <i class="fa fa-edit"></i>
                         </a>
